@@ -1,7 +1,7 @@
 {
-  "name": "dashboard-leon-vincennes-unified",
+  "name": "dashboard-hippodrome-live-separated",
   "version": "1.0.0",
-  "description": "Affichage unifié style Leon.gp – Hippodrome Paris-Vincennes",
+  "description": "Dashboard Hippodrome LIVE avec blocs bus séparés et Vélib amélioré",
   "main": "server.js",
   "type": "module",
   "scripts": {

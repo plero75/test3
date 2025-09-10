@@ -14,12 +14,12 @@ const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Me
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 const SYTADIN_URL = "https://www.sytadin.fr/sys/barometre_cumul.jsp.html";
 
-// StopAreas / Stops IDFM
+// StopAreas / Stops IDFM - CORRIGÉS avec les bons IDs
 const STOP_IDS = {
-  RER_A: "STIF:StopArea:SP:43135:",      // Joinville RER
-  BUS_77: "STIF:StopArea:SP:463641:",    // Hippodrome (77)
-  BUS_201: "STIF:StopArea:SP:463644:",   // École du Breuil (201 ou autre selon PRIM)
-  JOINVILLE_AREA: "STIF:StopArea:SP:70640:" // Joinville (toutes lignes)
+  RER_A: "STIF:StopArea:SP:43135:",          // Joinville RER A
+  JOINVILLE_AREA: "STIF:StopArea:SP:70640:", // Joinville-le-Pont (toutes lignes bus)
+  HIPPODROME: "STIF:StopArea:SP:463641:",    // Hippodrome de Vincennes (bus 77/201)
+  BREUIL: "STIF:StopArea:SP:463644:"         // École du Breuil (bus 77)
 };
 
 async function fetchText(url){ const r = await fetch(url); if(!r.ok) throw new Error('Fetch '+url); return await r.text(); }
@@ -27,34 +27,43 @@ async function fetchJSON(url){ const r = await fetch(url); if(!r.ok) throw new E
 
 app.get('/api/nextDepartures', async (req, res) => {
   try {
-    const [rer, bus77, bus201, joinvilleArea] = await Promise.all([
+    console.log('🚀 Récupération des données transport...');
+
+    const [rer, joinvilleAll, hippodrome, breuil] = await Promise.all([
       fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`),
-      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BUS_77}`),
-      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BUS_201}`),
-      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.JOINVILLE_AREA}`)
+      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.JOINVILLE_AREA}`),
+      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}`),
+      fetchJSON(`${PROXY}https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BREUIL}`)
     ]);
 
-    const rerData   = regroupRER(rer);
-    const bus77Data = parseStop(bus77);
-    const bus201Data= parseStop(bus201);
-    const joinvData = parseStop(joinvilleArea);
+    console.log('✅ Données récupérées, traitement...');
+
+    const rerData = regroupRER(rer);
+    const joinvilleData = parseStop(joinvilleAll);
+    const hippodromeData = parseStop(hippodrome);
+    const breuilData = parseStop(breuil);
+
+    console.log(`📊 RER: ${rerData.directionParis.length + rerData.directionBoissy.length} trains`);
+    console.log(`🚌 Joinville: ${joinvilleData.length} bus, Hippodrome: ${hippodromeData.length} bus, Breuil: ${breuilData.length} bus`);
 
     res.json({
       RER_A: rerData,
       BUS: {
-        joinville: joinvData,                                            
-        hippodrome: bus77Data.concat(bus201Data).filter(x => ['77','201'].includes(x.line)),
-        breuil: bus77Data.filter(x => x.line === '77')
+        joinville: joinvilleData,      // Tous les bus de Joinville-le-Pont
+        hippodrome: hippodromeData,    // Bus 77/201 à l'Hippodrome
+        breuil: breuilData             // Bus 77 à l'École du Breuil
       }
     });
   } catch (e) {
-    console.error(e);
+    console.error('❌ Erreur nextDepartures:', e);
     res.status(500).json({ error: e.message });
   }
 });
 
 app.get('/api/infos', async (req, res) => {
   try {
+    console.log('🌐 Récupération infos (météo, vélib, trafic, news)...');
+
     const [meteo, velib, rssXML, baro] = await Promise.all([
       fetchJSON(WEATHER_URL),
       fetchJSON(VELIB_URL),
@@ -64,12 +73,13 @@ app.get('/api/infos', async (req, res) => {
 
     const trafic = parseSytadinBaro(baro);
 
-    // Actualités avec titre + description/summary
     const actus = (rssXML?.items||[]).slice(0, 10).map(item => ({
       title: item.title || '',
       description: item.contentSnippet || item.summary || item.content || '',
       link: item.link || ''
     }));
+
+    console.log('✅ Infos récupérées');
 
     res.json({
       meteo: { 
@@ -77,16 +87,133 @@ app.get('/api/infos', async (req, res) => {
         desc: "Conditions actuelles", 
         extra: `Vent ${meteo?.current_weather?.windspeed || 0} km/h` 
       },
-      velib: parseVelib(velib),
+      velib: parseVelibAmélioré(velib),
       trafic,
       actus,
       alerte: null
     });
   } catch (e) {
-    console.error(e);
+    console.error('❌ Erreur infos:', e);
     res.status(500).json({ error: e.message });
   }
 });
+
+// ========= ENDPOINT COURSES VINCENNES =========
+app.get('/api/vincennes', async (req, res) => {
+  try {
+    console.log('🏇 Récupération courses Vincennes...');
+    const prochaines = await getVincennesCourses();
+    console.log(`🎯 ${prochaines.length} courses trouvées`);
+
+    res.json({
+      prochaines,
+      hippodrome: "Paris-Vincennes",
+      derniereMiseAJour: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error('❌ Erreur courses Vincennes:', e);
+    res.status(500).json({ error: e.message, prochaines: [] });
+  }
+});
+
+async function getVincennesCourses() {
+  const today = new Date();
+  const courses = [];
+
+  // Chercher sur 7 jours
+  for (let i = 0; i < 7; i++) {
+    const dateCheck = new Date(today);
+    dateCheck.setDate(today.getDate() + i);
+    const datePMU = formatDatePMU(dateCheck);
+
+    try {
+      const url = `https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${datePMU}`;
+      const data = await fetchJSON(url);
+
+      const reunions = data?.programme?.reunions || [];
+
+      for (const reunion of reunions) {
+        const hippodrome = reunion.hippodrome || {};
+        const codeHippo = hippodrome.code || '';
+        const libelleLong = hippodrome.libelleLong || '';
+
+        // Vérifier si c'est Vincennes
+        if (codeHippo === 'VIN' || 
+            libelleLong.toLowerCase().includes('vincennes') || 
+            libelleLong.toLowerCase().includes('paris-vincennes')) {
+
+          const coursesReunion = reunion.courses || [];
+          const maintenant = new Date();
+
+          for (const course of coursesReunion) {
+            const heureDepart = course.heureDepart;
+            let heureCourse = null;
+            let heureStr = '--:--';
+
+            // Convertir le timestamp
+            if (heureDepart) {
+              try {
+                heureCourse = new Date(heureDepart);
+                heureStr = heureCourse.toLocaleTimeString('fr-FR', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              } catch (e) {
+                console.warn('Erreur parsing heure:', heureDepart);
+              }
+            }
+
+            // Ajouter seulement les courses futures
+            if (!heureCourse || heureCourse > maintenant) {
+              courses.push({
+                date: dateCheck.toISOString().split('T')[0],
+                dateLabel: dateCheck.toLocaleDateString('fr-FR', { 
+                  weekday: 'long', 
+                  day: 'numeric', 
+                  month: 'long' 
+                }),
+                reunion: reunion.numOfficiel || 1,
+                course: course.numOrdre || course.numOfficiel || '?',
+                heure: heureStr,
+                nom: course.libelle || 'Course sans nom',
+                distance: course.distance || 'N/A',
+                discipline: formatDiscipline(course.discipline),
+                dotation: course.montantPrix || 'N/A',
+                statut: course.statut || 'PROGRAMMEE',
+                heureTimestamp: heureCourse ? heureCourse.getTime() : 0
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`Erreur pour la date ${datePMU}:`, e.message);
+      continue;
+    }
+  }
+
+  // Trier par heure et retourner les 8 prochaines
+  return courses
+    .sort((a, b) => a.heureTimestamp - b.heureTimestamp)
+    .slice(0, 8);
+}
+
+function formatDatePMU(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}${month}${year}`;
+}
+
+function formatDiscipline(discipline) {
+  const mapping = {
+    'ATTELE': 'Attelé',
+    'MONTE': 'Monté',
+    'PLAT': 'Plat',
+    'OBSTACLES': 'Obstacles'
+  };
+  return mapping[discipline] || discipline || 'Trot';
+}
 
 function minutesFromISO(iso){
   if(!iso) return null;
@@ -131,11 +258,23 @@ function groupByDest(arr){
   return out;
 }
 
-function parseVelib(data){
+function parseVelibAmélioré(data){
   const out = {};
+  const stationMap = {
+    '12163': { name: 'Hippodrome de Vincennes', zone: 'Hippodrome' },
+    '12128': { name: 'École Vétérinaire Maisons-Alfort', zone: 'École Vétérinaire' }
+  };
+
   (data?.data?.stations||[]).forEach(st => {
-    if(st.station_id==='12163' || st.station_id==='12128'){
-      out[st.station_id] = { name: st.stationCode, bikes: st.num_bikes_available, docks: st.num_docks_available };
+    if(stationMap[st.station_id]){
+      out[st.station_id] = { 
+        name: stationMap[st.station_id].name,
+        zone: stationMap[st.station_id].zone,
+        bikes: st.num_bikes_available || 0, 
+        docks: st.num_docks_available || 0,
+        total: st.capacity || (st.num_bikes_available + st.num_docks_available),
+        status: st.is_renting === 1 && st.is_returning === 1 ? 'ACTIVE' : 'INACTIVE'
+      };
     }
   });
   return out;
@@ -151,9 +290,22 @@ function parseSytadinBaro(html){
       note: `État: ${(etatMatch? etatMatch[1].trim(): '—')} · Tendance: ${(tendMatch? tendMatch[1].trim(): '—')}`
     };
   }catch(e){
-    return { km: null, note: '' };
+    return { km: null, note: 'Données indisponibles' };
   }
 }
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Serveur unifié en écoute sur http://localhost:'+PORT));
+app.listen(PORT, () => {
+  console.log('\n🎪 ========================================');
+  console.log(`🚀 Dashboard Hippodrome LIVE sur http://localhost:${PORT}`);
+  console.log('🎪 ========================================');
+  console.log('📍 Arrêts surveillés:');
+  console.log('   🚆 RER A Joinville-le-Pont');
+  console.log('   🚌 Joinville-le-Pont (toutes lignes)');
+  console.log('   🚌 Hippodrome de Vincennes (77/201)');
+  console.log('   🚌 École du Breuil (77)');
+  console.log('   🏇 Courses Vincennes (API PMU)');
+  console.log('   🚲 Stations Vélib');
+  console.log('   🌤️ Météo + 🚗 Trafic + 📰 Actualités');
+  console.log('🎪 ========================================\n');
+});
