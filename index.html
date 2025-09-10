@@ -8,7 +8,8 @@
     :root{
       --bg:#0f1115; --panel:#161a22; --card:#0e1220; --text:#f4f6fb; --muted:#a9b1c3;
       --accent:#ffd400; --danger:#ff4d4f; --warn:#ff9f1a; --ok:#20c997; --border:#1f2633;
-      --idfm-blue:#0087CE; --rerA:#e51c23;
+      --idfm-blue:#0087CE; --rerA:#e51c23; --vincennes:#8B4513; --joinville:#2E8B57;
+      --hippodrome:#4682B4; --breuil:#DAA520;
       --block:#ffffff; --block-text:#000000;
     }
     *{box-sizing:border-box}
@@ -27,90 +28,119 @@
     .clock{background:#000;padding:6px 10px;border-radius:6px;color:var(--accent);font-weight:800;
       font-variant-numeric:tabular-nums;border:1px solid #222;}
 
-    /* Layout unifié */
+    /* Layout avec 3 colonnes et plus de blocs */
     .main-grid{display:grid;gap:14px;padding:14px;height:100%;
-      grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr auto;}
+      grid-template-columns:1fr 1fr 1fr;grid-template-rows:250px 180px 180px 120px;}
 
-    /* Blocs transport (colonne gauche) */
-    .transport-col{display:grid;gap:14px;grid-column:1;grid-row:1/3;}
+    /* Première ligne : RER A (span 2) + Météo/Trafic */
+    .rer-section{grid-column:1/3;grid-row:1;}
+    .info-section{grid-column:3;grid-row:1;}
 
-    /* Blocs info (colonne droite) */
-    .info-col{display:grid;gap:14px;grid-column:2;grid-row:1/2;}
+    /* Deuxième ligne : 3 blocs bus */
+    .bus-joinville{grid-column:1;grid-row:2;}
+    .bus-hippodrome{grid-column:2;grid-row:2;}
+    .bus-breuil{grid-column:3;grid-row:2;}
 
-    /* Bloc actualités (bas, pleine largeur) */
-    .news-section{grid-column:1/3;grid-row:3;min-height:120px;}
+    /* Troisième ligne : Vélib + Courses Vincennes (span 2) */
+    .velib-section{grid-column:1;grid-row:3;}
+    .courses-section{grid-column:2/4;grid-row:3;}
+
+    /* Quatrième ligne : Actualités (full width) */
+    .news-section{grid-column:1/4;grid-row:4;}
 
     .bloc{background:var(--block); color:var(--block-text); border-radius:14px; overflow:hidden; border:2px solid #e9eef7;
       display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(0,0,0,.25);}
     .bloc-hd{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid #eef3fb;
-      font-weight:900; letter-spacing:.2px; font-size:18px}
-    .bloc-hd .tag{font-size:12px;padding:4px 8px;border-radius:999px;background:#f4f7ff;border:1px solid #dbe5f5;color:#2c3b52}
-    .bloc-bd{padding:10px;flex:1;display:flex;flex-direction:column;gap:10px}
+      font-weight:900; letter-spacing:.2px; font-size:16px}
+    .bloc-hd .tag{font-size:11px;padding:3px 6px;border-radius:999px;background:#f4f7ff;border:1px solid #dbe5f5;color:#2c3b52}
+    .bloc-bd{padding:10px;flex:1;display:flex;flex-direction:column;gap:8px}
 
     /* RER grid */
     .rer-grid{display:grid;gap:10px;grid-template-columns:1fr 1fr;flex:1;}
-    .rer-col .col-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#546279;font-size:14px;font-weight:700}
-    .row{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid #e6ecf7;border-left:12px solid var(--rerA);
+    .rer-col .col-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#546279;font-size:13px;font-weight:700}
+    .row{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #e6ecf7;border-left:12px solid var(--rerA);
       border-radius:12px;padding:8px}
-    .row .dir{font-weight:900;font-size:16px}
-    .row .meta{color:#6a7893;font-size:11px}
+    .row .dir{font-weight:900;font-size:15px}
+    .row .meta{color:#6a7893;font-size:10px}
     .times{margin-left:auto;display:flex;gap:6px;align-items:center}
-    .chip{background:#000;color:var(--accent);border:2px solid #1e1e1e; padding:6px 10px;border-radius:8px;
-      font-weight:900;font-variant-numeric: tabular-nums;min-width:40px;text-align:center;font-size:16px}
+    .chip{background:#000;color:var(--accent);border:2px solid #1e1e1e; padding:5px 8px;border-radius:8px;
+      font-weight:900;font-variant-numeric: tabular-nums;min-width:35px;text-align:center;font-size:14px}
     .chip.cancel{background:#220000;color:#ffb3b3;border-color:#3a0000;text-decoration:line-through}
     .chip.late{background:#1a1400;color:#ffd56a;border-color:#3a2d00}
 
-    /* Bus rows */
-    .bus-list{display:grid;gap:8px;flex:1}
-    .bus-row{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e6ecf7;border-left:12px solid var(--idfm-blue);
-      border-radius:12px;padding:8px}
-    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:35px;height:35px;border-radius:50%;
-      font-weight:900;background:#001826;color:#73c8ff;border:2px solid #0e3d57;font-size:14px}
-    .dest{font-weight:900;font-size:16px}
-    .sub{font-size:11px;color:#6a7893}
+    /* Bus rows - différentes couleurs par arrêt */
+    .bus-list{display:grid;gap:6px;flex:1}
+    .bus-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e6ecf7;
+      border-radius:10px;padding:6px}
+    .bus-row.joinville{border-left:10px solid var(--joinville)}
+    .bus-row.hippodrome{border-left:10px solid var(--hippodrome)}
+    .bus-row.breuil{border-left:10px solid var(--breuil)}
+
+    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:50%;
+      font-weight:900;background:#001826;color:#73c8ff;border:2px solid #0e3d57;font-size:12px}
+    .dest{font-weight:900;font-size:14px;flex:1}
+    .sub{font-size:10px;color:#6a7893}
+    .bus-times{display:flex;gap:4px;align-items:center}
+
+    /* Courses Vincennes */
+    .courses-list{display:grid;gap:8px;flex:1;grid-template-columns:1fr 1fr}
+    .course-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e6ecf7;border-left:10px solid var(--vincennes);
+      border-radius:10px;padding:6px}
+    .course-time{display:inline-flex;align-items:center;justify-content:center;min-width:45px;height:30px;border-radius:6px;
+      font-weight:900;background:#8B4513;color:#fff;border:2px solid #654321;font-size:12px}
+    .course-info{flex:1}
+    .course-name{font-weight:900;font-size:13px}
+    .course-details{font-size:10px;color:#6a7893}
+    .course-prize{font-size:11px;color:#2c5aa0;font-weight:800}
+
+    /* Vélib amélioré */
+    .velib-stations{display:grid;gap:8px;flex:1}
+    .velib-station{background:#fff;border:2px solid #e6ecf7;border-left:10px solid #00AA55;border-radius:10px;padding:8px}
+    .velib-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .velib-name{font-weight:900;font-size:14px;color:#2c5aa0}
+    .velib-id{font-size:11px;color:#6a7893}
+    .velib-counts{display:flex;gap:12px}
+    .velib-count{display:flex;align-items:center;gap:4px;font-weight:800;font-size:12px}
+    .velib-count.bikes{color:#00AA55}
+    .velib-count.docks{color:#2c5aa0}
 
     /* Info blocks */
     .info-rotating{position:relative;height:100%;overflow:hidden}
     .info-panel{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
     .info-panel.active{opacity:1}
     .metric{display:flex;align-items:baseline;gap:8px;justify-content:center}
-    .metric .big{font-size:48px;font-weight:900}
-    .metric .unit{font-size:16px;color:#6a7893}
-    .info-desc{font-size:14px;color:#6a7893;margin-top:8px}
-    .velib-stations{display:grid;gap:6px;font-size:12px}
-    .velib-station{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#f8f9fb;border-radius:6px}
-    .velib-name{font-weight:700}
-    .velib-count{color:#2c5aa0;font-weight:800}
+    .metric .big{font-size:36px;font-weight:900}
+    .metric .unit{font-size:14px;color:#6a7893}
+    .info-desc{font-size:11px;color:#6a7893;margin-top:6px}
 
     /* Actualités */
     .news-content{position:relative;height:100%;overflow:hidden}
-    .news-item{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;padding:16px;display:flex;flex-direction:column;justify-content:center}
+    .news-item{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;padding:12px;display:flex;flex-direction:column;justify-content:center}
     .news-item.active{opacity:1}
-    .news-title{font-weight:900;font-size:20px;margin-bottom:10px;line-height:1.3}
-    .news-text{font-size:16px;line-height:1.4;color:#ddd}
-    .news-meta{font-size:12px;color:#999;margin-top:8px}
+    .news-title{font-weight:900;font-size:16px;margin-bottom:6px;line-height:1.3}
+    .news-text{font-size:13px;line-height:1.4;color:#ddd}
+    .news-meta{font-size:10px;color:#999;margin-top:6px}
 
     .alert{position:absolute; left:14px; right:14px; bottom:14px;
       background:linear-gradient(90deg,#2b0b0b,#1a0000); border:2px solid #3a1010; color:#ffd6d6;
-      padding:10px 12px; border-radius:12px; display:none; gap:12px; align-items:center; font-weight:800}
-    .alert .dot{width:10px;height:10px;border-radius:50%;background:var(--danger)}
+      padding:8px 10px; border-radius:10px; display:none; gap:10px; align-items:center; font-weight:800;font-size:12px}
+    .alert .dot{width:8px;height:8px;border-radius:50%;background:var(--danger)}
     .muted{color:#9aa7bf}
-    .section-note{font-size:11px;color:#6a7893;margin-left:6px}
+    .section-note{font-size:10px;color:#6a7893;margin-left:6px}
   </style>
 </head>
 <body>
   <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris‑Vincennes">
     <header>
-      <div class="brand">Transports & Infos Temps Réel <small>– Hippodrome Paris‑Vincennes</small></div>
+      <div class="brand">Dashboard Hippodrome <small>– Transport & Courses LIVE</small></div>
       <div class="spacer"></div>
       <div id="lastUpdate" class="muted" aria-live="polite"></div>
       <div id="clock" class="clock" aria-label="Heure"></div>
     </header>
 
     <div class="main-grid">
-      <!-- COLONNE TRANSPORT (gauche) -->
-      <div class="transport-col">
-        <!-- RER A -->
+      <!-- RER A (span 2 colonnes) -->
+      <div class="rer-section">
         <div class="bloc" aria-labelledby="hd-rer">
           <div class="bloc-hd" id="hd-rer">🚆 RER A – Joinville‑le‑Pont <span class="tag">Temps réel</span></div>
           <div class="bloc-bd">
@@ -126,19 +156,10 @@
             </div>
           </div>
         </div>
-
-        <!-- BUS -->
-        <div class="bloc" aria-labelledby="hd-bus">
-          <div class="bloc-hd" id="hd-bus">🚌 Bus – Joinville & Hippodrome <span class="tag">Toutes lignes</span></div>
-          <div class="bloc-bd">
-            <div id="bus-all" class="bus-list" aria-live="polite"></div>
-          </div>
-        </div>
       </div>
 
-      <!-- COLONNE INFO (droite) -->
-      <div class="info-col">
-        <!-- Météo / Trafic (rotation) -->
+      <!-- Météo / Trafic (rotation) -->
+      <div class="info-section">
         <div class="bloc" aria-labelledby="hd-info">
           <div class="bloc-hd" id="hd-info">📊 <span id="info-title">Météo Locale</span></div>
           <div class="bloc-bd">
@@ -158,8 +179,40 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Vélib -->
+      <!-- BUS JOINVILLE-LE-PONT -->
+      <div class="bus-joinville">
+        <div class="bloc" aria-labelledby="hd-bus-joinville">
+          <div class="bloc-hd" id="hd-bus-joinville">🚌 Joinville-le-Pont <span class="tag">Toutes lignes</span></div>
+          <div class="bloc-bd">
+            <div id="bus-joinville-list" class="bus-list" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUS HIPPODROME -->
+      <div class="bus-hippodrome">
+        <div class="bloc" aria-labelledby="hd-bus-hippo">
+          <div class="bloc-hd" id="hd-bus-hippo">🚌 Hippodrome <span class="tag">77 / 201</span></div>
+          <div class="bloc-bd">
+            <div id="bus-hippodrome-list" class="bus-list" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUS ÉCOLE DU BREUIL -->
+      <div class="bus-breuil">
+        <div class="bloc" aria-labelledby="hd-bus-breuil">
+          <div class="bloc-hd" id="hd-bus-breuil">🚌 École du Breuil <span class="tag">77</span></div>
+          <div class="bloc-bd">
+            <div id="bus-breuil-list" class="bus-list" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VÉLIB AMÉLIORÉ -->
+      <div class="velib-section">
         <div class="bloc" aria-labelledby="hd-velib">
           <div class="bloc-hd" id="hd-velib">🚲 Vélib' Proximité</div>
           <div class="bloc-bd">
@@ -168,7 +221,17 @@
         </div>
       </div>
 
-      <!-- ACTUALITÉS (bas, pleine largeur) -->
+      <!-- COURSES VINCENNES (span 2 colonnes) -->
+      <div class="courses-section">
+        <div class="bloc" aria-labelledby="hd-courses">
+          <div class="bloc-hd" id="hd-courses">🏇 Prochaines Courses <span class="tag" id="courses-counter">Vincennes</span></div>
+          <div class="bloc-bd">
+            <div id="courses-list" class="courses-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTUALITÉS (full width) -->
       <div class="news-section">
         <div class="bloc" aria-labelledby="hd-news">
           <div class="bloc-hd" id="hd-news">📰 Actualités <span class="tag" id="news-counter">1/10</span></div>
@@ -188,7 +251,7 @@
   </div>
 
   <script>
-    const ENDPOINTS = { departures: '/api/nextDepartures', infos: '/api/infos' };
+    const ENDPOINTS = { departures: '/api/nextDepartures', infos: '/api/infos', courses: '/api/vincennes' };
     const $ = (sel, root=document) => root.querySelector(sel);
 
     let currentNews = 0;
@@ -227,15 +290,15 @@
       });
     }
 
-    function renderBusAll(listEl, joinville, hippodrome, breuil){
+    function renderBusArray(listEl, buses, cssClass){
       listEl.innerHTML = '';
-      const all = [...(joinville||[]), ...(hippodrome||[]), ...(breuil||[])];
-      all.slice(0,6).forEach(b=>{
-        const row = document.createElement('div'); row.className='bus-row';
+      (buses||[]).slice(0,4).forEach(b=>{
+        const row = document.createElement('div'); 
+        row.className = `bus-row ${cssClass}`;
         const badge = document.createElement('div'); badge.className='badge'; badge.textContent = b.line || '—';
-        const text = document.createElement('div');
+        const text = document.createElement('div'); text.className='dest';
         text.innerHTML = `<div class="dest">${b.dest||''}</div><div class="sub">${b.stop||''}</div>`;
-        const times = document.createElement('div'); times.className='times';
+        const times = document.createElement('div'); times.className='bus-times';
         (b.minutes||[]).slice(0,3).forEach(min=> times.appendChild(makeChip(typeof min==='number'? `${min}` : (min||'—'))));
         if(b.status==='cancelled') times.appendChild(makeChip('supprimé','cancel'));
         if(b.delay && b.delay>0) times.appendChild(makeChip(`+${b.delay} min`,'late'));
@@ -243,12 +306,64 @@
       });
     }
 
+    function renderCourses(courses){
+      const listEl = $('#courses-list'); listEl.innerHTML='';
+      if(!courses || courses.length === 0){
+        listEl.innerHTML = '<div class="info-desc">Aucune course programmée</div>';
+        return;
+      }
+
+      courses.slice(0,6).forEach(course => {
+        const row = document.createElement('div'); row.className='course-row';
+        const timeBox = document.createElement('div'); timeBox.className='course-time';
+        timeBox.textContent = course.heure || '--:--';
+
+        const info = document.createElement('div'); info.className='course-info';
+        info.innerHTML = `
+          <div class="course-name">${course.nom || 'Course inconnue'}</div>
+          <div class="course-details">${course.distance || '----'}m • ${course.discipline || 'Trot'}</div>
+        `;
+
+        const prize = document.createElement('div'); prize.className='course-prize';
+        if(course.dotation && course.dotation !== 'N/A'){
+          const montant = typeof course.dotation === 'number' ? 
+            `${(course.dotation/1000).toFixed(0)}k€` : course.dotation;
+          prize.textContent = montant;
+        }
+
+        row.append(timeBox, info, prize);
+        listEl.append(row);
+      });
+    }
+
     function renderVelib(obj){
       const el = $('#velib-list'); el.innerHTML='';
       if(!obj){ el.innerHTML='<div class="info-desc">Données indisponibles</div>'; return; }
+
+      // Mapping des IDs vers noms de stations
+      const stationNames = {
+        '12163': 'Hippodrome de Vincennes',
+        '12128': 'École Vétérinaire de Maisons-Alfort'
+      };
+
       Object.entries(obj).forEach(([id, info])=>{
         const station = document.createElement('div'); station.className='velib-station';
-        station.innerHTML = `<span class="velib-name">${info.name||'Station '+id}</span><span class="velib-count">${info.bikes||0}🚲 ${info.docks||0}📍</span>`;
+
+        const header = document.createElement('div'); header.className='velib-header';
+        const name = document.createElement('div'); name.className='velib-name';
+        name.textContent = stationNames[id] || `Station ${info.name || id}`;
+        const stationId = document.createElement('div'); stationId.className='velib-id';
+        stationId.textContent = `#${id}`;
+        header.append(name, stationId);
+
+        const counts = document.createElement('div'); counts.className='velib-counts';
+        const bikes = document.createElement('div'); bikes.className='velib-count bikes';
+        bikes.innerHTML = `🚲 <strong>${info.bikes ?? '—'}</strong> vélos`;
+        const docks = document.createElement('div'); docks.className='velib-count docks';
+        docks.innerHTML = `📍 <strong>${info.docks ?? '—'}</strong> places`;
+        counts.append(bikes, docks);
+
+        station.append(header, counts);
         el.append(station);
       });
     }
@@ -310,12 +425,22 @@
       }
     }
 
-    async function fetchJSON(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }catch{ return null; } }
+    async function fetchJSON(url){ 
+      try{ 
+        const r = await fetch(url,{cache:'no-store'}); 
+        if(!r.ok) throw new Error(`HTTP ${r.status}`); 
+        return await r.json(); 
+      }catch(e){ 
+        console.error(`Fetch error ${url}:`, e);
+        return null; 
+      } 
+    }
 
     async function refresh(){
-      const [dep, inf] = await Promise.all([
+      const [dep, inf, courses] = await Promise.all([
         fetchJSON(ENDPOINTS.departures),
-        fetchJSON(ENDPOINTS.infos)
+        fetchJSON(ENDPOINTS.infos),
+        fetchJSON(ENDPOINTS.courses)
       ]);
 
       renderRER($('#rer-paris'),  dep?.RER_A?.directionParis || []);
@@ -323,7 +448,10 @@
       $('#rer-paris-note').textContent = dep?.RER_A?.noteParis || '';
       $('#rer-boissy-note').textContent = dep?.RER_A?.noteBoissy || '';
 
-      renderBusAll($('#bus-all'), dep?.BUS?.joinville, dep?.BUS?.hippodrome, dep?.BUS?.breuil);
+      // Séparer les 3 types de bus
+      renderBusArray($('#bus-joinville-list'), dep?.BUS?.joinville || [], 'joinville');
+      renderBusArray($('#bus-hippodrome-list'), dep?.BUS?.hippodrome || [], 'hippodrome'); 
+      renderBusArray($('#bus-breuil-list'), dep?.BUS?.breuil || [], 'breuil');
 
       // Météo
       if(inf?.meteo){
@@ -340,6 +468,7 @@
 
       renderVelib(inf?.velib);
       renderNews(inf?.actus);
+      renderCourses(courses?.prochaines || []);
 
       setLastUpdate();
     }
