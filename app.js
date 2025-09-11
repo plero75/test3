@@ -27,10 +27,13 @@ function setClock() {
 setInterval(setClock,1000);
 setClock();
 
-function setLastUpdate() {
+<div id="lastUpdate"></div>
+<script>
   const d = new Date();
-  $("#lastUpdate").textContent = `Maj ${d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
-}
+  document.getElementById("lastUpdate").textContent =
+    `Maj ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+</script>
+
 
 // Helpers
 function makeChip(text) {
