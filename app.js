@@ -29,9 +29,10 @@ setClock();
 
 <div id="lastUpdate"></div>
 <script>
-  const d = new Date();
-  document.getElementById("lastUpdate").textContent =
-    `Maj ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+const d = new Date();
+document.getElementById("lastUpdate").textContent =
+  `Maj ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+
 </script>
 
 
