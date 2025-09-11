@@ -1,7 +1,4 @@
-```javascript
-// app.js
-
-// Configuration
+// app.js - Configuration
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
 const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
@@ -47,10 +44,10 @@ async function fetchJSON(url, timeout = 10000) {
     const id = setTimeout(() => ctrl.abort(), timeout);
     const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
     clearTimeout(id);
-if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     return await res.json();
   } catch (e) {
-    console.error(`Fetch JSON ${url}:`, e.message);
+    console.error("Fetch JSON " + url + ":", e.message);
     return null;
   }
 }
@@ -61,10 +58,10 @@ async function fetchText(url, timeout = 10000) {
     const id = setTimeout(() => ctrl.abort(), timeout);
     const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
     clearTimeout(id);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     return await res.text();
   } catch (e) {
-    console.error(`Fetch Text ${url}:`, e.message);
+    console.error("Fetch Text " + url + ":", e.message);
     return null;
   }
 }
@@ -114,7 +111,7 @@ function renderRER(el, rows) {
   (rows || []).slice(0, 3).forEach(r => {
     const row = document.createElement("div");
     row.className = "row";
-    row.innerHTML = `<div class="dir">${r.destination}</div><div class="times"></div>`;
+    row.innerHTML = '<div class="dir">' + r.destination + '</div><div class="times"></div>';
     r.minutes.slice(0, 3).forEach(m => row.querySelector(".times").appendChild(makeChip(m)));
     el.append(row);
   });
@@ -124,11 +121,8 @@ function renderBus(el, buses, cls) {
   el.innerHTML = "";
   (buses || []).slice(0, 4).forEach(b => {
     const row = document.createElement("div");
-    row.className = `bus-row ${cls}`;
-    row.innerHTML = `
-      <div class="badge">${b.line || "—"}</div>
-      <div class="dest">${b.dest}<div class="sub">${b.stop}</div></div>
-      <div class="bus-times"></div>`;
+    row.className = "bus-row " + cls;
+    row.innerHTML = '<div class="badge">' + (b.line || "—") + '</div><div class="dest">' + b.dest + '<div class="sub">' + b.stop + '</div></div><div class="bus-times"></div>';
     b.minutes.slice(0, 3).forEach(m => row.querySelector(".bus-times").appendChild(makeChip(m)));
     el.append(row);
   });
@@ -149,20 +143,13 @@ function parseVelibDetailed(data) {
   });
   return out;
 }
+
 function renderVelib(el, stations) {
   el.innerHTML = "";
   Object.entries(stations || {}).forEach(([id, info]) => {
     const st = document.createElement("div");
     st.className = "velib-station";
-    st.innerHTML = `
-      <div class="velib-header">
-        <div class="velib-name">${info.name}</div><div class="velib-id">#${id}</div>
-      </div>
-      <div class="velib-counts">
-        <div class="velib-count meca">🚲 <strong>${info.mechanical}</strong> méca</div>
-        <div class="velib-count elec">⚡ <strong>${info.electric}</strong> élec</div>
-        <div class="velib-count docks">📍 <strong>${info.docks}</strong> places</div>
-      </div>`;
+    st.innerHTML = '<div class="velib-header"><div class="velib-name">' + info.name + '</div><div class="velib-id">#' + id + '</div></div><div class="velib-counts"><div class="velib-count meca">🚲 <strong>' + info.mechanical + '</strong> méca</div><div class="velib-count elec">⚡ <strong>' + info.electric + '</strong> élec</div><div class="velib-count docks">📍 <strong>' + info.docks + '</strong> places</div></div>';
     el.append(st);
   });
 }
@@ -173,8 +160,8 @@ async function getVincennes() {
   for (let d = 0; d < 3; d++) {
     const dt = new Date();
     dt.setDate(dt.getDate() + d);
-    const pmu = `${String(dt.getDate()).padStart(2, "0")}${String(dt.getMonth()+1).padStart(2, "0")}${dt.getFullYear()}`;
-    const url = PROXY + encodeURIComponent(`https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu}`);
+    const pmu = String(dt.getDate()).padStart(2, "0") + String(dt.getMonth() + 1).padStart(2, "0") + dt.getFullYear();
+    const url = PROXY + encodeURIComponent("https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/" + pmu);
     const data = await fetchJSON(url);
     if (!data) continue;
     data.programme.reunions.forEach(r => {
@@ -183,10 +170,10 @@ async function getVincennes() {
           const hd = new Date(c.heureDepart);
           if (hd > new Date()) {
             arr.push({
-              heure: hd.toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"}),
+              heure: hd.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
               nom: c.libelle,
               distance: c.distance,
-              discipline: c.discipline.replace("ATTELE","Attelé").replace("MONTE","Monté"),
+              discipline: c.discipline.replace("ATTELE", "Attelé").replace("MONTE", "Monté"),
               dotation: c.montantPrix,
               ts: hd.getTime()
             });
@@ -195,17 +182,15 @@ async function getVincennes() {
       }
     });
   }
-  return arr.sort((a,b) => a.ts - b.ts).slice(0, 6);
+  return arr.sort((a, b) => a.ts - b.ts).slice(0, 6);
 }
+
 function renderCourses(el, courses) {
   el.innerHTML = "";
-  (courses || []).slice(0,6).forEach(c => {
+  (courses || []).slice(0, 6).forEach(c => {
     const row = document.createElement("div");
     row.className = "course-row";
-    row.innerHTML = `
-      <div class="course-time">${c.heure}</div>
-      <div class="course-info"><div class="course-name">${c.nom}</div><div class="course-details">${c.distance}m • ${c.discipline}</div></div>
-      <div class="course-prize">${(c.dotation/1000).toFixed(0)}k€</div>`;
+    row.innerHTML = '<div class="course-time">' + c.heure + '</div><div class="course-info"><div class="course-name">' + c.nom + '</div><div class="course-details">' + c.distance + 'm • ' + c.discipline + '</div></div><div class="course-prize">' + (c.dotation / 1000).toFixed(0) + 'k€</div>';
     el.append(row);
   });
 }
@@ -217,7 +202,7 @@ async function loadNews() {
     const xml = await fetchText(PROXY + encodeURIComponent(RSS_URL));
     if (xml) {
       const doc = new DOMParser().parseFromString(xml, "application/xml");
-      const items = Array.from(doc.querySelectorAll("item")).slice(0,10);
+      const items = Array.from(doc.querySelectorAll("item")).slice(0, 10);
       actus = items.map(i => ({
         title: i.querySelector("title")?.textContent || "",
         description: i.querySelector("description")?.textContent || ""
@@ -231,31 +216,40 @@ async function loadNews() {
   }
   renderNews(actus);
 }
+
 function renderNews(items) {
   newsItems = items; currentNews = 0;
   const el = $("#news-content"); el.innerHTML = "";
-  items.forEach((n,i) => {
+  items.forEach((n, i) => {
     const d = document.createElement("div");
-    d.className = `news-item${i===0?" active":""}`;
-    d.innerHTML = `<div class="news-title">${n.title}</div><div class="news-text">${n.description}</div><div class="news-meta">France Info</div>`;
+    d.className = "news-item" + (i === 0 ? " active" : "");
+    d.innerHTML = '<div class="news-title">' + n.title + '</div><div class="news-text">' + n.description + '</div><div class="news-meta">France Info</div>';
     el.append(d);
   });
-  $("#news-counter").textContent = `1/${items.length}`;
+  $("#news-counter").textContent = "1/" + items.length;
 }
+
 function nextNews() {
   document.querySelector(".news-item.active")?.classList.remove("active");
-  currentNews = (currentNews+1) % newsItems.length;
+  currentNews = (currentNews + 1) % newsItems.length;
   document.querySelectorAll(".news-item")[currentNews].classList.add("active");
-  $("#news-counter").textContent = `${currentNews+1}/${newsItems.length}`;
+  $("#news-counter").textContent = (currentNews + 1) + "/" + newsItems.length;
+}
+
+function toggleInfoPanel() {
+  $("#panel-meteo").classList.toggle("active");
+  $("#panel-trafic").classList.toggle("active");
+  $("#info-title").textContent = currentInfoPanel ? "Météo Locale" : "Trafic IDF";
+  currentInfoPanel = currentInfoPanel ? 0 : 1;
 }
 
 async function refresh() {
   console.log("🔄 Refresh");
   const [rer, jv, hp, br] = await Promise.all([
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.JOINVILLE_AREA}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BREUIL}`))
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL))
   ]);
   if (rer) {
     const rd = regroupRER(rer);
@@ -270,7 +264,7 @@ async function refresh() {
   if (meteo?.current_weather) {
     $("#meteo-temp").textContent = Math.round(meteo.current_weather.temperature);
     $("#meteo-desc").textContent = "Conditions actuelles";
-    $("#meteo-extra").textContent = `Vent ${meteo.current_weather.windspeed} km/h`;
+    $("#meteo-extra").textContent = "Vent " + meteo.current_weather.windspeed + " km/h";
   }
   renderVelib($("#velib-list"), parseVelibDetailed(velibData));
 
@@ -282,7 +276,6 @@ async function refresh() {
 }
 
 setInterval(nextNews, 20000);
-setInterval(() => toggleInfoPanel(), 15000);
+setInterval(toggleInfoPanel, 15000);
 setInterval(refresh, 30000);
 refresh();
-```
