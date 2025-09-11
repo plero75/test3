@@ -20,7 +20,7 @@ let currentNews = 0;
 let newsItems = [];
 let currentInfoPanel = 0;
 
-// Clock and last update
+// Update clock and timestamp
 function setClock() {
   const d = new Date();
   $("#clock").textContent = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -50,17 +50,31 @@ async function fetchJSON(url, timeout = 10000) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
-    console.error(`Fetch ${url}:`, e.message);
+    console.error(`Fetch JSON ${url}:`, e.message);
     return null;
   }
 }
 
+async function fetchText(url, timeout = 10000) {
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.text();
+  } catch (e) {
+    console.error(`Fetch Text ${url}:`, e.message);
+    return null;
+  }
+}
+
+// Transport parsing
 function minutesFromISO(iso) {
   if (!iso) return null;
   return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
 }
 
-// Transport parsing
 function parseStop(data) {
   const visits = data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit || [];
   return visits.map((v) => {
@@ -90,7 +104,7 @@ function regroupRER(data) {
   const rows = parseStop(data);
   return {
     directionParis: groupByDest(rows.filter((r) => /paris|la défense/i.test(r.dest))),
-    directionBoissy: groupByDest(rows.filter((r) => /boissy|marne/i.test(r.dest))),
+    directionBoissy: groupByDest(rows.filter((r) => /boissy|marne/i.test(r.dest)))
   };
 }
 
@@ -119,7 +133,7 @@ function renderBus(el, buses, cls) {
       <div class="badge">${b.line || "—"}</div>
       <div class="dest">${b.dest}<div class="sub">${b.stop}</div></div>
       <div class="bus-times"></div>`;
-    b.minutes.slice(0, 3).forEach((m) => row.querySelector(".bus-times").appendChild(makeChip(m)));
+    (b.minutes || []).slice(0, 3).forEach((m) => row.querySelector(".bus-times").appendChild(makeChip(m)));
     el.append(row);
   });
 }
@@ -134,7 +148,7 @@ function parseVelibDetailed(data) {
         name: map[st.station_id],
         mechanical: st.num_bikes_available_types?.mechanical || 0,
         electric: st.num_bikes_available_types?.ebike || 0,
-        docks: st.num_docks_available || 0,
+        docks: st.num_docks_available || 0
       };
     }
   });
@@ -165,23 +179,19 @@ async function getVincennes() {
   for (let d = 0; d < 3; d++) {
     const date = new Date();
     date.setDate(date.getDate() + d);
-    const pmu = `${String(date.getDate()).padStart(2, "0")}${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}${date.getFullYear()}`;
+    const pmu = `${String(date.getDate()).padStart(2,"0")}${String(date.getMonth()+1).padStart(2,"0")}${date.getFullYear()}`;
     try {
-      const data = await fetchJSON(
-        `https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu}`
-      );
+      const data = await fetchJSON(`https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu}`);
       data.programme.reunions.forEach((r) => {
         if (r.hippodrome.code === "VIN") {
           r.courses.forEach((c) => {
             const hd = new Date(c.heureDepart);
             if (hd > new Date()) {
-              arr.push({ 
-                heure: hd.toLocaleTimeString("fr-FR", { hour:'2-digit', minute:'2-digit' }),
+              arr.push({
+                heure: hd.toLocaleTimeString("fr-FR", { hour:"2-digit",minute:"2-digit" }),
                 nom: c.libelle,
                 distance: c.distance,
-                discipline: c.discipline.replace("ATTELE", "Attelé").replace("MONTE", "Monté"),
+                discipline: c.discipline.replace("ATTELE","Attelé").replace("MONTE","Monté"),
                 dotation: c.montantPrix,
                 timestamp: hd.getTime()
               });
@@ -191,7 +201,7 @@ async function getVincennes() {
       });
     } catch {}
   }
-  return arr.sort((a, b) => a.timestamp - b.timestamp).slice(0, 6);
+  return arr.sort((a,b)=>a.timestamp-b.timestamp).slice(0,6);
 }
 
 function renderCourses(el, courses) {
@@ -216,74 +226,79 @@ function renderNews(items) {
   currentNews = 0;
   const el = $("#news-content");
   el.innerHTML = "";
-  newsItems.forEach((n, i) => {
+  items.forEach((n,i) => {
     const d = document.createElement("div");
-    d.className = `news-item${i === 0 ? " active" : ""}`;
+    d.className = `news-item${i===0?" active":""}`;
     d.innerHTML = `
       <div class="news-title">${n.title}</div>
       <div class="news-text">${n.description}</div>
       <div class="news-meta">France Info</div>`;
     el.append(d);
   });
-  $("#news-counter").textContent = `1/${newsItems.length}`;
+  $("#news-counter").textContent = `1/${items.length}`;
 }
 
 function nextNews() {
   document.querySelector(".news-item.active")?.classList.remove("active");
-  currentNews = (currentNews + 1) % newsItems.length;
+  currentNews = (currentNews+1) % newsItems.length;
   document.querySelectorAll(".news-item")[currentNews].classList.add("active");
-  $("#news-counter").textContent = `${currentNews + 1}/${newsItems.length}`;
+  $("#news-counter").textContent = `${currentNews+1}/${newsItems.length}`;
 }
 
 function toggleInfoPanel() {
   $("#panel-meteo").classList.toggle("active");
   $("#panel-trafic").classList.toggle("active");
-  $("#info-title").textContent = currentInfoPanel ? "Météo Locale" : "Trafic IDF";
+  $("#info-title").textContent = currentInfoPanel ? "Météo Locale":"Trafic IDF";
   currentInfoPanel ^= 1;
 }
 
 async function refresh() {
-  const [rer, jv, hp, br] = await Promise.all([
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.JOINVILLE_AREA}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}`)),
-    fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BREUIL}`))
+  const [rer,jv,hp,br] = await Promise.all([
+    fetchJSON(`${PROXY}${encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`)}`),
+    fetchJSON(`${PROXY}${encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.JOINVILLE_AREA}`)}`),
+    fetchJSON(`${PROXY}${encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}`)}`),
+    fetchJSON(`${PROXY}${encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.BREUIL}`)}`)
   ]);
-  if (rer) {
+  if(rer) {
     const rd = regroupRER(rer);
     renderRER($("#rer-paris"), rd.directionParis);
     renderRER($("#rer-boissy"), rd.directionBoissy);
   }
-  renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
-  renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
-  renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
+  renderBus($("#bus-joinville-list"), parseStop(jv),"joinville");
+  renderBus($("#bus-hippodrome-list"), parseStop(hp),"hippodrome");
+  renderBus($("#bus-breuil-list"), parseStop(br),"breuil");
 
-  const [meteo, velibData] = await Promise.all([fetchJSON(WEATHER_URL), fetchJSON(VELIB_URL)]);
-  if (meteo?.current_weather) {
+  const [meteo, velibData] = await Promise.all([
+    fetchJSON(WEATHER_URL),
+    fetchJSON(VELIB_URL)
+  ]);
+  if(meteo?.current_weather) {
     $("#meteo-temp").textContent = Math.round(meteo.current_weather.temperature);
     $("#meteo-desc").textContent = "Conditions actuelles";
     $("#meteo-extra").textContent = `Vent ${meteo.current_weather.windspeed} km/h`;
   }
   renderVelib($("#velib-list"), parseVelibDetailed(velibData));
 
-  // Courses Vincennes
   const courses = await getVincennes();
   renderCourses($("#courses-list"), courses);
 
-  // News via proxy RSS
   let actus = [];
   try {
-    const rss = await fetchJSON(PROXY + encodeURIComponent(RSS_URL));
-    if (rss?.items) actus = rss.items.slice(0, 10).map(i => ({ title: i.title, description: i.contentSnippet || i.summary || "" }));
+    const xml = await fetchText(`${PROXY}${encodeURIComponent(RSS_URL)}`);
+    const doc = new DOMParser().parseFromString(xml,"application/xml");
+    actus = Array.from(doc.querySelectorAll("item")).slice(0,10).map(i=>({
+      title: i.querySelector("title")?.textContent || "",
+      description: i.querySelector("description")?.textContent || ""
+    }));
   } catch {
-    actus = [{ title: "Actualités indisponibles", description: "Impossible de récupérer les news" }];
+    actus=[{title:"Actualités indisponibles",description:"Impossible de récupérer les news"}];
   }
   renderNews(actus);
 
   setLastUpdate();
 }
 
-setInterval(nextNews, 20000);
-setInterval(toggleInfoPanel, 15000);
-setInterval(refresh, 30000);
+setInterval(nextNews,20000);
+setInterval(toggleInfoPanel,15000);
+setInterval(refresh,30000);
 refresh();
