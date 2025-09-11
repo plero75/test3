@@ -47,7 +47,7 @@ async function fetchJSON(url, timeout = 10000) {
     const id = setTimeout(() => ctrl.abort(), timeout);
     const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
     clearTimeout(id);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+if(!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
     console.error(`Fetch JSON ${url}:`, e.message);
