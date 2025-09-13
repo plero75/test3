@@ -1,16 +1,14 @@
-// app.js - Configuration avec API Vélib PRIM
+// app.js - Version avec messages d'erreur (pas de fallbacks)
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
-
-// ✅ API Vélib via PRIM (avec votre proxy)
-const VELIB_PRIM_BASE = "https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia/coverage/fr-idf/equipment/poi_types/amenity:bicycle_rental/pois";
-
+const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 
+// ✅ IDs STIF (à tester/ajuster si nécessaire)
 const STOP_IDS = {
   RER_A: "STIF:StopArea:SP:43135:",
   JOINVILLE_AREA: "STIF:StopArea:SP:70640:",
-  HIPPODROME: "STIF:StopArea:SP:463641:",  
+  HIPPODROME: "STIF:StopArea:SP:463641:",
   BREUIL: "STIF:StopArea:SP:463644:"
 };
 
@@ -76,7 +74,15 @@ function minutesFromISO(iso) {
 }
 
 function parseStop(data) {
-  const visits = data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit || [];
+  if (!data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit) {
+    return null;
+  }
+  
+  const visits = data.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
+  if (visits.length === 0) {
+    return null;
+  }
+  
   return visits.map(v => {
     const mv = v.MonitoredVehicleJourney || {};
     const call = mv.MonitoredCall || {};
@@ -102,16 +108,27 @@ function groupByDest(arr) {
 
 function regroupRER(data) {
   const rows = parseStop(data);
+  if (!rows) return null;
+  
   return {
     directionParis: groupByDest(rows.filter(r => /paris|la défense/i.test(r.dest))),
     directionBoissy: groupByDest(rows.filter(r => /boissy|marne/i.test(r.dest)))
   };
 }
 
-// Renderers
+// ✅ Renderers avec messages d'erreur
 function renderRER(el, rows) {
   el.innerHTML = "";
-  (rows || []).slice(0, 3).forEach(r => {
+  if (!rows || rows.length === 0) {
+    const error = document.createElement("div");
+    error.className = "error-message";
+    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
+    error.textContent = "Aucun passage prévu";
+    el.appendChild(error);
+    return;
+  }
+  
+  rows.slice(0, 3).forEach(r => {
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML = '<div class="dir">' + r.destination + '</div><div class="times"></div>';
@@ -122,7 +139,16 @@ function renderRER(el, rows) {
 
 function renderBus(el, buses, cls) {
   el.innerHTML = "";
-  (buses || []).slice(0, 4).forEach(b => {
+  if (!buses || buses.length === 0) {
+    const error = document.createElement("div");
+    error.className = "error-message";
+    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
+    error.textContent = "Données indisponibles";
+    el.appendChild(error);
+    return;
+  }
+  
+  buses.slice(0, 4).forEach(b => {
     const row = document.createElement("div");
     row.className = "bus-row " + cls;
     row.innerHTML = '<div class="badge">' + (b.line || "—") + '</div><div class="dest">' + b.dest + '<div class="sub">' + b.stop + '</div></div><div class="bus-times"></div>';
@@ -131,80 +157,41 @@ function renderBus(el, buses, cls) {
   });
 }
 
-// ✅ Vélib via PRIM avec votre proxy
-async function fetchVelibPRIM() {
-  try {
-    // Coordonnées Hippodrome Vincennes : 48.8350, 2.4400 
-    const velibUrl = VELIB_PRIM_BASE + "?distance=3000&coord=48.8350;2.4400";
-    const url = PROXY + encodeURIComponent(velibUrl);
-    
-    console.log("🚲 Fetching Vélib PRIM:", velibUrl);
-    const data = await fetchJSON(url, 20000);
-    
-    if (data?.pois) {
-      return parseVelibPRIM(data);
-    }
-    
-    console.warn("Vélib PRIM: No pois data received");
-    return getFallbackVelib();
-    
-  } catch (error) {
-    console.error("Vélib PRIM error:", error);
-    return getFallbackVelib();
-  }
-}
-
-// ✅ Parser Vélib PRIM
-function parseVelibPRIM(data) {
-  const stations = {};
+// Vélib parsing
+function parseVelibDetailed(data) {
+  const out = {}, map = { 
+    "12163": "Vincennes – Hippodrome",
+    "12128": "École du Breuil / Pyramides"
+  };
   
-  // Rechercher stations proches hippodrome et école du breuil
-  data.pois.forEach((poi, index) => {
-    const name = poi.name || "";
-    const coord = poi.coord || {};
-    const props = poi.properties || {};
-    
-    // Filtrer par proximité et nom
-    const isRelevant = 
-      /hippodrome|vincennes/i.test(name) ||
-      /breuil|école/i.test(name) ||
-      (coord.lat > 48.83 && coord.lat < 48.85 && coord.lon > 2.43 && coord.lon < 2.46);
-    
-    if (isRelevant && index < 2) { // Prendre les 2 premières stations pertinentes
-      const stationId = (12163 + index).toString();
-      stations[stationId] = {
-        name: name.length > 30 ? name.substring(0, 30) + "..." : name,
-        mechanical: parseInt(props.available_bikes) || 0,
-        electric: parseInt(props.available_ebikes) || 0,
-        docks: parseInt(props.available_bike_stands) || 0
+  if (!data?.data?.stations) return null;
+  
+  data.data.stations.forEach(st => {
+    if (map[st.station_id]) {
+      out[st.station_id] = {
+        name: map[st.station_id],
+        mechanical: st.num_bikes_available_types?.mechanical || 0,
+        electric: st.num_bikes_available_types?.ebike || 0,
+        docks: st.num_docks_available || 0
       };
     }
   });
-
-  return Object.keys(stations).length > 0 ? stations : getFallbackVelib();
-}
-
-// ✅ Fallback Vélib si API indisponible
-function getFallbackVelib() {
-  return {
-    "12163": {
-      name: "Vincennes – Hippodrome",
-      mechanical: 5,
-      electric: 3,
-      docks: 12
-    },
-    "12128": {
-      name: "École du Breuil",
-      mechanical: 7, 
-      electric: 2,
-      docks: 8
-    }
-  };
+  
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 function renderVelib(el, stations) {
   el.innerHTML = "";
-  Object.entries(stations || {}).forEach(([id, info]) => {
+  if (!stations) {
+    const error = document.createElement("div");
+    error.className = "error-message";
+    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
+    error.textContent = "Service temporairement indisponible";
+    el.appendChild(error);
+    return;
+  }
+  
+  Object.entries(stations).forEach(([id, info]) => {
     const st = document.createElement("div");
     st.className = "velib-station";
     st.innerHTML = '<div class="velib-header"><div class="velib-name">' + info.name + '</div><div class="velib-id">#' + id + '</div></div><div class="velib-counts"><div class="velib-count meca">🚲 <strong>' + info.mechanical + '</strong> méca</div><div class="velib-count elec">⚡ <strong>' + info.electric + '</strong> élec</div><div class="velib-count docks">📍 <strong>' + info.docks + '</strong> places</div></div>';
@@ -212,7 +199,7 @@ function renderVelib(el, stations) {
   });
 }
 
-// Courses via proxy
+// Courses Vincennes
 async function getVincennes() {
   const arr = [];
   for (let d = 0; d < 3; d++) {
@@ -251,7 +238,16 @@ async function getVincennes() {
 
 function renderCourses(el, courses) {
   el.innerHTML = "";
-  (courses || []).slice(0, 6).forEach(c => {
+  if (!courses || courses.length === 0) {
+    const error = document.createElement("div");
+    error.className = "error-message";
+    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
+    error.textContent = "Aucune course programmée";
+    el.appendChild(error);
+    return;
+  }
+  
+  courses.slice(0, 6).forEach(c => {
     const row = document.createElement("div");
     row.className = "course-row";
     row.innerHTML = '<div class="course-time">' + c.heure + '</div><div class="course-info"><div class="course-name">' + c.nom + '</div><div class="course-details">' + c.distance + 'm • ' + c.discipline + '</div></div><div class="course-prize">' + (c.dotation / 1000).toFixed(0) + 'k€</div>';
@@ -276,21 +272,25 @@ async function loadNews() {
     console.warn("RSS failed:", e);
   }
   
-  if (!actus.length) {
-    actus = [
-      { title: "RER A : trafic normal", description: "Circulation fluide sur l'ensemble de la ligne" },
-      { title: "Nouveaux horaires bus 77", description: "Renforts en soirée vers l'hippodrome" },
-      { title: "Vélib' : stations rechargées", description: "Disponibilité optimale dans le secteur Vincennes" },
-      { title: "Météo clémente", description: "Températures douces pour les déplacements" }
-    ];
-  }
-  
   renderNews(actus);
 }
 
 function renderNews(items) {
-  newsItems = items; currentNews = 0;
-  const el = $("#news-content"); el.innerHTML = "";
+  newsItems = items; 
+  currentNews = 0;
+  const el = $("#news-content"); 
+  el.innerHTML = "";
+  
+  if (!items || items.length === 0) {
+    const error = document.createElement("div");
+    error.className = "news-item active error-message";
+    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
+    error.innerHTML = '<div class="news-title">Actualités indisponibles</div><div class="news-text">Service temporairement interrompu</div>';
+    el.appendChild(error);
+    $("#news-counter").textContent = "0/0";
+    return;
+  }
+  
   items.forEach((n, i) => {
     const d = document.createElement("div");
     d.className = "news-item" + (i === 0 ? " active" : "");
@@ -301,6 +301,7 @@ function renderNews(items) {
 }
 
 function nextNews() {
+  if (!newsItems.length) return;
   document.querySelector(".news-item.active")?.classList.remove("active");
   currentNews = (currentNews + 1) % newsItems.length;
   document.querySelectorAll(".news-item")[currentNews].classList.add("active");
@@ -314,45 +315,60 @@ function toggleInfoPanel() {
   currentInfoPanel = currentInfoPanel ? 0 : 1;
 }
 
-// ✅ Main refresh avec Vélib PRIM
+// ✅ Main refresh avec messages d'erreur
 async function refresh() {
   console.log("🔄 Refresh");
   
-  const [rer, jv, hp, br] = await Promise.all([
-    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A)),
-    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA)),
-    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME)),
-    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL))
-  ]);
-  
-  if (rer) {
-    const rd = regroupRER(rer);
-    renderRER($("#rer-paris"), rd.directionParis);
-    renderRER($("#rer-boissy"), rd.directionBoissy);
+  try {
+    // Transport
+    const [rer, jv, hp, br] = await Promise.all([
+      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A)),
+      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA)),
+      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME)),
+      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL))
+    ]);
+    
+    // RER A
+    const rerData = regroupRER(rer);
+    renderRER($("#rer-paris"), rerData?.directionParis);
+    renderRER($("#rer-boissy"), rerData?.directionBoissy);
+    
+    // Bus
+    renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
+    renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
+    renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
+
+    // Météo + Vélib
+    const [meteo, velibData] = await Promise.all([
+      fetchJSON(WEATHER_URL),
+      fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000)
+    ]);
+    
+    // Météo
+    if (meteo?.current_weather) {
+      $("#meteo-temp").textContent = Math.round(meteo.current_weather.temperature);
+      $("#meteo-desc").textContent = "Conditions actuelles";
+      $("#meteo-extra").textContent = "Vent " + meteo.current_weather.windspeed + " km/h";
+    } else {
+      $("#meteo-temp").textContent = "--";
+      $("#meteo-desc").textContent = "Données indisponibles";
+      $("#meteo-extra").textContent = "";
+    }
+    
+    // Vélib
+    renderVelib($("#velib-list"), parseVelibDetailed(velibData));
+
+    // Courses
+    const courses = await getVincennes();
+    renderCourses($("#courses-list"), courses);
+
+    // News
+    await loadNews();
+    
+  } catch (error) {
+    console.error("Erreur refresh:", error);
   }
   
-  renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
-  renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
-  renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
-
-  // ✅ Météo + Vélib PRIM via proxy
-  const [meteo, velibData] = await Promise.all([
-    fetchJSON(WEATHER_URL),
-    fetchVelibPRIM()
-  ]);
-  
-  if (meteo?.current_weather) {
-    $("#meteo-temp").textContent = Math.round(meteo.current_weather.temperature);
-    $("#meteo-desc").textContent = "Conditions actuelles";
-    $("#meteo-extra").textContent = "Vent " + meteo.current_weather.windspeed + " km/h";
-  }
-  
-  renderVelib($("#velib-list"), velibData);
-
-  const courses = await getVincennes();
-  renderCourses($("#courses-list"), courses);
-
-  await loadNews();
   setLastUpdate();
 }
 
