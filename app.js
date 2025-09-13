@@ -1,10 +1,9 @@
-// app.js - Version avec messages d'erreur (pas de fallbacks)
+// app.js - Version avec messages d'erreur personnalisés par section
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
 const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 
-// ✅ IDs STIF (à tester/ajuster si nécessaire)
 const STOP_IDS = {
   RER_A: "STIF:StopArea:SP:43135:",
   JOINVILLE_AREA: "STIF:StopArea:SP:70640:",
@@ -17,6 +16,23 @@ const $ = (sel, root = document) => root.querySelector(sel);
 let currentNews = 0;
 let newsItems = [];
 let currentInfoPanel = 0;
+
+// ✅ Fonction d'affichage d'erreur personnalisée
+function renderError(el, message, type = "warning") {
+  el.innerHTML = "";
+  const errorDiv = document.createElement('div');
+  errorDiv.className = `error-message error-${type}`;
+  
+  const styles = {
+    warning: 'color: #ff6b35; background: #fff3f0; border: 1px solid #ffccc7; border-radius: 4px; font-weight: 500; text-align: center; padding: 15px; margin: 5px;',
+    error: 'color: #dc3545; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; font-weight: 600; text-align: center; padding: 15px; margin: 5px;',
+    info: 'color: #0056b3; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px; font-weight: 500; text-align: center; padding: 15px; margin: 5px;'
+  };
+  
+  errorDiv.style.cssText = styles[type] || styles.warning;
+  errorDiv.textContent = message;
+  el.appendChild(errorDiv);
+}
 
 // Clock et updates
 function setClock() {
@@ -116,16 +132,11 @@ function regroupRER(data) {
   };
 }
 
-// ✅ Renderers avec messages d'erreur
+// Renderers
 function renderRER(el, rows) {
   el.innerHTML = "";
   if (!rows || rows.length === 0) {
-    const error = document.createElement("div");
-    error.className = "error-message";
-    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
-    error.textContent = "Aucun passage prévu";
-    el.appendChild(error);
-    return;
+    return; // L'erreur sera gérée dans refresh()
   }
   
   rows.slice(0, 3).forEach(r => {
@@ -140,12 +151,7 @@ function renderRER(el, rows) {
 function renderBus(el, buses, cls) {
   el.innerHTML = "";
   if (!buses || buses.length === 0) {
-    const error = document.createElement("div");
-    error.className = "error-message";
-    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
-    error.textContent = "Données indisponibles";
-    el.appendChild(error);
-    return;
+    return; // L'erreur sera gérée dans refresh()
   }
   
   buses.slice(0, 4).forEach(b => {
@@ -183,12 +189,7 @@ function parseVelibDetailed(data) {
 function renderVelib(el, stations) {
   el.innerHTML = "";
   if (!stations) {
-    const error = document.createElement("div");
-    error.className = "error-message";
-    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
-    error.textContent = "Service temporairement indisponible";
-    el.appendChild(error);
-    return;
+    return; // L'erreur sera gérée dans refresh()
   }
   
   Object.entries(stations).forEach(([id, info]) => {
@@ -239,12 +240,7 @@ async function getVincennes() {
 function renderCourses(el, courses) {
   el.innerHTML = "";
   if (!courses || courses.length === 0) {
-    const error = document.createElement("div");
-    error.className = "error-message";
-    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
-    error.textContent = "Aucune course programmée";
-    el.appendChild(error);
-    return;
+    return; // L'erreur sera gérée dans refresh()
   }
   
   courses.slice(0, 6).forEach(c => {
@@ -282,11 +278,7 @@ function renderNews(items) {
   el.innerHTML = "";
   
   if (!items || items.length === 0) {
-    const error = document.createElement("div");
-    error.className = "news-item active error-message";
-    error.style.cssText = "color: #999; font-style: italic; text-align: center; padding: 20px;";
-    error.innerHTML = '<div class="news-title">Actualités indisponibles</div><div class="news-text">Service temporairement interrompu</div>';
-    el.appendChild(error);
+    renderError(el, "📰 Actualités temporairement indisponibles", "info");
     $("#news-counter").textContent = "0/0";
     return;
   }
@@ -315,58 +307,112 @@ function toggleInfoPanel() {
   currentInfoPanel = currentInfoPanel ? 0 : 1;
 }
 
-// ✅ Main refresh avec messages d'erreur
+// ✅ Main refresh avec messages d'erreur personnalisés par section
 async function refresh() {
   console.log("🔄 Refresh");
   
   try {
-    // Transport
-    const [rer, jv, hp, br] = await Promise.all([
-      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A)),
-      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA)),
-      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME)),
-      fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL))
-    ]);
-    
-    // RER A
+    // ✅ RER A - Messages personnalisés
+    console.log("🚇 Chargement RER A...");
+    const rer = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A));
     const rerData = regroupRER(rer);
-    renderRER($("#rer-paris"), rerData?.directionParis);
-    renderRER($("#rer-boissy"), rerData?.directionBoissy);
     
-    // Bus
-    renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
-    renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
-    renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
+    if (rerData && (rerData.directionParis?.length > 0 || rerData.directionBoissy?.length > 0)) {
+      renderRER($("#rer-paris"), rerData.directionParis);
+      renderRER($("#rer-boissy"), rerData.directionBoissy);
+    } else {
+      renderError($("#rer-paris"), "🚇 Aucun RER A prévu vers Paris", "warning");
+      renderError($("#rer-boissy"), "🚇 Aucun RER A prévu vers Boissy/Marne", "warning");
+    }
 
-    // Météo + Vélib
-    const [meteo, velibData] = await Promise.all([
-      fetchJSON(WEATHER_URL),
-      fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000)
-    ]);
+    // ✅ Bus Joinville - Message personnalisé
+    console.log("🚌 Chargement Bus Joinville...");
+    const jv = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA));
+    const jvData = parseStop(jv);
     
-    // Météo
+    if (jvData && jvData.length > 0) {
+      renderBus($("#bus-joinville-list"), jvData, "joinville");
+    } else {
+      renderError($("#bus-joinville-list"), "🚌 Bus Joinville : aucun passage programmé", "warning");
+    }
+
+    // ✅ Bus Hippodrome - Message personnalisé
+    console.log("🏇 Chargement Bus Hippodrome...");
+    const hp = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME));
+    const hpData = parseStop(hp);
+    
+    if (hpData && hpData.length > 0) {
+      renderBus($("#bus-hippodrome-list"), hpData, "hippodrome");
+    } else {
+      renderError($("#bus-hippodrome-list"), "🏇 Bus Hippodrome : service interrompu", "warning");
+    }
+
+    // ✅ Bus École du Breuil - Message personnalisé
+    console.log("🌳 Chargement Bus École du Breuil...");
+    const br = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL));
+    const brData = parseStop(br);
+    
+    if (brData && brData.length > 0) {
+      renderBus($("#bus-breuil-list"), brData, "breuil");
+    } else {
+      renderError($("#bus-breuil-list"), "🌳 Bus École du Breuil : données indisponibles", "warning");
+    }
+
+    // ✅ Météo - Message personnalisé
+    console.log("🌤️ Chargement Météo...");
+    const meteo = await fetchJSON(WEATHER_URL);
+    
     if (meteo?.current_weather) {
       $("#meteo-temp").textContent = Math.round(meteo.current_weather.temperature);
       $("#meteo-desc").textContent = "Conditions actuelles";
       $("#meteo-extra").textContent = "Vent " + meteo.current_weather.windspeed + " km/h";
     } else {
       $("#meteo-temp").textContent = "--";
-      $("#meteo-desc").textContent = "Données indisponibles";
-      $("#meteo-extra").textContent = "";
+      $("#meteo-desc").textContent = "Météo indisponible";
+      $("#meteo-extra").textContent = "Service temporairement interrompu";
     }
+
+    // ✅ Vélib - Message personnalisé
+    console.log("🚲 Chargement Vélib...");
+    const velibData = await fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000);
+    const velibStations = parseVelibDetailed(velibData);
     
-    // Vélib
-    renderVelib($("#velib-list"), parseVelibDetailed(velibData));
+    if (velibStations && Object.keys(velibStations).length > 0) {
+      renderVelib($("#velib-list"), velibStations);
+    } else {
+      renderError($("#velib-list"), "🚲 Stations Vélib temporairement indisponibles", "info");
+    }
 
-    // Courses
+    // ✅ Courses Vincennes - Message personnalisé
+    console.log("🏇 Chargement Courses...");
     const courses = await getVincennes();
-    renderCourses($("#courses-list"), courses);
+    
+    if (courses && courses.length > 0) {
+      renderCourses($("#courses-list"), courses);
+    } else {
+      renderError($("#courses-list"), "🏇 Aucune course programmée aujourd'hui", "info");
+    }
 
-    // News
+    // ✅ Actualités - Gestion dans loadNews()
+    console.log("📰 Chargement Actualités...");
     await loadNews();
     
   } catch (error) {
-    console.error("Erreur refresh:", error);
+    console.error("Erreur critique refresh:", error);
+    
+    // ✅ Messages d'erreur critiques par section
+    renderError($("#rer-paris"), "🚇 Erreur serveur RER A", "error");
+    renderError($("#rer-boissy"), "🚇 Erreur serveur RER A", "error");
+    renderError($("#bus-joinville-list"), "🚌 Erreur serveur Bus Joinville", "error");
+    renderError($("#bus-hippodrome-list"), "🏇 Erreur serveur Bus Hippodrome", "error");
+    renderError($("#bus-breuil-list"), "🌳 Erreur serveur Bus École du Breuil", "error");
+    renderError($("#velib-list"), "🚲 Erreur serveur Vélib", "error");
+    renderError($("#courses-list"), "🏇 Erreur serveur Courses", "error");
+    renderError($("#news-content"), "📰 Erreur serveur Actualités", "error");
+    
+    $("#meteo-temp").textContent = "--";
+    $("#meteo-desc").textContent = "Erreur météo";
+    $("#meteo-extra").textContent = "Connexion interrompue";
   }
   
   setLastUpdate();
