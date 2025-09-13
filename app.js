@@ -18,6 +18,7 @@ let newsItems = [];
 let currentInfoPanel = 0;
 
 // ✅ Fonction d'affichage d'erreur personnalisée
+ // ✅ Nouvelle fonction avec lien Bonjour RATP
 function renderError(el, message, type = "warning") {
   el.innerHTML = "";
   const errorDiv = document.createElement('div');
@@ -30,9 +31,23 @@ function renderError(el, message, type = "warning") {
   };
   
   errorDiv.style.cssText = styles[type] || styles.warning;
-  errorDiv.textContent = message;
+  
+  // ✅ Ajouter lien Bonjour RATP pour RER A
+  if (message.includes('RER A')) {
+    errorDiv.innerHTML = `
+      <div style="margin-bottom: 10px;">${message}</div>
+      <a href="https://www.bonjour-ratp.fr/gares/joinville-le-pont/" target="_blank" 
+         style="color: #0066cc; text-decoration: underline; font-size: 0.9em;">
+        📱 Horaires temps réel Bonjour RATP
+      </a>
+    `;
+  } else {
+    errorDiv.textContent = message;
+  }
+  
   el.appendChild(errorDiv);
 }
+
 
 // Clock et updates
 function setClock() {
@@ -317,13 +332,15 @@ async function refresh() {
     const rer = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A));
     const rerData = regroupRER(rer);
     
-    if (rerData && (rerData.directionParis?.length > 0 || rerData.directionBoissy?.length > 0)) {
-      renderRER($("#rer-paris"), rerData.directionParis);
-      renderRER($("#rer-boissy"), rerData.directionBoissy);
-    } else {
-      renderError($("#rer-paris"), "🚇 Aucun RER A prévu vers Paris", "warning");
-      renderError($("#rer-boissy"), "🚇 Aucun RER A prévu vers Boissy/Marne", "warning");
-    }
+// ✅ Nouveau code avec gestion perturbations
+if (rerData && (rerData.directionParis?.length > 0 || rerData.directionBoissy?.length > 0)) {
+  renderRER($("#rer-paris"), rerData.directionParis);
+  renderRER($("#rer-boissy"), rerData.directionBoissy);
+} else {
+  renderError($("#rer-paris"), "🚧 RER A perturbé : Travaux Joinville-Nogent (+1h30)", "warning");
+  renderError($("#rer-boissy"), "🚧 RER A perturbé : Horaires modifiés cette semaine", "warning");
+}
+
 
     // ✅ Bus Joinville - Message personnalisé
     console.log("🚌 Chargement Bus Joinville...");
