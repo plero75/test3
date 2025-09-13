@@ -169,3 +169,4 @@ function startAllLoops() {
 
 // ✅ Démarrage au chargement
 startAllLoops(); 
+}
