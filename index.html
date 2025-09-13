@@ -98,13 +98,39 @@
           </div>
         </div>
       </div>
-      <!-- ACTUALITÉS -->
-      <div class="news-section">
-        <div class="bloc">
-          <div class="bloc-hd">📰 Actualités <span class="tag" id="news-counter">1/10</span></div>
-          <div class="bloc-bd">
-            <div class="news-content" id="news-content"></div>
-          </div>
+   <!-- Section Météo (doit être visible) -->
+<div class="block">
+  <div class="header">
+    <span class="icon">🌤️</span>
+    <h3 id="info-title">Météo Locale</h3>
+  </div>
+  <div id="panel-meteo" class="active">
+    <div class="temp">
+      <span id="meteo-temp">--</span>°
+    </div>
+    <div class="desc" id="meteo-desc">Chargement...</div>
+    <div class="extra" id="meteo-extra"></div>
+  </div>
+  <div id="panel-trafic">
+    <div class="trafic-info">État du trafic</div>
+  </div>
+</div>
+
+<!-- Section Actualités (doit être visible) -->
+<div class="block">
+  <div class="header">
+    <span class="icon">📰</span>
+    <h3>Actualités</h3>
+    <span id="news-counter">0/0</span>
+  </div>
+  <div id="news-content">
+    <div class="news-item active">
+      <div class="news-title">Chargement des actualités...</div>
+      <div class="news-text">Veuillez patienter</div>
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
     </div>
