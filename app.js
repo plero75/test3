@@ -1,8 +1,3 @@
- 
-
-```javascript
-// ✅ Fonctions spécialisées avec intervalles adaptés
-
 // 📰 Fonction Actualités (15 minutes)
 async function news() {
   console.log("📰 Chargement Actualités...");
@@ -109,29 +104,24 @@ async function courses() {
   }
 }
 
-// ✅ Fonctions de démarrage des intervalles
+ // ✅ Fonctions de démarrage des intervalles (SANS exécution immédiate)
 function startWeatherLoop() {
-  meteo();
   setInterval(meteo, 30 * 60 * 1000); // 30 minutes
 }
 
 function startNewsLoop() {
-  news();
   setInterval(news, 15 * 60 * 1000); // 15 minutes
 }
 
 function startVelibLoop() {
-  velib();
   setInterval(velib, 10 * 60 * 1000); // 10 minutes
 }
 
 function startTransportLoop() {
-  transport();
   setInterval(transport, 60 * 1000); // 1 minute
 }
 
 function startCoursesLoop() {
-  courses();
   setInterval(courses, 5 * 60 * 1000); // 5 minutes
 }
 
@@ -148,7 +138,24 @@ async function refresh() {
   setLastUpdate();
 }
 
-// ✅ Initialisation de tous les intervalles
+// ✅ Fonction de démarrage initial - EXÉCUTE TOUT IMMÉDIATEMENT
+async function initialRefresh() {
+  console.log("🚀 Dashboard Vincennes - Chargement initial...");
+  
+  // Exécuter toutes les fonctions immédiatement au démarrage
+  await Promise.all([
+    transport(),
+    courses(),
+    velib(),
+    news(),
+    meteo()
+  ]);
+  
+  setLastUpdate();
+  console.log("✅ Chargement initial terminé");
+}
+
+// ✅ Démarrage des intervalles (SANS exécution immédiate)
 function startAllLoops() {
   startTransportLoop();    // 1 min
   startCoursesLoop();      // 5 min  
@@ -163,10 +170,18 @@ function startAllLoops() {
   // Clock
   setInterval(setClock, 1000);
   setClock();
-  
-  setLastUpdate();
 }
 
-// ✅ Démarrage au chargement
-startAllLoops(); 
+// ✅ SÉQUENCE DE DÉMARRAGE CORRECTE
+async function initDashboard() {
+  // 1. Chargement immédiat de toutes les données
+  await initialRefresh();
+  
+  // 2. Démarrage des intervalles pour les mises à jour automatiques
+  startAllLoops();
+  
+  console.log("🎯 Dashboard opérationnel - Intervalles démarrés");
 }
+
+// ✅ Démarrage au chargement de la page
+initDashboard();
