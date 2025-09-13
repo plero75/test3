@@ -100,3 +100,31 @@ header { display: flex; align-items: center; padding: 0 16px; border-bottom: 1px
 .error-msg { background: #2b0b0b; border: 2px solid #3a1010; color: #ffd6d6; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 12px; }
 .alert { position: absolute; left: 14px; right: 14px; bottom: 14px; background: linear-gradient(90deg,#2b0b0b,#1a0000); border: 2px solid #3a1010; color: #ffd6d6; padding: 8px 10px; border-radius: 10px; display: none; gap: 10px; align-items: center; font-weight: 800; font-size: 12px; }
 .alert .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+
+/* Correction de la grille principale */
+.dashboard-container, .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Correction des blocs individuels */
+.block, .card {
+  position: relative; /* ✅ Pas d'absolute */
+  box-sizing: border-box;
+  margin-bottom: 0; /* ✅ Supprimer les marges qui causent les décalages */
+  min-height: 200px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+  .dashboard-container, .grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
+
