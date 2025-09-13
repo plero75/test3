@@ -347,11 +347,12 @@ if (rerData && (rerData.directionParis?.length > 0 || rerData.directionBoissy?.l
     const jv = await fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA));
     const jvData = parseStop(jv);
     
-    if (jvData && jvData.length > 0) {
-      renderBus($("#bus-joinville-list"), jvData, "joinville");
-    } else {
-      renderError($("#bus-joinville-list"), "🚌 Bus Joinville : aucun passage programmé", "warning");
-    }
+if (jvData && jvData.length > 0) {
+  renderBus($("#bus-joinville-list"), jvData, "joinville");
+} else {
+  renderError($("#bus-joinville-list"), "🚌 Bus Joinville : Horaires modifiés (travaux RER A)", "warning");
+}
+
 
     // ✅ Bus Hippodrome - Message personnalisé
     console.log("🏇 Chargement Bus Hippodrome...");
