@@ -1,6 +1,4 @@
-Je vois que vous voulez **séparer les fonctions** avec des intervalles de rafraîchissement différents. Excellente idée ! Voici comment refactoriser votre code :
-
-## 📋 Structure complète avec fonctions spécialisées
+ 
 
 ```javascript
 // ✅ Fonctions spécialisées avec intervalles adaptés
