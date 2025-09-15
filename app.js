@@ -1,4 +1,4 @@
-// app.js - Dashboard Hippodrome Vincennes
+// app.js - Dashboard Hippodrome Paris-Vincennes
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
 const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
@@ -17,7 +17,7 @@ let currentNews = 0;
 let newsItems = [];
 let currentInfoPanel = 0;
 
-// ✅ Fonctions de base OBLIGATOIRES
+// Fonctions de base
 async function fetchJSON(url, timeout = 10000) {
   try {
     const ctrl = new AbortController();
@@ -46,6 +46,7 @@ async function fetchText(url, timeout = 10000) {
   }
 }
 
+// Fonction renderError (comme avant)
 function renderError(el, message, type = "warning") {
   el.innerHTML = "";
   const errorDiv = document.createElement('div');
@@ -58,20 +59,7 @@ function renderError(el, message, type = "warning") {
   };
   
   errorDiv.style.cssText = styles[type] || styles.warning;
-  
-  // Ajouter lien Bonjour RATP pour RER A
-  if (message.includes('RER A')) {
-    errorDiv.innerHTML = `
-      <div style="margin-bottom: 10px;">${message}</div>
-      <a href="https://www.bonjour-ratp.fr/gares/joinville-le-pont/" target="_blank" 
-         style="color: #0066cc; text-decoration: underline; font-size: 0.9em;">
-        📱 Horaires temps réel Bonjour RATP
-      </a>
-    `;
-  } else {
-    errorDiv.textContent = message;
-  }
-  
+  errorDiv.textContent = message;
   el.appendChild(errorDiv);
 }
 
@@ -297,7 +285,7 @@ function toggleInfoPanel() {
   currentInfoPanel = currentInfoPanel ? 0 : 1;
 }
 
-// ✅ VOS FONCTIONS SPÉCIALISÉES (ajoutez-les APRÈS les fonctions de base ci-dessus)
+// ✅ VOS FONCTIONS SPÉCIALISÉES
 
 // 📰 Fonction Actualités (15 minutes)
 async function news() {
