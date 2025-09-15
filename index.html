@@ -14,127 +14,56 @@
       <div id="lastUpdate" class="muted" aria-live="polite"></div>
       <div id="clock" class="clock" aria-label="Heure"></div>
     </header>
-    <div class="main-grid">
-      <!-- RER A (span 2 colonnes) -->
-      <div class="rer-section">
-        <div class="bloc">
-          <div class="bloc-hd">🚆 RER A – Joinville-le-Pont <span class="tag">Temps réel</span></div>
-          <div class="bloc-bd">
-            <div class="rer-grid">
-              <div class="rer-col">
-                <div class="col-hd">⬅︎ Vers Paris <span class="section-note" id="rer-paris-note"></span></div>
-                <div id="rer-paris" class="list"></div>
-              </div>
-              <div class="rer-col">
-                <div class="col-hd">Vers Boissy/Marne ➜ <span class="section-note" id="rer-boissy-note"></span></div>
-                <div id="rer-boissy" class="list"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Météo / Trafic -->
-      <div class="info-section">
-        <div class="bloc">
-          <div class="bloc-hd">📊 <span id="info-title">Météo Locale</span></div>
-          <div class="bloc-bd">
-            <div class="info-rotating">
-              <div id="panel-meteo" class="info-panel active">
-                <div class="metric"><div id="meteo-temp" class="big">--°</div><div class="unit">C</div></div>
-                <div id="meteo-desc" class="info-desc">Chargement...</div>
-                <div id="meteo-extra" class="info-desc"></div>
-              </div>
-              <div id="panel-trafic" class="info-panel">
-                <div class="metric"><div id="trafic-km" class="big">--</div><div class="unit">km</div></div>
-                <div class="info-desc">de bouchons en IDF</div>
-                <div id="trafic-note" class="info-desc"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- BUS JOINVILLE -->
-      <div class="bus-joinville">
-        <div class="bloc">
-          <div class="bloc-hd">🚌 Joinville-le-Pont <span class="tag">Toutes lignes</span></div>
-          <div class="bloc-bd">
-            <div id="bus-joinville-list" class="bus-list"></div>
-          </div>
-        </div>
-      </div>
-      <!-- BUS HIPPODROME -->
-      <div class="bus-hippodrome">
-        <div class="bloc">
-          <div class="bloc-hd">🚌 Hippodrome <span class="tag">77 / 201</span></div>
-          <div class="bloc-bd">
-            <div id="bus-hippodrome-list" class="bus-list"></div>
-          </div>
-        </div>
-      </div>
-      <!-- BUS ÉCOLE DU BREUIL -->
-      <div class="bus-breuil">
-        <div class="bloc">
-          <div class="bloc-hd">🚌 École du Breuil <span class="tag">77</span></div>
-          <div class="bloc-bd">
-            <div id="bus-breuil-list" class="bus-list"></div>
-          </div>
-        </div>
-      </div>
-      <!-- VÉLIB DÉTAILLÉ -->
-      <div class="velib-section">
-        <div class="bloc">
-          <div class="bloc-hd">🚲 Vélib' Proximité <span class="tag">Meca/Élec</span></div>
-          <div class="bloc-bd">
-            <div id="velib-list" class="velib-stations"></div>
-          </div>
-        </div>
-      </div>
-      <!-- COURSES VINCENNES -->
-      <div class="courses-section">
-        <div class="bloc">
-          <div class="bloc-hd">🏇 Prochaines Courses <span class="tag" id="courses-counter">Vincennes</span></div>
-          <div class="bloc-bd">
-            <div id="courses-list" class="courses-list"></div>
-          </div>
-        </div>
-      </div>
-   <!-- Section Météo (doit être visible) -->
-<div class="block">
-  <div class="header">
-    <span class="icon">🌤️</span>
-    <h3 id="info-title">Météo Locale</h3>
+ <div class="dashboard-container">
+  <!-- RER A -->
+  <div class="block" id="rer-section">
+    <h3>RER A - Joinville-le-Pont</h3>
+    <div id="rer-paris"></div>
+    <div id="rer-boissy"></div>
   </div>
-  <div id="panel-meteo" class="active">
-    <div class="temp">
-      <span id="meteo-temp">--</span>°
-    </div>
-    <div class="desc" id="meteo-desc">Chargement...</div>
-    <div class="extra" id="meteo-extra"></div>
-  </div>
-  <div id="panel-trafic">
-    <div class="trafic-info">État du trafic</div>
-  </div>
-</div>
 
-<!-- Section Actualités (doit être visible) -->
-<div class="block">
-  <div class="header">
-    <span class="icon">📰</span>
+  <!-- Météo/Trafic -->
+  <div class="block" id="meteo-panel">
+    <h3>Météo Locale</h3>
+    <div id="meteo-temp">--</div>
+    <div id="meteo-desc">Chargement...</div>
+    <div id="meteo-extra"></div>
+  </div>
+
+  <!-- Bus Joinville -->
+  <div class="block" id="bus-joinville-list">
+    <h3>Bus Joinville-le-Pont</h3>
+  </div>
+
+  <!-- Bus Hippodrome -->
+  <div class="block" id="bus-hippodrome-list">
+    <h3>Bus Hippodrome</h3>
+  </div>
+
+  <!-- Bus École du Breuil -->
+  <div class="block" id="bus-breuil-list">
+    <h3>Bus École du Breuil</h3>
+  </div>
+
+  <!-- Vélib -->
+  <div class="block" id="velib-section">
+    <h3>Vélib Proximité</h3>
+    <div id="velib-list"></div>
+  </div>
+
+  <!-- Courses -->
+  <div class="block" id="courses-section">
+    <h3>Prochaines Courses Vincennes</h3>
+    <div id="courses-list"></div>
+  </div>
+
+  <!-- Actualités -->
+  <div class="block" id="actualites-section">
     <h3>Actualités</h3>
+    <div id="news-content"></div>
     <span id="news-counter">0/0</span>
   </div>
-  <div id="news-content">
-    <div class="news-item active">
-      <div class="news-title">Chargement des actualités...</div>
-      <div class="news-text">Veuillez patienter</div>
-    </div>
-  </div>
 </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
   <script src="app.js"></script>
 </body>
 </html>
