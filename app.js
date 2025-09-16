@@ -391,7 +391,7 @@ async function initialRefresh() {
   await Promise.all([
     transport(),
     courses(),
-     startVelibLoop();
+     startVelibLoop(),
 
     news(),
     meteo(),
