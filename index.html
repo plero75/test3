@@ -16,15 +16,16 @@
     </header>
 
     <div class="dashboard-container">
-      <!-- 🚆 RER A -->
+
+      <!-- RER A -->
       <div class="block" id="rer-section">
-        <h3>RER A – Joinville-le-Pont</h3>
-        <div id="alertes-rer-a"></div>
+        <h3>RER A - Joinville-le-Pont</h3>
         <div id="rer-paris"></div>
         <div id="rer-boissy"></div>
+        <div id="traffic-rer" class="traffic-container"></div>
       </div>
 
-      <!-- 🌤️ Météo -->
+      <!-- Météo -->
       <div class="block" id="meteo-panel">
         <h3>Météo Locale</h3>
         <div id="meteo-temp">--</div>
@@ -32,45 +33,44 @@
         <div id="meteo-extra"></div>
       </div>
 
-      <!-- 🚌 Bus Joinville -->
-      <div class="block">
+      <!-- Bus Joinville -->
+      <div class="block" id="bus-joinville-list">
         <h3>Bus Joinville-le-Pont</h3>
-        <div id="bus-joinville-list"></div>
+        <div id="traffic-77" class="traffic-container"></div>
+        <div id="traffic-201" class="traffic-container"></div>
       </div>
 
-      <!-- 🚌 Bus Hippodrome -->
-      <div class="block">
+      <!-- Bus Hippodrome -->
+      <div class="block" id="bus-hippodrome-list">
         <h3>Bus Hippodrome</h3>
-        <div id="bus-hippodrome-list"></div>
       </div>
 
-      <!-- 🚌 Bus École du Breuil -->
-      <div class="block">
+      <!-- Bus École du Breuil -->
+      <div class="block" id="bus-breuil-list">
         <h3>Bus École du Breuil</h3>
-        <div id="bus-breuil-list"></div>
       </div>
 
-      <!-- 🚲 Vélib -->
+      <!-- Vélib -->
       <div class="block" id="velib-section">
         <h3>Vélib Proximité</h3>
         <div id="velib-list"></div>
       </div>
 
-      <!-- 🏇 Courses -->
+      <!-- Courses -->
       <div class="block" id="courses-section">
         <h3>Prochaines Courses Vincennes</h3>
         <div id="courses-list"></div>
       </div>
 
-      <!-- 📰 Actualités -->
+      <!-- Actualités -->
       <div class="block" id="actualites-section">
         <h3>Actualités</h3>
         <div id="news-content"></div>
         <span id="news-counter">0/0</span>
       </div>
+
     </div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
