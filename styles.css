@@ -236,3 +236,66 @@ header { display: flex; align-items: center; padding: 0 16px; border-bottom: 1px
 }
 
 
+/* --- Trafic (perturbations, infos) --- */
+.traffic-container {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.traffic-alert {
+  background: #3a1010;
+  border: 1px solid #ff6b35;
+  color: #ffd6d6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 4px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.traffic-ok {
+  background: #0e2f1c;
+  border: 1px solid #1f6c3a;
+  color: #c8ffd6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.traffic-error {
+  background: #2b0b0b;
+  border: 1px solid #8b0000;
+  color: #ffd6d6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Loader de trafic */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 8px;
+}
+
+.loader::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 3px solid #ccc;
+  border-top: 3px solid var(--idfm-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
