@@ -5,10 +5,11 @@ const GENERAL_MESSAGE = "https://prim.iledefrance-mobilites.fr/marketplace/gener
 const VEHICLE_JOURNEYS = "https://prim.iledefrance-mobilites.fr/marketplace/vehicle_journeys";
 
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
-const VELIB_URLS = [
-  "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json",
-  "https://transport.data.gouv.fr/gbfs/velib-metropole/station_status.json"
-];
+// Vélib via proxy pour contourner CORS
+const VELIB_URL = PROXY + encodeURIComponent(
+  "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json"
+);
+
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 
 
@@ -320,17 +321,15 @@ async function meteo() {
 
 async function velib() {
   showLoader("velib-list", "Chargement Vélib...");
-  let velibData = null;
-  for (const url of VELIB_URLS) {
-    velibData = await fetchJSON(url, 20000);
-    if (velibData) break; // on sort dès que ça marche
-  }
+  const velibData = await fetchJSON(VELIB_URL, 20000);
   if (velibData) {
     renderVelib($("#velib-list"), parseVelibDetailed(velibData));
   } else {
     renderError($("#velib-list"), "🚲 Service Vélib indisponible", "info");
   }
 }
+
+
 
 async function courses() {
   showLoader("courses-list", "Chargement courses...");
