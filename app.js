@@ -62,9 +62,10 @@ function renderError(el, message, type = "warning") {
 }
 
 // --- Divers ---
-function makeChip(text) {
+function makeChip(text, variant) {
   const span = document.createElement("span");
   span.className = "chip";
+  if (variant) span.classList.add("chip-" + variant);
   span.textContent = text;
   return span;
 }
@@ -126,27 +127,50 @@ function regroupRER(data) {
 // --- Render Transport ---
 function renderRER(el, rows) {
   el.innerHTML = "";
-  if (!rows || rows.length === 0) return;
+  if (!rows || rows.length === 0) {
+    el.innerHTML = '<div class="board-empty">Pas de données disponibles</div>';
+    return;
+  }
   rows.slice(0, 3).forEach(r => {
     const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `<div class="dir">${r.destination}</div><div class="times"></div>`;
-    r.minutes.forEach(m => row.querySelector(".times").appendChild(makeChip(m)));
+    row.className = "rer-row";
+    row.innerHTML = `
+      <div class="rer-destination">
+        <div class="rer-label">${r.destination || "—"}</div>
+      </div>
+      <div class="rer-times"></div>`;
+    const times = row.querySelector(".rer-times");
+    if (!r.minutes?.length) {
+      times.appendChild(makeChip("—"));
+    } else {
+      r.minutes.forEach(m => times.appendChild(makeChip(String(m))));
+    }
     el.append(row);
   });
 }
 
 function renderBus(el, buses, cls) {
   el.innerHTML = "";
-  if (!buses || buses.length === 0) return;
+  if (!buses || buses.length === 0) {
+    el.innerHTML = '<div class="board-empty">Pas de données disponibles</div>';
+    return;
+  }
   buses.slice(0, 4).forEach(b => {
     const row = document.createElement("div");
-    row.className = "bus-row " + cls;
+    row.className = "bus-row" + (cls ? " " + cls : "");
     row.innerHTML = `
-      <div class="badge">${b.line || "—"}</div>
-      <div class="dest">${b.dest}<div class="sub">${b.stop}</div></div>
+      <div class="bus-line">${b.line || "—"}</div>
+      <div class="bus-destination">
+        <div class="bus-title">${b.dest || ""}</div>
+        <div class="bus-stop">${b.stop || ""}</div>
+      </div>
       <div class="bus-times"></div>`;
-    b.minutes.forEach(m => row.querySelector(".bus-times").appendChild(makeChip(m)));
+    const times = row.querySelector(".bus-times");
+    if (!b.minutes?.length) {
+      times.appendChild(makeChip("—"));
+    } else {
+      b.minutes.forEach(m => times.appendChild(makeChip(String(m))));
+    }
     el.append(row);
   });
 }
