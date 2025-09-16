@@ -152,44 +152,59 @@ function renderBus(el, buses, cls) {
 }
 
 // --- Vélib ---
-function parseVelibDetailed(data) {
-  const out = {}, map = { 
-    "12163": "Vincennes – Hippodrome",
-    "12128": "École du Breuil / Pyramides"
-  };
-  if (!data?.data?.stations) return null;
-  data.data.stations.forEach(st => {
-    if (map[st.station_id]) {
-      out[st.station_id] = {
-        name: map[st.station_id],
-        mechanical: st.num_bikes_available_types?.mechanical || 0,
-        electric: st.num_bikes_available_types?.ebike || 0,
-        docks: st.num_docks_available || 0
-      };
+// 🚲 Fonction Vélib direct avec OpenData Paris
+async function fetchVelibDirect(url, containerId) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    if (!data || !data[0]) {
+      document.getElementById(containerId).textContent = "❌ Pas de données Vélib’";
+      return;
     }
-  });
-  return Object.keys(out).length > 0 ? out : null;
+
+    const s = data[0]; // la station unique grâce au qv1
+    document.getElementById(containerId).innerHTML = `
+      <div class="velib-block">
+        <strong>📍 ${s.name}</strong><br>
+        🚲 ${s.mechanical} méca | 🔌 ${s.ebike} élec<br>
+        🅿️ ${s.numdocksavailable} bornes
+      </div>`;
+
+    document.getElementById('velib-update').textContent =
+      'Mise à jour : ' + (new Date()).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  } catch (e) {
+    console.error("Erreur Vélib direct:", e);
+    document.getElementById(containerId).textContent = "❌ Erreur Vélib’";
+  }
 }
 
-function renderVelib(el, stations) {
-  el.innerHTML = "";
-  if (!stations) return;
-  Object.entries(stations).forEach(([id, info]) => {
-    const st = document.createElement("div");
-    st.className = "velib-station";
-    st.innerHTML = `
-      <div class="velib-header">
-        <div class="velib-name">${info.name}</div>
-        <div class="velib-id">#${id}</div>
-      </div>
-      <div class="velib-counts">
-        <div class="velib-count meca">🚲 <strong>${info.mechanical}</strong> méca</div>
-        <div class="velib-count elec">⚡ <strong>${info.electric}</strong> élec</div>
-        <div class="velib-count docks">📍 <strong>${info.docks}</strong> places</div>
-      </div>`;
-    el.append(st);
-  });
+// 🚲 Boucle de mise à jour auto
+function startVelibLoop() {
+  // Appels initiaux
+  fetchVelibDirect(
+    "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/exports/json?lang=fr&qv1=(12163)&timezone=Europe%2FParis",
+    "velib-vincennes"
+  );
+  fetchVelibDirect(
+    "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/exports/json?lang=fr&qv1=(12128)&timezone=Europe%2FParis",
+    "velib-breuil"
+  );
+
+  // 🔄 Rafraîchissement toutes les 3 minutes
+  setInterval(() => {
+    fetchVelibDirect(
+      "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/exports/json?lang=fr&qv1=(12163)&timezone=Europe%2FParis",
+      "velib-vincennes"
+    );
+    fetchVelibDirect(
+      "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/exports/json?lang=fr&qv1=(12128)&timezone=Europe%2FParis",
+      "velib-breuil"
+    );
+  }, 3 * 60 * 1000); // 3 minutes
 }
+
 
 // --- Courses Vincennes ---
 async function getVincennes() {
