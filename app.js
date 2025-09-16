@@ -391,7 +391,8 @@ async function initialRefresh() {
   await Promise.all([
     transport(),
     courses(),
-    velib(),
+     startVelibLoop();
+
     news(),
     meteo(),
     getTraffic(LINES.RER_A, "traffic-rer"),
