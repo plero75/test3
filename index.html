@@ -1,196 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Affichage Dynamique – Hippodrome Paris-Vincennes</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris-Vincennes">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="station-meta">
-          <span class="station-name">Hippodrome Paris-Vincennes</span>
-          <div class="mode-badges" aria-hidden="true">
-            <span class="mode metro">M</span>
-            <span class="mode rer">RER</span>
-            <span class="mode tram">T</span>
-            <span class="mode bus">BUS</span>
-          </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Affichage bus – Joinville-le-Pont</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="screen" role="application" aria-label="Temps réel Joinville-le-Pont">
+      <header class="screen-header">
+        <div class="station">
+          <p class="station-label">Joinville-le-Pont</p>
+          <p class="station-sub">Correspondances bus</p>
         </div>
-        <p class="topbar-subtitle">Tableau temps réel des départs et informations voyageurs</p>
-      </div>
-      <div class="topbar-right">
-        <div class="topbar-update">
-          <span class="label">Dernière mise à jour</span>
-          <span id="lastUpdate" class="value" aria-live="polite">--:--</span>
+        <div class="clock-block" aria-live="polite">
+          <span class="clock-label">Heure</span>
+          <span id="clock" class="clock-value">--:--</span>
         </div>
-        <div id="clock" class="clock" aria-label="Heure">--:--</div>
-      </div>
-    </header>
+      </header>
 
-    <main class="dashboard-grid">
-      <!-- RER A -->
-      <section class="block block-rer" id="rer-section">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge rer">RER A</span>
-            <div class="block-heading">
-              <h3>Joinville-le-Pont</h3>
-              <p>Prochains départs</p>
+      <main class="screen-main">
+        <section class="board" aria-labelledby="board-title">
+          <div class="board-header">
+            <h1 id="board-title">Départs en temps réel</h1>
+            <div class="board-meta">
+              <span class="board-station">Arrêt : Joinville-le-Pont – RER</span>
+              <span class="board-update">Mise à jour <span id="lastUpdate">--:--</span></span>
             </div>
           </div>
-          <span class="status-tag live">Temps réel</span>
-        </div>
-        <div class="block-body">
-          <div class="board-grid rer-grid">
-            <div class="board-column">
-              <div class="column-title">Vers Paris / La Défense</div>
-              <div id="rer-paris" class="board-list" aria-live="polite"></div>
-            </div>
-            <div class="board-column">
-              <div class="column-title">Vers Boissy / Marne-la-Vallée</div>
-              <div id="rer-boissy" class="board-list" aria-live="polite"></div>
-            </div>
-          </div>
-          <div id="traffic-rer" class="traffic-stack" aria-live="polite"></div>
-        </div>
-      </section>
+          <div id="board-list" class="board-list" role="list"></div>
+        </section>
 
-      <!-- Météo -->
-      <section class="block block-info" id="meteo-panel">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge meteo">☁</span>
-            <div class="block-heading">
-              <h3>Météo locale</h3>
-              <p>Joinville-le-Pont</p>
+        <aside class="focus" aria-labelledby="focus-title">
+          <div class="focus-header">
+            <span id="focus-line-badge" class="line-pill large">77</span>
+            <div class="focus-heading">
+              <h2 id="focus-title">Ligne 77</h2>
+              <p id="focus-line-direction">Direction Joinville-le-Pont</p>
             </div>
           </div>
-        </div>
-        <div class="block-body meteo-body">
-          <div class="meteo-main">
-            <span id="meteo-temp" class="meteo-temp">--°</span>
-            <div class="meteo-details">
-              <span id="meteo-desc" class="meteo-desc">Chargement...</span>
-              <span id="meteo-extra" class="meteo-extra muted"></span>
+          <div class="focus-panels">
+            <div class="focus-panel focus-departures">
+              <div class="panel-title">Prochains départs</div>
+              <div class="focus-stop">
+                <span class="stop-label">Hippodrome</span>
+                <div id="focus-hippodrome" class="stop-times"></div>
+              </div>
+              <div class="focus-stop">
+                <span class="stop-label">École du Breuil</span>
+                <div id="focus-breuil" class="stop-times"></div>
+              </div>
+            </div>
+            <div class="focus-panel focus-info">
+              <div class="panel-title">Information trafic</div>
+              <div id="focus-traffic" class="panel-body"></div>
             </div>
           </div>
-        </div>
-      </section>
+        </aside>
+      </main>
 
-      <!-- Bus Joinville -->
-      <section class="block block-bus" id="bus-joinville">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge bus joinville">Bus</span>
-            <div class="block-heading">
-              <h3>Joinville-le-Pont</h3>
-              <p>Toutes lignes</p>
-            </div>
-          </div>
-        </div>
-        <div class="block-body">
-          <div id="bus-joinville-list" class="board-list bus-list" aria-live="polite"></div>
-          <div class="traffic-stack">
-            <div id="traffic-77" class="traffic-container" aria-live="polite"></div>
-            <div id="traffic-201" class="traffic-container" aria-live="polite"></div>
-          </div>
-        </div>
-      </section>
+      <footer class="screen-footer" role="contentinfo">
+        <span class="footer-label">Info voyageurs</span>
+        <p id="ticker-text" class="footer-ticker">
+          Respectez les consignes de sécurité et validez votre titre de transport.
+        </p>
+      </footer>
+    </div>
 
-      <!-- Bus Hippodrome -->
-      <section class="block block-bus" id="bus-hippodrome">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge bus hippodrome">Bus</span>
-            <div class="block-heading">
-              <h3>Hippodrome</h3>
-              <p>Lignes 77 &amp; 201</p>
-            </div>
-          </div>
-        </div>
-        <div class="block-body">
-          <div id="bus-hippodrome-list" class="board-list bus-list" aria-live="polite"></div>
-        </div>
-      </section>
-
-      <!-- Bus École du Breuil -->
-      <section class="block block-bus" id="bus-breuil">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge bus breuil">Bus</span>
-            <div class="block-heading">
-              <h3>École du Breuil</h3>
-              <p>Ligne 77</p>
-            </div>
-          </div>
-        </div>
-        <div class="block-body">
-          <div id="bus-breuil-list" class="board-list bus-list" aria-live="polite"></div>
-        </div>
-      </section>
-
-      <!-- Vélib -->
-      <section class="block block-velib" id="velib-section">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge velib">🚲</span>
-            <div class="block-heading">
-              <h3>Stations Vélib'</h3>
-              <p>Autour de l'hippodrome</p>
-            </div>
-          </div>
-          <span id="velib-update" class="muted"></span>
-        </div>
-        <div class="block-body velib-body">
-          <div class="velib-grid">
-            <div id="velib-vincennes" class="velib-card"></div>
-            <div id="velib-breuil" class="velib-card"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Courses -->
-      <section class="block block-courses" id="courses-section">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge course">🏇</span>
-            <div class="block-heading">
-              <h3>Prochaines courses</h3>
-              <p>Hippodrome de Vincennes</p>
-            </div>
-          </div>
-        </div>
-        <div class="block-body">
-          <div id="courses-list" class="courses-list"></div>
-        </div>
-      </section>
-
-      <!-- Actualités -->
-      <section class="block block-news" id="actualites-section">
-        <div class="block-header">
-          <div class="block-title">
-            <span class="line-badge news">📰</span>
-            <div class="block-heading">
-              <h3>Actualités</h3>
-              <p>France Info</p>
-            </div>
-          </div>
-          <span id="news-counter" class="status-tag">0/0</span>
-        </div>
-        <div class="block-body">
-          <div id="news-content" class="news-content" aria-live="polite"></div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="ticker" role="contentinfo">
-      <span class="ticker-label">Info voyageurs</span>
-      <span class="ticker-text">Port du masque recommandé à bord des trains et en gare. Lors de votre voyage, n'oubliez pas de valider votre titre de transport.</span>
-    </footer>
-  </div>
-  <script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>
