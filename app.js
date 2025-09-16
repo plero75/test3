@@ -4,14 +4,13 @@ const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&long
 const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 
-// Arrêts
+// Arrêts & lignes
 const STOP_IDS = {
   JOINVILLE: "STIF:StopArea:SP:70640:", // RER A
   HIPPODROME: "STIF:StopArea:SP:463641:", // Bus 77
   BREUIL: "STIF:StopArea:SP:463644:" // Bus 201
 };
 
-// Lignes
 const LINE_IDS = {
   RER_A: "STIF:Line::C01742:",
   BUS_77: "STIF:Line::C02251:",
@@ -63,6 +62,14 @@ function makeChip(text) {
 
 function renderError(el, message, type = "warning") {
   el.innerHTML = `<div class="error-message">${message}</div>`;
+}
+
+// ✅ Loader utilitaire
+function showLoader(id, text = "Chargement en cours") {
+  const el = document.getElementById(id);
+  if (el) {
+    el.innerHTML = `<div class="loader">${text}</div>`;
+  }
 }
 
 // ========= Transports =========
@@ -251,8 +258,14 @@ function renderNews(items) {
   $("#news-counter").textContent = `1/${items.length}`;
 }
 
-// ========= Fonctions principales =========
+// ========= Fonctions principales avec loaders =========
 async function transport() {
+  showLoader("rer-paris");
+  showLoader("rer-boissy");
+  showLoader("bus-joinville-list", "Chargement bus...");
+  showLoader("bus-hippodrome-list", "Chargement bus...");
+  showLoader("bus-breuil-list", "Chargement bus...");
+
   const [rer, jv, hp, br] = await Promise.all([
     fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.JOINVILLE}&LineRef=${LINE_IDS.RER_A}`)),
     fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.JOINVILLE}`)),
@@ -260,7 +273,6 @@ async function transport() {
     fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.BREUIL}`))
   ]);
 
-  // RER
   const rerData = regroupRER(rer);
   if (rerData) {
     renderRER($("#rer-paris"), rerData.directionParis);
@@ -270,16 +282,15 @@ async function transport() {
     }
   }
 
-  // Bus
   renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
   renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
   renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
 
-  // Alertes RER A
   await renderAlerts(LINE_IDS.RER_A, "alertes-rer-a");
 }
 
 async function news() {
+  showLoader("news-content", "Chargement actualités...");
   const xml = await fetchText(PROXY + encodeURIComponent(RSS_URL));
   const doc = new DOMParser().parseFromString(xml, "application/xml");
   const items = Array.from(doc.querySelectorAll("item")).slice(0, 10).map(i => ({
@@ -290,19 +301,23 @@ async function news() {
 }
 
 async function meteo() {
+  showLoader("meteo-temp", "⏳");
   const weather = await fetchJSON(WEATHER_URL);
   if (weather?.current_weather) {
     $("#meteo-temp").textContent = Math.round(weather.current_weather.temperature);
     $("#meteo-extra").textContent = `Vent ${weather.current_weather.windspeed} km/h`;
+    $("#meteo-desc").textContent = "Conditions actuelles";
   }
 }
 
 async function velib() {
+  showLoader("velib-list", "Chargement Vélib...");
   const velibData = await fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000);
   renderVelib($("#velib-list"), parseVelibDetailed(velibData));
 }
 
 async function courses() {
+  showLoader("courses-list", "Chargement courses...");
   const vincennesCourses = await getVincennes();
   renderCourses($("#courses-list"), vincennesCourses);
 }
