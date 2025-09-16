@@ -37,16 +37,48 @@ header { display: flex; align-items: center; padding: 0 16px; border-bottom: 1px
 
 /* Block */
 .block {
-  background-color: #1a1d24;  /* gris très sombre */
-  color: var(--text);         /* texte clair */
+  background-color: #1a1d24;   /* fond sombre */
+  color: var(--text);          /* texte clair */
   border: 1px solid #2c3344;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 0;                  /* on laisse le header/body gérer l'espacement */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-.bloc-hd { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 2px solid #eef3fb; font-weight: 900; font-size: 16px; }
-.bloc-hd .tag { font-size: 11px; padding: 3px 6px; border-radius: 999px; background: #f4f7ff; border: 1px solid #dbe5f5; color: #2c3b52; }
-.bloc-bd { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+/* Header de bloc */
+.bloc-hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #2c3344;
+  font-weight: 900;
+  font-size: 16px;
+  background: #11141c;         /* léger contraste */
+  color: var(--accent);        /* accent jaune */
+}
+
+/* Petit tag (optionnel dans header) */
+.bloc-hd .tag {
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid #2c3344;
+  color: var(--text);
+}
+
+/* Corps de bloc */
+.bloc-bd {
+  padding: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 /* RER */
 .rer-grid { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; flex: 1; }
