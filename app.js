@@ -1,8 +1,13 @@
 // app.js - Dashboard Hippodrome Paris-Vincennes
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
+const STOP_MONITORING = "https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring";
+const GENERAL_MESSAGE = "https://prim.iledefrance-mobilites.fr/marketplace/general-message";
+const VEHICLE_JOURNEYS = "https://prim.iledefrance-mobilites.fr/marketplace/vehicle_journeys";
+
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
 const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
+
 
 // Arrêts & lignes
 const STOP_IDS = {
@@ -312,9 +317,10 @@ async function meteo() {
 
 async function velib() {
   showLoader("velib-list", "Chargement Vélib...");
-  const velibData = await fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000);
+  const velibData = await fetchJSON(VELIB_URL, 20000); // 🔥 direct, sans proxy
   renderVelib($("#velib-list"), parseVelibDetailed(velibData));
 }
+
 
 async function courses() {
   showLoader("courses-list", "Chargement courses...");
