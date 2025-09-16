@@ -1,34 +1,29 @@
 // app.js - Dashboard Hippodrome Paris-Vincennes
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
-const STOP_MONITORING = "https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring";
-const GENERAL_MESSAGE = "https://prim.iledefrance-mobilites.fr/marketplace/general-message";
-const VEHICLE_JOURNEYS = "https://prim.iledefrance-mobilites.fr/marketplace/vehicle_journeys";
-
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
-// Vélib via proxy pour contourner CORS
-const VELIB_URL = PROXY + encodeURIComponent(
-  "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json"
-);
-
+const VELIB_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
 const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
 
-
-// Arrêts & lignes
 const STOP_IDS = {
-  JOINVILLE: "STIF:StopArea:SP:70640:", // RER A
-  HIPPODROME: "STIF:StopArea:SP:463641:", // Bus 77
-  BREUIL: "STIF:StopArea:SP:463644:" // Bus 201
+  RER_A: "STIF:StopArea:SP:43135:",
+  JOINVILLE_AREA: "STIF:StopArea:SP:70640:",
+  HIPPODROME: "STIF:StopArea:SP:463641:",
+  BREUIL: "STIF:StopArea:SP:463644:"
 };
 
-const LINE_IDS = {
-  RER_A: "STIF:Line::C01742:",
-  BUS_77: "STIF:Line::C02251:",
-  BUS_201: "STIF:Line::C02251:"
+const LINES = {
+  RER_A: "line:IDFM:C01742",
+  BUS_77: "line:IDFM:C02251",
+  BUS_201: "line:IDFM:C01219"
 };
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
-// ========= Helpers =========
+let currentNews = 0;
+let newsItems = [];
+let currentInfoPanel = 0;
+
+// --- Helpers fetch ---
 async function fetchJSON(url, timeout = 10000) {
   try {
     const ctrl = new AbortController();
@@ -57,11 +52,16 @@ async function fetchText(url, timeout = 10000) {
   }
 }
 
-function minutesFromISO(iso) {
-  if (!iso) return null;
-  return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+// --- Rendu erreurs ---
+function renderError(el, message, type = "warning") {
+  el.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "error-message";
+  div.textContent = message;
+  el.appendChild(div);
 }
 
+// --- Divers ---
 function makeChip(text) {
   const span = document.createElement("span");
   span.className = "chip";
@@ -69,33 +69,35 @@ function makeChip(text) {
   return span;
 }
 
-function renderError(el, message, type = "warning") {
-  el.innerHTML = `<div class="error-message">${message}</div>`;
+function setClock() {
+  const d = new Date();
+  $("#clock").textContent = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ✅ Loader utilitaire
-function showLoader(id, text = "Chargement en cours") {
-  const el = document.getElementById(id);
-  if (el) {
-    el.innerHTML = `<div class="loader">${text}</div>`;
-  }
+function setLastUpdate() {
+  const d = new Date();
+  $("#lastUpdate").textContent = "Maj " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ========= Transports =========
+// --- Parsing Transport ---
+function minutesFromISO(iso) {
+  if (!iso) return null;
+  return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+}
+
 function parseStop(data) {
-  const visits = data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit || [];
+  if (!data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit) {
+    return null;
+  }
+  const visits = data.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
   return visits.map(v => {
     const mv = v.MonitoredVehicleJourney || {};
     const call = mv.MonitoredCall || {};
     const dest = mv.DestinationName?.[0]?.value || "";
     const stop = call.StopPointName?.[0]?.value || "";
-    const line = (mv.LineRef?.value || "").replace("STIF:Line::", "");
+    const line = (mv.LineRef?.value || "").replace("STIF:Line:", "");
     const mins = minutesFromISO(call.ExpectedDepartureTime);
-    return {
-      line, dest, stop,
-      minutes: mins != null ? [mins] : [],
-      vjId: mv.VehicleJourneyRef
-    };
+    return { line, dest, stop, minutes: mins != null ? [mins] : [] };
   });
 }
 
@@ -103,12 +105,13 @@ function groupByDest(arr) {
   const map = {};
   arr.forEach(x => {
     const k = x.dest || "—";
-    map[k] = map[k] || { destination: k, minutes: [], vjId: x.vjId };
+    map[k] = map[k] || { destination: k, minutes: [] };
     if (x.minutes?.length) map[k].minutes.push(x.minutes[0]);
   });
-  return Object.values(map)
-    .map(r => ({ ...r, minutes: r.minutes.sort((a, b) => a - b).slice(0, 4) }))
-    .sort((a, b) => (a.minutes[0] || 999) - (b.minutes[0] || 999));
+  return Object.values(map).map(r => ({
+    ...r,
+    minutes: r.minutes.sort((a, b) => a - b).slice(0, 4)
+  }));
 }
 
 function regroupRER(data) {
@@ -120,6 +123,7 @@ function regroupRER(data) {
   };
 }
 
+// --- Render Transport ---
 function renderRER(el, rows) {
   el.innerHTML = "";
   if (!rows || rows.length === 0) return;
@@ -138,7 +142,8 @@ function renderBus(el, buses, cls) {
   buses.slice(0, 4).forEach(b => {
     const row = document.createElement("div");
     row.className = "bus-row " + cls;
-    row.innerHTML = `<div class="badge">${b.line}</div>
+    row.innerHTML = `
+      <div class="badge">${b.line || "—"}</div>
       <div class="dest">${b.dest}<div class="sub">${b.stop}</div></div>
       <div class="bus-times"></div>`;
     b.minutes.forEach(m => row.querySelector(".bus-times").appendChild(makeChip(m)));
@@ -146,35 +151,7 @@ function renderBus(el, buses, cls) {
   });
 }
 
-// 🚏 Liste des arrêts desservis
-async function renderStopsFromVJ(containerId, vjId) {
-  const url = PROXY + encodeURIComponent(
-    `https://prim.iledefrance-mobilites.fr/marketplace/vehicle_journeys/${vjId}`
-  );
-  const vj = await fetchJSON(url);
-  const stops = vj?.vehicle_journeys?.[0]?.stop_times?.map(s => s.stop_point.name) || [];
-  if (stops.length) {
-    document.getElementById(containerId).innerHTML +=
-      `<div class="stops">🚏 ${stops.join(" → ")}</div>`;
-  }
-}
-
-// ⚠️ Alertes trafic
-async function renderAlerts(lineRef, containerId) {
-  const url = PROXY + encodeURIComponent(
-    `https://prim.iledefrance-mobilites.fr/marketplace/general-message?LineRef=${lineRef}`
-  );
-  const data = await fetchJSON(url);
-  const messages = data?.Siri?.ServiceDelivery?.GeneralMessageDelivery?.[0]?.InfoMessage || [];
-  let html = "";
-  messages.forEach(m => {
-    const text = m.Content?.Message?.Text || "";
-    html += `<div class="alert">⚠️ ${text}</div>`;
-  });
-  document.getElementById(containerId).innerHTML = html || "✅ Pas d’alerte";
-}
-
-// ========= Vélib =========
+// --- Vélib ---
 function parseVelibDetailed(data) {
   const out = {}, map = { 
     "12163": "Vincennes – Hippodrome",
@@ -191,7 +168,7 @@ function parseVelibDetailed(data) {
       };
     }
   });
-  return out;
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 function renderVelib(el, stations) {
@@ -200,8 +177,11 @@ function renderVelib(el, stations) {
   Object.entries(stations).forEach(([id, info]) => {
     const st = document.createElement("div");
     st.className = "velib-station";
-    st.innerHTML = `<div class="velib-header"><div class="velib-name">${info.name}</div>
-      <div class="velib-id">#${id}</div></div>
+    st.innerHTML = `
+      <div class="velib-header">
+        <div class="velib-name">${info.name}</div>
+        <div class="velib-id">#${id}</div>
+      </div>
       <div class="velib-counts">
         <div class="velib-count meca">🚲 <strong>${info.mechanical}</strong> méca</div>
         <div class="velib-count elec">⚡ <strong>${info.electric}</strong> élec</div>
@@ -211,140 +191,204 @@ function renderVelib(el, stations) {
   });
 }
 
-// ========= Courses Vincennes =========
+// --- Courses Vincennes ---
 async function getVincennes() {
   const arr = [];
-  const dt = new Date();
-  const pmu = String(dt.getDate()).padStart(2, "0") + String(dt.getMonth() + 1).padStart(2, "0") + dt.getFullYear();
-  const url = PROXY + encodeURIComponent(`https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu}`);
-  const data = await fetchJSON(url);
-  if (!data) return [];
-  data.programme.reunions.forEach(r => {
-    if (r.hippodrome.code === "VIN") {
-      r.courses.forEach(c => {
-        const hd = new Date(c.heureDepart);
-        if (hd > new Date()) {
-          arr.push({
-            heure: hd.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-            nom: c.libelle,
-            distance: c.distance,
-            discipline: c.discipline,
-            dotation: c.montantPrix,
-            ts: hd.getTime()
-          });
-        }
-      });
-    }
-  });
+  for (let d = 0; d < 3; d++) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + d);
+    const pmu = String(dt.getDate()).padStart(2, "0") + String(dt.getMonth() + 1).padStart(2, "0") + dt.getFullYear();
+    const url = PROXY + encodeURIComponent("https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/" + pmu);
+    const data = await fetchJSON(url);
+    if (!data) continue;
+    data.programme.reunions.forEach(r => {
+      if (r.hippodrome.code === "VIN") {
+        r.courses.forEach(c => {
+          const hd = new Date(c.heureDepart);
+          if (hd > new Date()) {
+            arr.push({
+              heure: hd.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+              nom: c.libelle,
+              distance: c.distance,
+              discipline: c.discipline,
+              dotation: c.montantPrix,
+              ts: hd.getTime()
+            });
+          }
+        });
+      }
+    });
+  }
   return arr.sort((a, b) => a.ts - b.ts).slice(0, 6);
 }
 
 function renderCourses(el, courses) {
   el.innerHTML = "";
+  if (!courses || courses.length === 0) return;
   courses.forEach(c => {
     const row = document.createElement("div");
     row.className = "course-row";
-    row.innerHTML = `<div class="course-time">${c.heure}</div>
-      <div class="course-info"><div class="course-name">${c.nom}</div>
-      <div class="course-details">${c.distance}m • ${c.discipline}</div></div>
+    row.innerHTML = `
+      <div class="course-time">${c.heure}</div>
+      <div class="course-info">
+        <div class="course-name">${c.nom}</div>
+        <div class="course-details">${c.distance}m • ${c.discipline}</div>
+      </div>
       <div class="course-prize">${(c.dotation / 1000).toFixed(0)}k€</div>`;
     el.append(row);
   });
 }
 
-// ========= Actualités =========
+// --- News ---
 function renderNews(items) {
+  newsItems = items; 
+  currentNews = 0;
   const el = $("#news-content"); 
   el.innerHTML = "";
+  if (!items || items.length === 0) {
+    renderError(el, "📰 Actualités indisponibles");
+    $("#news-counter").textContent = "0/0";
+    return;
+  }
   items.forEach((n, i) => {
     const d = document.createElement("div");
     d.className = "news-item" + (i === 0 ? " active" : "");
-    d.innerHTML = `<div class="news-title">${n.title}</div>
-      <div class="news-text">${n.description}</div>
-      <div class="news-meta">France Info</div>`;
+    d.innerHTML = `<div class="news-title">${n.title}</div><div class="news-text">${n.description}</div><div class="news-meta">France Info</div>`;
     el.append(d);
   });
-  $("#news-counter").textContent = `1/${items.length}`;
+  $("#news-counter").textContent = "1/" + items.length;
 }
 
-// ========= Fonctions principales avec loaders =========
-async function transport() {
-  showLoader("rer-paris");
-  showLoader("rer-boissy");
-  showLoader("bus-joinville-list", "Chargement bus...");
-  showLoader("bus-hippodrome-list", "Chargement bus...");
-  showLoader("bus-breuil-list", "Chargement bus...");
+function nextNews() {
+  if (!newsItems.length) return;
+  document.querySelector(".news-item.active")?.classList.remove("active");
+  currentNews = (currentNews + 1) % newsItems.length;
+  document.querySelectorAll(".news-item")[currentNews].classList.add("active");
+  $("#news-counter").textContent = (currentNews + 1) + "/" + newsItems.length;
+}
 
+// --- Traffic ---
+async function getTraffic(lineId, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `<div class="loader">Chargement trafic...</div>`;
+  try {
+    const url = PROXY + encodeURIComponent(
+      `https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia/line_reports/lines/${lineId}`
+    );
+    const data = await fetchJSON(url, 15000);
+    el.innerHTML = "";
+    if (data?.line_reports?.length > 0) {
+      data.line_reports.forEach(report => {
+        const msg = report.messages?.[0]?.text || "Perturbation en cours";
+        const div = document.createElement("div");
+        div.className = "traffic-alert";
+        div.innerHTML = `⚠️ ${msg}`;
+        el.appendChild(div);
+      });
+    } else {
+      const ok = document.createElement("div");
+      ok.className = "traffic-ok";
+      ok.innerHTML = "✅ Trafic normal";
+      el.appendChild(ok);
+    }
+  } catch (e) {
+    console.error("Erreur trafic", e);
+    el.innerHTML = `<div class="traffic-error">❌ Trafic indisponible</div>`;
+  }
+}
+
+// --- Modules principaux ---
+async function news() {
+  const xml = await fetchText(PROXY + encodeURIComponent(RSS_URL));
+  let actus = [];
+  if (xml) {
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const items = Array.from(doc.querySelectorAll("item")).slice(0, 10);
+    actus = items.map(i => ({
+      title: i.querySelector("title")?.textContent || "",
+      description: i.querySelector("description")?.textContent || ""
+    }));
+  }
+  renderNews(actus);
+}
+
+async function meteo() {
+  const weather = await fetchJSON(WEATHER_URL);
+  if (weather?.current_weather) {
+    $("#meteo-temp").textContent = Math.round(weather.current_weather.temperature);
+    $("#meteo-desc").textContent = "Conditions actuelles";
+    $("#meteo-extra").textContent = "Vent " + weather.current_weather.windspeed + " km/h";
+  }
+}
+
+async function velib() {
+  const velibData = await fetchJSON(PROXY + encodeURIComponent(VELIB_URL), 20000);
+  const velibStations = parseVelibDetailed(velibData);
+  if (velibStations) renderVelib($("#velib-list"), velibStations);
+}
+
+async function transport() {
   const [rer, jv, hp, br] = await Promise.all([
-    fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.JOINVILLE}&LineRef=${LINE_IDS.RER_A}`)),
-    fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.JOINVILLE}`)),
-    fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.HIPPODROME}`)),
-    fetchJSON(PROXY + encodeURIComponent(`${STOP_MONITORING}?MonitoringRef=${STOP_IDS.BREUIL}`))
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.RER_A)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.JOINVILLE_AREA)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.HIPPODROME)),
+    fetchJSON(PROXY + encodeURIComponent("https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=" + STOP_IDS.BREUIL))
   ]);
 
   const rerData = regroupRER(rer);
   if (rerData) {
     renderRER($("#rer-paris"), rerData.directionParis);
     renderRER($("#rer-boissy"), rerData.directionBoissy);
-    if (rerData.directionParis?.[0]?.vjId) {
-      await renderStopsFromVJ("rer-paris", rerData.directionParis[0].vjId);
-    }
   }
-
-  renderBus($("#bus-joinville-list"), parseStop(jv), "joinville");
-  renderBus($("#bus-hippodrome-list"), parseStop(hp), "hippodrome");
-  renderBus($("#bus-breuil-list"), parseStop(br), "breuil");
-
-  await renderAlerts(LINE_IDS.RER_A, "alertes-rer-a");
+  const jvData = parseStop(jv);
+  if (jvData) renderBus($("#bus-joinville-list"), jvData, "joinville");
+  const hpData = parseStop(hp);
+  if (hpData) renderBus($("#bus-hippodrome-list"), hpData, "hippodrome");
+  const brData = parseStop(br);
+  if (brData) renderBus($("#bus-breuil-list"), brData, "breuil");
 }
-
-async function news() {
-  showLoader("news-content", "Chargement actualités...");
-  const xml = await fetchText(PROXY + encodeURIComponent(RSS_URL));
-  const doc = new DOMParser().parseFromString(xml, "application/xml");
-  const items = Array.from(doc.querySelectorAll("item")).slice(0, 10).map(i => ({
-    title: i.querySelector("title")?.textContent || "",
-    description: i.querySelector("description")?.textContent || ""
-  }));
-  renderNews(items);
-}
-
-async function meteo() {
-  showLoader("meteo-temp", "⏳");
-  const weather = await fetchJSON(WEATHER_URL);
-  if (weather?.current_weather) {
-    $("#meteo-temp").textContent = Math.round(weather.current_weather.temperature);
-    $("#meteo-extra").textContent = `Vent ${weather.current_weather.windspeed} km/h`;
-    $("#meteo-desc").textContent = "Conditions actuelles";
-  }
-}
-
-async function velib() {
-  showLoader("velib-list", "Chargement Vélib...");
-  const velibData = await fetchJSON(VELIB_URL, 20000);
-  if (velibData) {
-    renderVelib($("#velib-list"), parseVelibDetailed(velibData));
-  } else {
-    renderError($("#velib-list"), "🚲 Service Vélib indisponible", "info");
-  }
-}
-
-
 
 async function courses() {
-  showLoader("courses-list", "Chargement courses...");
   const vincennesCourses = await getVincennes();
-  renderCourses($("#courses-list"), vincennesCourses);
+  if (vincennesCourses) renderCourses($("#courses-list"), vincennesCourses);
 }
 
-// ========= Initialisation =========
-async function initDashboard() {
-  await Promise.all([transport(), meteo(), velib(), courses(), news()]);
-  setInterval(transport, 60000);
-  setInterval(meteo, 30 * 60 * 1000);
-  setInterval(velib, 10 * 60 * 1000);
+// --- Boucles ---
+function startAllLoops() {
+  setInterval(transport, 60 * 1000);
   setInterval(courses, 5 * 60 * 1000);
+  setInterval(velib, 10 * 60 * 1000);
   setInterval(news, 15 * 60 * 1000);
+  setInterval(meteo, 30 * 60 * 1000);
+
+  setInterval(() => getTraffic(LINES.RER_A, "traffic-rer"), 5 * 60 * 1000);
+  setInterval(() => getTraffic(LINES.BUS_77, "traffic-77"), 5 * 60 * 1000);
+  setInterval(() => getTraffic(LINES.BUS_201, "traffic-201"), 5 * 60 * 1000);
+
+  setInterval(nextNews, 20000);
+  setInterval(setClock, 1000);
+  setClock();
+}
+
+// --- Initialisation ---
+async function initialRefresh() {
+  await Promise.all([
+    transport(),
+    courses(),
+    velib(),
+    news(),
+    meteo(),
+    getTraffic(LINES.RER_A, "traffic-rer"),
+    getTraffic(LINES.BUS_77, "traffic-77"),
+    getTraffic(LINES.BUS_201, "traffic-201")
+  ]);
+  setLastUpdate();
+}
+
+async function initDashboard() {
+  await initialRefresh();
+  startAllLoops();
 }
 
 initDashboard();
