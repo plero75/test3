@@ -8,62 +8,69 @@
 </head>
 <body>
   <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris-Vincennes">
-    <header>app
+    <header>
       <div class="brand">Dashboard Hippodrome <small>– LIVE via Proxy</small></div>
       <div class="spacer"></div>
       <div id="lastUpdate" class="muted" aria-live="polite"></div>
       <div id="clock" class="clock" aria-label="Heure"></div>
     </header>
- <div class="dashboard-container">
-  <!-- RER A -->
-  <div class="block" id="rer-section">
-    <h3>RER A - Joinville-le-Pont</h3>
-    <div id="rer-paris"></div>
-    <div id="rer-boissy"></div>
+
+    <div class="dashboard-container">
+      <!-- 🚆 RER A -->
+      <div class="block" id="rer-section">
+        <h3>RER A – Joinville-le-Pont</h3>
+        <div id="alertes-rer-a"></div>
+        <div id="rer-paris"></div>
+        <div id="rer-boissy"></div>
+      </div>
+
+      <!-- 🌤️ Météo -->
+      <div class="block" id="meteo-panel">
+        <h3>Météo Locale</h3>
+        <div id="meteo-temp">--</div>
+        <div id="meteo-desc">Chargement...</div>
+        <div id="meteo-extra"></div>
+      </div>
+
+      <!-- 🚌 Bus Joinville -->
+      <div class="block">
+        <h3>Bus Joinville-le-Pont</h3>
+        <div id="bus-joinville-list"></div>
+      </div>
+
+      <!-- 🚌 Bus Hippodrome -->
+      <div class="block">
+        <h3>Bus Hippodrome</h3>
+        <div id="bus-hippodrome-list"></div>
+      </div>
+
+      <!-- 🚌 Bus École du Breuil -->
+      <div class="block">
+        <h3>Bus École du Breuil</h3>
+        <div id="bus-breuil-list"></div>
+      </div>
+
+      <!-- 🚲 Vélib -->
+      <div class="block" id="velib-section">
+        <h3>Vélib Proximité</h3>
+        <div id="velib-list"></div>
+      </div>
+
+      <!-- 🏇 Courses -->
+      <div class="block" id="courses-section">
+        <h3>Prochaines Courses Vincennes</h3>
+        <div id="courses-list"></div>
+      </div>
+
+      <!-- 📰 Actualités -->
+      <div class="block" id="actualites-section">
+        <h3>Actualités</h3>
+        <div id="news-content"></div>
+        <span id="news-counter">0/0</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Météo/Trafic -->
-  <div class="block" id="meteo-panel">
-    <h3>Météo Locale</h3>
-    <div id="meteo-temp">--</div>
-    <div id="meteo-desc">Chargement...</div>
-    <div id="meteo-extra"></div>
-  </div>
-
-  <!-- Bus Joinville -->
-  <div class="block" id="bus-joinville-list">
-    <h3>Bus Joinville-le-Pont</h3>
-  </div>
-
-  <!-- Bus Hippodrome -->
-  <div class="block" id="bus-hippodrome-list">
-    <h3>Bus Hippodrome</h3>
-  </div>
-
-  <!-- Bus École du Breuil -->
-  <div class="block" id="bus-breuil-list">
-    <h3>Bus École du Breuil</h3>
-  </div>
-
-  <!-- Vélib -->
-  <div class="block" id="velib-section">
-    <h3>Vélib Proximité</h3>
-    <div id="velib-list"></div>
-  </div>
-
-  <!-- Courses -->
-  <div class="block" id="courses-section">
-    <h3>Prochaines Courses Vincennes</h3>
-    <div id="courses-list"></div>
-  </div>
-
-  <!-- Actualités -->
-  <div class="block" id="actualites-section">
-    <h3>Actualités</h3>
-    <div id="news-content"></div>
-    <span id="news-counter">0/0</span>
-  </div>
-</div>
   <script src="app.js"></script>
 </body>
 </html>
