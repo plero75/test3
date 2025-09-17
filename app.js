@@ -143,10 +143,43 @@ function minutesFromISO(iso) {
   return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
 }
 
-function makeTimeChip(label) {
+function makeTimeChip(mainLabel, subLabel = "", options = {}) {
   const span = document.createElement("span");
   span.className = "time-chip";
-  span.textContent = label;
+  if (options?.variant) {
+    span.classList.add(`time-chip--${options.variant}`);
+  }
+
+  const main = document.createElement("span");
+  main.className = "time-chip-main";
+  main.textContent = mainLabel ?? "--";
+  span.appendChild(main);
+
+  const subs = Array.isArray(subLabel)
+    ? subLabel.filter(Boolean)
+    : subLabel
+    ? [subLabel]
+    : [];
+
+  subs.forEach(text => {
+    const sub = document.createElement("span");
+    sub.className = "time-chip-sub";
+    sub.textContent = text;
+    span.appendChild(sub);
+  });
+
+  if (options?.title) {
+    span.title = options.title;
+  }
+
+  if (options?.dataset) {
+    Object.entries(options.dataset).forEach(([key, value]) => {
+      if (value != null) {
+        span.dataset[key] = value;
+      }
+    });
+  }
+
   return span;
 }
 
@@ -345,14 +378,65 @@ function buildDeparturesFromVisits(visits = []) {
 }
 
 function createDepartureChip(departure) {
+  const hasMinutes = Number.isFinite(departure?.minutes);
+  const minutes = hasMinutes ? Math.max(0, departure.minutes) : null;
   const iso = departure?.expected || departure?.aimed || null;
-  const label = formatDepartureLabel(departure?.minutes, iso);
-  const chip = makeTimeChip(label);
-  if (iso) {
-    const timeLabel = formatClockTime(iso);
-    if (timeLabel) chip.title = `Départ estimé ${timeLabel}`;
+  const timeLabel = iso ? formatClockTime(iso) : null;
+  const tooltip = hasMinutes ? formatDepartureLabel(minutes, iso) : null;
+  const dataset = timeLabel ? { time: timeLabel } : undefined;
+
+  if (minutes == null) {
+    return makeTimeChip("--", "", {
+      variant: "unknown",
+      title: tooltip || "Horaire indisponible",
+      dataset
+    });
   }
-  return chip;
+
+  if (minutes === 0) {
+    return makeTimeChip("À quai", timeLabel || "", {
+      variant: "now",
+      title: tooltip || "Départ imminent",
+      dataset
+    });
+  }
+
+  if (minutes > 30) {
+    if (timeLabel) {
+      return makeTimeChip(timeLabel, `${minutes} min`, {
+        variant: "long",
+        title: tooltip || undefined,
+        dataset
+      });
+    }
+
+    return makeTimeChip(String(minutes), "min", {
+      variant: "long",
+      title: tooltip || undefined
+    });
+  }
+
+  const variant = minutes <= 5 ? "soon" : "regular";
+  const subParts = ["min"];
+  if (timeLabel) {
+    subParts.push(timeLabel);
+  }
+
+  return makeTimeChip(String(minutes), subParts.join(" · "), {
+    variant,
+    title: tooltip || undefined,
+    dataset
+  });
+}
+
+function createMinutesChip(minutes) {
+  if (!Number.isFinite(minutes)) {
+    return makeTimeChip("--", "", { variant: "unknown", title: "Horaire indisponible" });
+  }
+
+  const safeMinutes = Math.max(0, minutes);
+  const approxIso = new Date(Date.now() + safeMinutes * 60000).toISOString();
+  return createDepartureChip({ minutes: safeMinutes, expected: approxIso });
 }
 
 function stopPriority(name = "") {
@@ -636,7 +720,7 @@ function renderRerDirection(container, groups, emptyMessage = "Aucune donnée en
       });
     } else if (group.minutes?.length) {
       group.minutes.forEach(min => {
-        times.appendChild(makeTimeChip(formatDepartureLabel(min)));
+        times.appendChild(createMinutesChip(min));
       });
     } else {
       times.appendChild(makeInfoBadge("--"));
