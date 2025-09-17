@@ -761,6 +761,8 @@ function renderRerBlock(visits, trafficItem) {
   const parisEl = document.getElementById("rer-paris");
   const boissyEl = document.getElementById("rer-boissy");
   const otherEl = document.getElementById("rer-other");
+  const rerBody = document.querySelector(".rer-body");
+  const otherColumn = otherEl ? otherEl.closest(".rer-column") : null;
 
   const rerVisits = (visits || []).filter(v => v.lineId === LINES.RER_A.id);
   let { paris, boissy, other } = classifyRerDestinations(rerVisits);
@@ -777,7 +779,18 @@ function renderRerBlock(visits, trafficItem) {
 
   renderRerDirection(parisEl, paris);
   renderRerDirection(boissyEl, boissy);
-  renderRerDirection(otherEl, other, "Aucune autre destination pour le moment.");
+  if (other?.length) {
+    renderRerDirection(otherEl, other, "Aucune autre destination pour le moment.");
+  } else if (otherEl) {
+    otherEl.innerHTML = "";
+  }
+
+  if (rerBody) {
+    rerBody.classList.toggle("rer-body--three", other.length > 0);
+  }
+  if (otherColumn) {
+    otherColumn.hidden = !other.length;
+  }
 
   updateLineAlert(document.getElementById("traffic-rer-line"), trafficItem);
   updateStationStatus("rer-station-info", "Joinville-le-Pont", trafficItem);
