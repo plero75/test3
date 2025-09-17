@@ -599,8 +599,8 @@ body {
 }
 
 .bus-stations {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   flex: 1;
   min-height: 0;
@@ -1124,8 +1124,8 @@ body {
   }
 
   .bus-stations {
-    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
+    padding-right: 0;
   }
 
   .bus-station-card {

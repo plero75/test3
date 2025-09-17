@@ -15,6 +15,7 @@ const STOP_IDS = {
 const LINES = {
   RER_A: { id: "C01742", navitia: "line:IDFM:C01742", label: "RER A" },
   BUS_77: { id: "C02251", navitia: "line:IDFM:C02251", label: "Bus 77" },
+  BUS_106: { id: "C01135", navitia: "line:IDFM:C01135", label: "Bus 106" },
   BUS_201: { id: "C01219", navitia: "line:IDFM:C01219", label: "Bus 201" }
 };
 
@@ -790,7 +791,7 @@ function buildBusSummary(processedStops, trafficMap) {
 function renderBusTrafficHeader(container, trafficMap = {}) {
   if (!container) return;
   container.innerHTML = "";
-  const lines = [LINES.BUS_77, LINES.BUS_201];
+  const lines = [LINES.BUS_77, LINES.BUS_106, LINES.BUS_201];
   lines.forEach(line => {
     const row = document.createElement("div");
     row.className = "bus-traffic-row";
@@ -838,14 +839,21 @@ async function renderBusBoard(visits, trafficMap = {}) {
 
   const stops = groupVisitsByStop(visits || []).filter(stop => stop.lines.length);
 
+  const busTrafficIds = [LINES.BUS_77.id, LINES.BUS_106.id, LINES.BUS_201.id];
+  const busTrafficMap = busTrafficIds.reduce((acc, id) => {
+    acc[id] = trafficMap?.[id] || null;
+    return acc;
+  }, {});
+
   const lineGroups = [
     { lineId: LINES.BUS_77.id },
+    { lineId: LINES.BUS_106.id },
     { lineId: LINES.BUS_201.id },
     ...stops.flatMap(stop => stop.lines)
   ];
   await ensureLineMetas(lineGroups);
 
-  renderBusTrafficHeader(trafficEl, trafficMap);
+  renderBusTrafficHeader(trafficEl, busTrafficMap);
 
   if (!stops.length) {
     if (summaryEl) {
@@ -866,7 +874,7 @@ async function renderBusBoard(visits, trafficMap = {}) {
     .map(stop => ({ stop, statuses: trimStatusList(stop.statusSummary) }));
 
   if (summaryEl) {
-    const summaryInfo = buildBusSummary(processedStops, trafficMap);
+    const summaryInfo = buildBusSummary(processedStops, busTrafficMap);
     summaryEl.textContent = summaryInfo.text;
     summaryEl.className = `block-sub bus-summary ${summaryInfo.className}`;
   }
@@ -888,7 +896,7 @@ async function renderBusBoard(visits, trafficMap = {}) {
     title.textContent = stop.name || "Station";
     heading.appendChild(title);
 
-    const stationSummary = deriveStationSummary(stop, statuses, trafficMap);
+    const stationSummary = deriveStationSummary(stop, statuses, busTrafficMap);
     const summary = document.createElement("p");
     summary.className = `bus-station-summary ${stationSummary.className}`;
     summary.textContent = stationSummary.text;
@@ -940,7 +948,7 @@ async function renderBusBoard(visits, trafficMap = {}) {
       const trafficWrap = document.createElement("div");
       trafficWrap.className = "bus-line-traffic";
       const trafficKey = line.lineId || line.lineRef;
-      const trafficItem = trafficMap[trafficKey];
+      const trafficItem = busTrafficMap[trafficKey];
       const trafficStatus = trafficItem?.status || "unknown";
       const trafficText = document.createElement("span");
       trafficText.className = `line-alert-text ${trafficStatus}`;
@@ -1591,6 +1599,7 @@ async function refreshTransport() {
       breuilRaw,
       trafficRer,
       traffic77,
+      traffic106,
       traffic201
     ] = await Promise.all([
       fetchJSON(
@@ -1623,6 +1632,7 @@ async function refreshTransport() {
       ),
       fetchTraffic(LINES.RER_A.navitia),
       fetchTraffic(LINES.BUS_77.navitia),
+      fetchTraffic(LINES.BUS_106.navitia),
       fetchTraffic(LINES.BUS_201.navitia)
     ]);
 
@@ -1634,6 +1644,7 @@ async function refreshTransport() {
     const trafficItems = await Promise.all([
       buildTrafficItem(LINES.RER_A, trafficRer),
       buildTrafficItem(LINES.BUS_77, traffic77),
+      buildTrafficItem(LINES.BUS_106, traffic106),
       buildTrafficItem(LINES.BUS_201, traffic201)
     ]);
 
