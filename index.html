@@ -13,6 +13,18 @@
           <p class="brand-title">Hippodrome Paris-Vincennes</p>
           <p class="brand-sub">Tableau d'information voyageurs</p>
         </div>
+        <div class="weather-widget" aria-live="polite">
+          <div id="weather-icon" class="weather-icon weather-unknown" aria-hidden="true">
+            <div class="weather-shape"></div>
+          </div>
+          <div class="weather-data">
+            <span id="weather-temp" class="weather-temp">--°</span>
+            <div class="weather-details">
+              <span id="weather-desc" class="weather-desc">Chargement...</span>
+              <span id="weather-extra" class="weather-extra"></span>
+            </div>
+          </div>
+        </div>
         <div class="header-right">
           <div id="lastUpdate" class="last-update" aria-live="polite">Maj --:--</div>
           <div id="clock" class="clock" aria-live="off">--:--</div>
@@ -21,9 +33,12 @@
 
       <main class="dashboard-grid">
         <section class="block block-rer" aria-labelledby="rer-title">
-          <div class="block-header">
-            <h2 id="rer-title">RER A – Joinville-le-Pont</h2>
-            <div id="traffic-rer" class="traffic-chip" aria-live="polite"></div>
+          <div class="block-header block-header--stacked">
+            <div class="block-heading">
+              <h2 id="rer-title">RER A</h2>
+              <p id="rer-station-info" class="block-sub station-status">Station Joinville-le-Pont · chargement...</p>
+            </div>
+            <div id="traffic-rer-line" class="line-alert" aria-live="polite"></div>
           </div>
           <div class="block-body rer-body">
             <div class="rer-column">
@@ -34,57 +49,44 @@
               <h3>Vers Boissy / Marne-la-Vallée</h3>
               <div id="rer-boissy" class="rer-list" role="list"></div>
             </div>
-          </div>
-        </section>
-
-        <section class="block block-meteo" aria-labelledby="meteo-title">
-          <div class="block-header">
-            <h2 id="meteo-title">Météo</h2>
-          </div>
-          <div class="block-body meteo-body">
-            <div class="meteo-main">
-              <span id="meteo-temp" class="meteo-temp">--°</span>
-              <div class="meteo-details">
-                <span id="meteo-desc" class="meteo-desc">Chargement...</span>
-                <span id="meteo-extra" class="meteo-extra"></span>
-              </div>
+            <div class="rer-column">
+              <h3>Autres destinations</h3>
+              <div id="rer-other" class="rer-list" role="list"></div>
             </div>
           </div>
         </section>
 
-        <section class="block block-traffic" aria-labelledby="traffic-title">
-          <div class="block-header">
-            <h2 id="traffic-title">Circulation</h2>
+        <section class="block block-bus" aria-labelledby="bus-title">
+          <div class="block-header block-header--stacked">
+            <div class="block-heading">
+              <h2 id="bus-title">Bus</h2>
+              <p class="block-sub">Regroupement par destination</p>
+            </div>
           </div>
-          <div id="traffic-summary" class="block-body traffic-body"></div>
+          <div id="bus-board" class="block-body bus-body" role="list"></div>
         </section>
 
         <section class="block block-courses" aria-labelledby="courses-title">
-          <div class="block-header">
-            <h2 id="courses-title">Prochaines courses à Vincennes</h2>
+          <div class="block-header block-header--stacked">
+            <div class="block-heading">
+              <h2 id="courses-title">Courses à Vincennes</h2>
+              <p id="courses-date" class="block-sub">Chargement...</p>
+            </div>
+            <div id="courses-countdown" class="countdown-chip" aria-live="polite">--</div>
           </div>
           <div id="courses-list" class="block-body courses-list" role="list"></div>
         </section>
 
-        <section class="block block-bus" aria-labelledby="bus-joinville-title">
-          <div class="block-header">
-            <h2 id="bus-joinville-title">Bus – Joinville-le-Pont</h2>
+        <section class="block block-road" aria-labelledby="road-title">
+          <div class="block-header block-header--stacked">
+            <div class="block-heading">
+              <h2 id="road-title">Info trafic Sytadin</h2>
+              <p id="sytadin-update" class="block-sub">Chargement...</p>
+            </div>
           </div>
-          <div id="bus-joinville-list" class="block-body bus-list" role="list"></div>
-        </section>
-
-        <section class="block block-bus" aria-labelledby="bus-hippodrome-title">
-          <div class="block-header">
-            <h2 id="bus-hippodrome-title">Bus – Hippodrome</h2>
+          <div id="sytadin-content" class="block-body road-body">
+            <div id="sytadin-list" class="road-list" role="list"></div>
           </div>
-          <div id="bus-hippodrome-list" class="block-body bus-list" role="list"></div>
-        </section>
-
-        <section class="block block-bus" aria-labelledby="bus-breuil-title">
-          <div class="block-header">
-            <h2 id="bus-breuil-title">Bus – École du Breuil</h2>
-          </div>
-          <div id="bus-breuil-list" class="block-body bus-list" role="list"></div>
         </section>
 
         <section class="block block-news" aria-labelledby="news-title">
