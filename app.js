@@ -169,6 +169,18 @@ function trimStatusList(tags = []) {
   return tags;
 }
 
+function getStationStatusClass(tags = []) {
+  if (!tags?.length) return "ok";
+  if (tags.some(tag => tag.type === "unknown")) return "unknown";
+  if (tags.some(tag => ["delay", "cancelled", "ended"].includes(tag.type))) return "alert";
+  return "ok";
+}
+
+function formatStationSummary(tags = []) {
+  if (!tags?.length) return "Trafic normal";
+  return tags.map(tag => tag.label).join(" · ");
+}
+
 function getWeatherClass(code) {
   const numeric = Number(code);
   const entry = WEATHER_CLASS_MAP.find(item => item.codes.includes(numeric));
@@ -354,7 +366,13 @@ function stopPriority(name = "") {
 function groupVisitsByStop(visits = []) {
   const stops = new Map();
 
-  visits.forEach(visit => {
+  const filteredVisits = (visits || []).filter(visit => {
+    const id = visit.lineId || "";
+    const ref = visit.lineRef || "";
+    return id !== LINES.RER_A.id && !ref.includes(LINES.RER_A.id);
+  });
+
+  filteredVisits.forEach(visit => {
     const stopName = visit.stop || "Arrêt";
     const key = `${visit.stopId || ""}|${stopName.toLowerCase()}`;
     if (!stops.has(key)) {
@@ -681,23 +699,60 @@ function renderRerBlock(visits, trafficItem) {
 }
 
 async function renderBusBoard(visits, trafficMap = {}) {
-  const container = document.getElementById("bus-board");
-  if (!container) return;
-  container.innerHTML = "";
+  const anchor = document.getElementById("stations-anchor");
+  const grid = document.querySelector(".dashboard-grid");
+  const host = anchor || grid;
+  if (!host) return;
+
+  if (anchor) {
+    anchor.innerHTML = "";
+  } else {
+    grid.querySelectorAll(".block-station").forEach(block => block.remove());
+  }
 
   const stops = groupVisitsByStop(visits || []).filter(stop => stop.lines.length);
 
   if (!stops.length) {
-    container.appendChild(makeInfoBadge("Données bus indisponibles pour le moment."));
+    const emptySection = document.createElement("section");
+    emptySection.className = "block block-station block-station--empty";
+    emptySection.setAttribute("role", "region");
+    emptySection.setAttribute("aria-label", "Stations bus");
+
+    const header = document.createElement("div");
+    header.className = "block-header block-header--stacked station-header";
+
+    const heading = document.createElement("div");
+    heading.className = "block-heading";
+
+    const title = document.createElement("h2");
+    title.textContent = "Stations bus";
+    heading.appendChild(title);
+
+    const summary = document.createElement("p");
+    summary.className = "block-sub station-summary unknown";
+    summary.textContent = "Données indisponibles pour le moment";
+    heading.appendChild(summary);
+
+    header.appendChild(heading);
+    emptySection.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "block-body station-body";
+    body.appendChild(makeInfoBadge("Données bus indisponibles pour le moment."));
+    emptySection.appendChild(body);
+
+    host.appendChild(emptySection);
     return;
   }
 
   const lineIds = [
     ...new Set(
-      stops.flatMap(stop => stop.lines.map(line => line.lineId).filter(Boolean))
+      stops.flatMap(stop => stop.lines.map(line => line.lineId || null).filter(Boolean))
     )
   ];
   await Promise.all(lineIds.map(id => fetchLineMetadata(id)));
+
+  const insertionPoint = anchor ? null : document.querySelector(".block-courses");
 
   stops
     .sort((a, b) => {
@@ -707,129 +762,151 @@ async function renderBusBoard(visits, trafficMap = {}) {
     })
     .forEach(stop => {
       const section = document.createElement("section");
-      section.className = "bus-stop";
+      section.className = "block block-station";
+      section.setAttribute("role", "region");
+      section.setAttribute("aria-label", `Station ${stop.name || "bus"}`);
 
       const header = document.createElement("div");
-      header.className = "bus-stop-header";
+      header.className = "block-header block-header--stacked station-header";
 
-      const title = document.createElement("h3");
-      title.className = "bus-stop-name";
+      const heading = document.createElement("div");
+      heading.className = "block-heading";
+
+      const title = document.createElement("h2");
       title.textContent = stop.name || "Station";
-      header.appendChild(title);
+      heading.appendChild(title);
 
       const stopStatuses = trimStatusList(stop.statusSummary);
+      const summary = document.createElement("p");
+      summary.className = `block-sub station-summary ${getStationStatusClass(stopStatuses)}`;
+      summary.textContent = formatStationSummary(stopStatuses);
+      heading.appendChild(summary);
+
+      header.appendChild(heading);
+
       if (stopStatuses.length) {
         const statusWrap = document.createElement("div");
-        statusWrap.className = "status-group";
+        statusWrap.className = "status-group station-status-group";
         stopStatuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
         header.appendChild(statusWrap);
       }
 
       section.appendChild(header);
 
+      const body = document.createElement("div");
+      body.className = "block-body station-body";
+
       const linesWrap = document.createElement("div");
-      linesWrap.className = "bus-stop-lines";
+      linesWrap.className = "station-lines";
 
-      if (!stop.lines.length) {
-        linesWrap.appendChild(makeInfoBadge("Pas de passage suivi pour le moment."));
-      } else {
-        const sortedLines = stop.lines
-          .slice()
-          .sort((a, b) => {
-            const idA = a.lineId || a.lineRef;
-            const idB = b.lineId || b.lineRef;
-            const metaA = a.lineId ? lineMetaCache.get(a.lineId) || fallbackLineMeta(idA) : fallbackLineMeta(idA);
-            const metaB = b.lineId ? lineMetaCache.get(b.lineId) || fallbackLineMeta(idB) : fallbackLineMeta(idB);
-            return (metaA.code || idA || "").localeCompare(metaB.code || idB || "", "fr", { numeric: true });
-          });
-
-        sortedLines.forEach(line => {
-          const metaId = line.lineId || line.lineRef;
-          const meta = line.lineId ? lineMetaCache.get(line.lineId) || fallbackLineMeta(metaId) : fallbackLineMeta(metaId);
-          const card = document.createElement("article");
-          card.className = "bus-line-card";
-
-          const cardHeader = document.createElement("div");
-          cardHeader.className = "bus-line-card-header";
-
-          const badge = document.createElement("span");
-          badge.className = "line-pill";
-          badge.textContent = meta.code || meta.id || line.lineRef || "—";
-          badge.style.setProperty("--line-color", meta.color);
-          badge.style.setProperty("--line-text", meta.textColor);
-
-          const trafficWrap = document.createElement("div");
-          trafficWrap.className = "bus-line-card-traffic";
-          const trafficKey = line.lineId || line.lineRef;
-          const trafficItem = trafficMap[trafficKey];
-          if (trafficItem) {
-            const status = document.createElement("span");
-            status.className = `line-alert-text ${trafficItem.status}`;
-            status.textContent = trafficItem.message;
-            trafficWrap.appendChild(status);
-          } else {
-            const status = document.createElement("span");
-            status.className = "line-alert-text unknown";
-            status.textContent = "Information trafic indisponible";
-            trafficWrap.appendChild(status);
-          }
-
-          cardHeader.appendChild(badge);
-          cardHeader.appendChild(trafficWrap);
-          card.appendChild(cardHeader);
-
-          const lineStatuses = trimStatusList(line.statusSummary);
-          if (lineStatuses.length) {
-            const statusWrap = document.createElement("div");
-            statusWrap.className = "status-group";
-            lineStatuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
-            card.appendChild(statusWrap);
-          }
-
-          const destinationsWrap = document.createElement("div");
-          destinationsWrap.className = "bus-line-destinations";
-
-          line.destinations.forEach(dest => {
-            const row = document.createElement("div");
-            row.className = "bus-destination-row";
-
-            const info = document.createElement("div");
-            info.className = "bus-destination-info";
-
-            const destName = document.createElement("span");
-            destName.className = "destination-name";
-            destName.textContent = dest.display || dest.fullDestination || "Destination à préciser";
-            info.appendChild(destName);
-
-            const destStatuses = trimStatusList(dest.statusSummary);
-            if (destStatuses.length) {
-              const statusGroup = document.createElement("div");
-              statusGroup.className = "status-group";
-              destStatuses.forEach(tag => statusGroup.appendChild(createStatusChip(tag)));
-              info.appendChild(statusGroup);
-            }
-
-            row.appendChild(info);
-
-            const times = document.createElement("div");
-            times.className = "bus-times";
-            if (dest.departures.length) {
-              dest.departures.forEach(dep => times.appendChild(createDepartureChip(dep)));
-            } else {
-              times.appendChild(makeInfoBadge("--"));
-            }
-
-            row.appendChild(times);
-            destinationsWrap.appendChild(row);
-          });
-
-          card.appendChild(destinationsWrap);
-          linesWrap.appendChild(card);
+      const sortedLines = stop.lines
+        .slice()
+        .sort((a, b) => {
+          const idA = a.lineId || a.lineRef;
+          const idB = b.lineId || b.lineRef;
+          const metaA = a.lineId ? lineMetaCache.get(a.lineId) || fallbackLineMeta(idA) : fallbackLineMeta(idA);
+          const metaB = b.lineId ? lineMetaCache.get(b.lineId) || fallbackLineMeta(idB) : fallbackLineMeta(idB);
+          return (metaA.code || idA || "").localeCompare(metaB.code || idB || "", "fr", { numeric: true });
         });
+
+      if (!sortedLines.length) {
+        linesWrap.appendChild(makeInfoBadge("Pas de passage suivi pour le moment."));
       }
 
-      section.appendChild(linesWrap);
-      container.appendChild(section);
+      sortedLines.forEach(line => {
+        const metaId = line.lineId || line.lineRef;
+        const meta = line.lineId ? lineMetaCache.get(line.lineId) || fallbackLineMeta(metaId) : fallbackLineMeta(metaId);
+        const card = document.createElement("article");
+        card.className = "station-line-card";
+
+        const cardHeader = document.createElement("div");
+        cardHeader.className = "station-line-card-header";
+
+        const badge = document.createElement("span");
+        badge.className = "line-pill";
+        badge.textContent = meta.code || meta.id || line.lineRef || "—";
+        badge.style.setProperty("--line-color", meta.color);
+        badge.style.setProperty("--line-text", meta.textColor);
+
+        const trafficWrap = document.createElement("div");
+        trafficWrap.className = "station-line-card-traffic";
+        const trafficKey = line.lineId || line.lineRef;
+        const trafficItem = trafficMap[trafficKey];
+        if (trafficItem) {
+          const status = document.createElement("span");
+          status.className = `line-alert-text ${trafficItem.status}`;
+          status.textContent = trafficItem.message;
+          trafficWrap.appendChild(status);
+        } else {
+          const status = document.createElement("span");
+          status.className = "line-alert-text unknown";
+          status.textContent = "Information trafic indisponible";
+          trafficWrap.appendChild(status);
+        }
+
+        cardHeader.appendChild(badge);
+        cardHeader.appendChild(trafficWrap);
+        card.appendChild(cardHeader);
+
+        const lineStatuses = trimStatusList(line.statusSummary);
+        if (lineStatuses.length) {
+          const statusWrap = document.createElement("div");
+          statusWrap.className = "status-group";
+          lineStatuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
+          card.appendChild(statusWrap);
+        }
+
+        const destinationsWrap = document.createElement("div");
+        destinationsWrap.className = "station-line-destinations";
+
+        line.destinations.forEach(dest => {
+          const row = document.createElement("div");
+          row.className = "station-destination-row";
+
+          const info = document.createElement("div");
+          info.className = "station-destination-info";
+
+          const destName = document.createElement("span");
+          destName.className = "destination-name";
+          destName.textContent = dest.display || dest.fullDestination || "Destination à préciser";
+          info.appendChild(destName);
+
+          const destStatuses = trimStatusList(dest.statusSummary);
+          if (destStatuses.length) {
+            const statusGroup = document.createElement("div");
+            statusGroup.className = "status-group";
+            destStatuses.forEach(tag => statusGroup.appendChild(createStatusChip(tag)));
+            info.appendChild(statusGroup);
+          }
+
+          row.appendChild(info);
+
+          const times = document.createElement("div");
+          times.className = "station-times";
+          if (dest.departures.length) {
+            dest.departures.forEach(dep => times.appendChild(createDepartureChip(dep)));
+          } else {
+            times.appendChild(makeInfoBadge("--"));
+          }
+
+          row.appendChild(times);
+          destinationsWrap.appendChild(row);
+        });
+
+        card.appendChild(destinationsWrap);
+        linesWrap.appendChild(card);
+      });
+
+      body.appendChild(linesWrap);
+      section.appendChild(body);
+
+      if (anchor) {
+        anchor.appendChild(section);
+      } else if (insertionPoint) {
+        grid.insertBefore(section, insertionPoint);
+      } else {
+        grid.appendChild(section);
+      }
     });
 }
 
