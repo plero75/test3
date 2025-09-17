@@ -330,16 +330,12 @@ body {
   min-height: 0;
 }
 
-.stations-anchor {
-  display: contents;
-}
-
 .block-rer {
   grid-column: 1 / span 2;
   min-height: 0;
 }
 
-.block-station {
+.block-bus {
   grid-column: 3;
   min-height: 0;
 }
@@ -398,6 +394,23 @@ body {
 }
 
 .station-status.unknown {
+  color: var(--danger);
+}
+
+.bus-summary {
+  transition: color 0.3s ease;
+  color: var(--muted);
+}
+
+.bus-summary.ok {
+  color: var(--success);
+}
+
+.bus-summary.alert {
+  color: var(--warning);
+}
+
+.bus-summary.unknown {
   color: var(--danger);
 }
 
@@ -547,93 +560,150 @@ body {
   color: var(--muted);
 }
 
-.station-header {
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-}
-
-.station-header .block-heading {
-  flex: 1 1 auto;
-}
-
-.station-summary {
-  transition: color 0.3s ease;
-}
-
-.station-summary.ok {
-  color: var(--success);
-}
-
-.station-summary.alert {
-  color: var(--warning);
-}
-
-.station-summary.unknown {
-  color: var(--danger);
-}
-
-.station-status-group {
-  margin-left: auto;
-}
-
-.station-body {
-  padding-top: 16px;
-}
-
-.station-lines {
+.bus-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+}
+
+.bus-traffic {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bus-traffic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(0.75rem, 0.72rem + 0.18vw, 0.9rem);
+  color: var(--muted);
+}
+
+.bus-traffic-row .line-pill {
+  flex: 0 0 auto;
+}
+
+.bus-traffic-row .line-alert-text {
+  font-weight: 600;
+}
+
+.bus-stations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   padding-right: 6px;
 }
 
-.station-line-card {
+.bus-station-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 16px 18px;
   border-radius: 16px;
   background: rgba(12, 27, 48, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.04);
+  min-width: 0;
 }
 
-.station-line-card-header {
+.bus-station-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-.station-line-card-header .line-pill {
-  flex: 0 0 auto;
+.bus-station-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.station-line-card-traffic {
-  font-size: 0.82rem;
+.bus-station-title {
+  margin: 0;
+  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.15rem);
+}
+
+.bus-station-summary {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.95rem);
   color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+.bus-station-summary.ok {
+  color: var(--success);
+}
+
+.bus-station-summary.alert {
+  color: var(--warning);
+}
+
+.bus-station-summary.unknown {
+  color: var(--danger);
+}
+
+.bus-station-status {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.station-line-destinations {
+.bus-lines {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.station-destination-row {
+.bus-line-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bus-line-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.station-destination-info {
+.bus-line-header .line-pill {
+  flex: 0 0 auto;
+}
+
+.bus-line-traffic {
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bus-destinations {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bus-destination-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bus-destination-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -652,10 +722,10 @@ body {
   gap: 6px;
 }
 
-.station-times {
+.bus-times {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-end;
 }
 
@@ -964,7 +1034,7 @@ body {
     grid-column: 1 / span 2;
   }
 
-  .block-station {
+  .block-bus {
     grid-column: auto;
   }
 
@@ -1007,7 +1077,7 @@ body {
   .block-news,
   .block-velib,
   .block-courses,
-  .block-station {
+  .block-bus {
     grid-column: auto;
     grid-row: auto;
   }

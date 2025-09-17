@@ -56,7 +56,18 @@
           </div>
         </section>
 
-        <div id="stations-anchor" class="stations-anchor"></div>
+        <section class="block block-bus" aria-labelledby="bus-title">
+          <div class="block-header block-header--stacked">
+            <div class="block-heading">
+              <h2 id="bus-title">Bus</h2>
+              <p id="bus-summary" class="block-sub bus-summary">Chargement...</p>
+            </div>
+            <div id="bus-traffic" class="bus-traffic" aria-live="polite"></div>
+          </div>
+          <div class="block-body bus-body">
+            <div id="bus-stations" class="bus-stations" role="list"></div>
+          </div>
+        </section>
 
         <section class="block block-courses" aria-labelledby="courses-title">
           <div class="block-header block-header--stacked">
