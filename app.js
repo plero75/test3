@@ -62,6 +62,23 @@ function setLastUpdate() {
   $("#lastUpdate").textContent = "Maj " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function renderWeather(state = {}) {
+  const tempEl = document.getElementById("weather-temp");
+  const descEl = document.getElementById("weather-desc");
+  const extraEl = document.getElementById("weather-extra");
+
+  if (!tempEl || !descEl || !extraEl) return;
+
+  const { temperature, description, extra } = state;
+  tempEl.textContent = temperature ?? "--";
+  descEl.textContent = description ?? "Météo indisponible";
+  extraEl.textContent = extra ?? "";
+}
+
+function resetWeatherWidget() {
+  renderWeather();
+}
+
 // --- Parsing Transport ---
 function minutesFromISO(iso) {
   if (!iso) return null;
@@ -304,9 +321,19 @@ async function news() {
 async function meteo() {
   const weather = await fetchJSON(WEATHER_URL);
   if (weather?.current_weather) {
-    $("#meteo-temp").textContent = Math.round(weather.current_weather.temperature);
-    $("#meteo-desc").textContent = "Conditions actuelles";
-    $("#meteo-extra").textContent = "Vent " + weather.current_weather.windspeed + " km/h";
+    const current = weather.current_weather;
+    const temperature = Math.round(current.temperature);
+    const extra =
+      typeof current.windspeed === "number"
+        ? "Vent " + Math.round(current.windspeed) + " km/h"
+        : "";
+    renderWeather({
+      temperature: Number.isFinite(temperature) ? temperature : "--",
+      description: "Conditions actuelles",
+      extra
+    });
+  } else {
+    resetWeatherWidget();
   }
 }
 
@@ -370,4 +397,5 @@ async function initDashboard() {
   startAllLoops();
 }
 
+resetWeatherWidget();
 initDashboard();

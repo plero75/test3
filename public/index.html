@@ -166,9 +166,9 @@
             <div class="info-rotating">
               <!-- Panel Météo -->
               <div id="panel-meteo" class="info-panel active">
-                <div class="metric"><div id="meteo-temp" class="big">--°</div><div class="unit">C</div></div>
-                <div id="meteo-desc" class="info-desc">Chargement...</div>
-                <div id="meteo-extra" class="info-desc"></div>
+                <div class="metric"><div id="weather-temp" class="big">--°</div><div class="unit">C</div></div>
+                <div id="weather-desc" class="info-desc">Météo indisponible</div>
+                <div id="weather-extra" class="info-desc"></div>
               </div>
               <!-- Panel Trafic -->
               <div id="panel-trafic" class="info-panel">
@@ -267,6 +267,12 @@
     function setLastUpdate(){
       const d = new Date();
       $('#lastUpdate').textContent = `Maj ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
+    }
+
+    function resetWeatherPanel(){
+      $('#weather-temp').textContent = '--';
+      $('#weather-desc').textContent = 'Météo indisponible';
+      $('#weather-extra').textContent = '';
     }
 
     function makeChip(text, state){
@@ -455,9 +461,11 @@
 
       // Météo
       if(inf?.meteo){
-        $('#meteo-temp').textContent = Math.round(inf.meteo.temp) || '--';
-        $('#meteo-desc').textContent = inf.meteo.desc || '';
-        $('#meteo-extra').textContent = inf.meteo.extra || '';
+        $('#weather-temp').textContent = Math.round(inf.meteo.temp) || '--';
+        $('#weather-desc').textContent = inf.meteo.desc || '';
+        $('#weather-extra').textContent = inf.meteo.extra || '';
+      } else {
+        resetWeatherPanel();
       }
 
       // Trafic
@@ -478,6 +486,7 @@
     setInterval(toggleInfoPanel, 15000); // Météo/Trafic : 15s
     setInterval(refresh, 30000);         // Données : 30s
 
+    resetWeatherPanel();
     refresh();
   </script>
 </body>
