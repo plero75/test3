@@ -29,7 +29,8 @@ body {
   background: var(--bg);
   color: var(--text);
   display: flex;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .app {
@@ -267,15 +268,14 @@ body {
   display: grid;
   gap: 20px;
   padding: 22px 26px 26px;
-  height: 100%;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "rer rer bus"
     "rer rer bus"
     "courses road news"
     "velib road news";
-  grid-auto-rows: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  align-content: start;
 }
 
 .block {
@@ -336,6 +336,10 @@ body {
 
 .block-bus {
   grid-area: bus;
+}
+
+.block-bus .block-body {
+  flex: 0 1 auto;
 }
 
 .block-courses {
@@ -463,6 +467,7 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .info-badge {
@@ -536,12 +541,14 @@ body {
 }
 
 .bus-body {
-  gap: 16px;
-  overflow-y: auto;
-  padding-right: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  padding: 0;
+  overflow: visible;
 }
 
-.bus-line {
+.bus-stop {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -552,38 +559,26 @@ body {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
-.bus-line-header {
+.bus-stop-header {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.bus-line-title {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.bus-line-title strong {
-  font-size: 1rem;
+.bus-stop-name {
+  margin: 0;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
-.bus-line-traffic {
-  font-size: 0.82rem;
-  color: var(--muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.bus-destinations {
+.bus-stop-lines {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
-.bus-destination-card {
+.bus-line-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -593,11 +588,44 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.destination-header {
+.bus-line-card-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
   gap: 12px;
+}
+
+.bus-line-card-header .line-pill {
+  flex: 0 0 auto;
+}
+
+.bus-line-card-traffic {
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bus-line-destinations {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bus-destination-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bus-destination-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .destination-name {
@@ -611,41 +639,11 @@ body {
   gap: 6px;
 }
 
-.destination-stops {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.destination-stop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-}
-
-.destination-stop-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.stop-name {
-  font-weight: 600;
-  font-size: 0.88rem;
-}
-
-.stop-status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .bus-times {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .countdown-chip {
@@ -949,12 +947,12 @@ body {
 
   .dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "rer rer"
       "bus courses"
       "road news"
       "velib news";
+    grid-auto-rows: auto;
   }
 }
 
@@ -966,6 +964,7 @@ body {
       "bus courses"
       "road news"
       "velib news";
+    grid-auto-rows: auto;
   }
 
   .rer-body {
