@@ -677,145 +677,216 @@ body {
 
 .bus-stations {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
   align-content: start;
-  gap: 20px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 10px;
+  gap: 24px;
+  padding-right: 4px;
 }
 
 .bus-station-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px 22px;
-  border-radius: 20px;
-  background: linear-gradient(155deg, rgba(10, 31, 69, 0.88), rgba(6, 20, 48, 0.82));
-  border: 1px solid rgba(96, 138, 212, 0.2);
-  box-shadow: 0 16px 32px rgba(4, 12, 32, 0.55);
-  backdrop-filter: blur(12px);
-  min-width: 0;
-  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: linear-gradient(160deg, rgba(15, 46, 120, 0.92), rgba(8, 22, 58, 0.88));
+  border: 2px solid rgba(86, 131, 210, 0.4);
+  border-radius: 18px;
+  box-shadow: 0 20px 38px rgba(3, 12, 32, 0.55);
+  min-height: 0;
+  overflow: hidden;
 }
 
-.bus-station-header {
+.bus-board-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(104, 146, 216, 0.16);
+  gap: 18px;
+  padding: 18px 24px 16px;
+  background: linear-gradient(135deg, rgba(8, 33, 92, 0.95), rgba(5, 21, 54, 0.9));
+  border-bottom: 2px solid rgba(104, 150, 226, 0.35);
 }
 
-.bus-station-heading {
+.bus-board-heading {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1 1 auto;
+  gap: 10px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
-.bus-station-title {
+.bus-board-title {
   margin: 0;
-  font-size: clamp(1.05rem, 1rem + 0.35vw, 1.3rem);
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.55rem);
+  letter-spacing: 0.02em;
 }
 
-.bus-station-summary {
+.bus-board-summary {
   margin: 0;
-  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.95rem);
-  color: var(--muted);
-  transition: color 0.3s ease;
+  font-size: clamp(0.82rem, 0.78rem + 0.2vw, 0.98rem);
   font-weight: 600;
+  color: rgba(208, 220, 248, 0.9);
 }
 
-.bus-station-summary.ok {
+.bus-board-summary.ok {
   color: var(--success);
 }
 
-.bus-station-summary.alert {
+.bus-board-summary.alert {
   color: var(--warning);
 }
 
-.bus-station-summary.unknown {
+.bus-board-summary.unknown {
   color: var(--danger);
 }
 
-.bus-station-status {
+.bus-board-status {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.bus-lines {
+.bus-board-clock {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(13, 48, 125, 0.85), rgba(10, 34, 88, 0.8));
+  border: 1px solid rgba(122, 165, 236, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  text-align: center;
 }
 
-.bus-line-card {
+.bus-board-clock-label {
+  font-size: clamp(0.65rem, 0.6rem + 0.18vw, 0.78rem);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(207, 220, 247, 0.75);
+}
+
+.bus-board-clock-value {
+  font-size: clamp(1.15rem, 1.05rem + 0.6vw, 1.6rem);
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.bus-board-table {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: linear-gradient(160deg, rgba(12, 38, 82, 0.85), rgba(8, 26, 60, 0.7));
-  border: 1px solid rgba(104, 144, 216, 0.16);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  min-height: 0;
 }
 
-.bus-line-header {
+.bus-board-row {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1.3fr) minmax(0, 0.9fr);
+  gap: 18px;
+  align-items: center;
+  padding: 14px 24px;
+  background: rgba(5, 22, 58, 0.7);
+  border-bottom: 1px solid rgba(84, 132, 210, 0.22);
+}
+
+.bus-board-row:nth-child(odd) {
+  background: rgba(7, 29, 72, 0.72);
+}
+
+.bus-board-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
 }
 
-.bus-line-header .line-pill {
-  flex: 0 0 auto;
-}
-
-.bus-line-traffic {
-  font-size: 0.82rem;
-  color: var(--muted);
+.bus-board-destination {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 0;
-  font-weight: 600;
-}
-
-.bus-destinations {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.bus-destination-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(4, 18, 44, 0.6);
-  border: 1px solid rgba(96, 138, 212, 0.12);
-}
-
-.bus-destination-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
   min-width: 0;
 }
 
 .destination-name {
   font-weight: 700;
-  font-size: clamp(0.92rem, 0.86rem + 0.25vw, 1.1rem);
-  letter-spacing: 0.01em;
+  font-size: clamp(0.98rem, 0.92rem + 0.28vw, 1.2rem);
+  letter-spacing: 0.015em;
+}
+
+.destination-alt {
+  font-size: clamp(0.7rem, 0.66rem + 0.18vw, 0.85rem);
+  color: rgba(205, 216, 238, 0.75);
+}
+
+.destination-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bus-board-times {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.bus-board-line-traffic {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 24px 14px;
+  background: rgba(4, 20, 54, 0.82);
+  font-size: clamp(0.72rem, 0.68rem + 0.18vw, 0.86rem);
+  border-bottom: 1px solid rgba(84, 132, 210, 0.18);
+}
+
+.bus-board-line-traffic .traffic-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(203, 216, 246, 0.85);
+}
+
+.bus-board-line-traffic .traffic-text {
+  font-weight: 600;
+  color: rgba(215, 224, 247, 0.88);
+}
+
+.bus-board-line-traffic.alert .traffic-text {
+  color: var(--warning);
+}
+
+.bus-board-line-traffic.unknown .traffic-text {
+  color: var(--muted);
+}
+
+.bus-board-empty {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bus-board-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 24px 18px;
+  background: linear-gradient(160deg, rgba(9, 30, 70, 0.9), rgba(5, 18, 42, 0.88));
+  border-top: 2px solid rgba(104, 150, 226, 0.28);
+}
+
+.bus-board-footer-message {
+  margin: 0;
+  font-size: clamp(0.72rem, 0.68rem + 0.16vw, 0.86rem);
+  font-weight: 600;
+  color: rgba(210, 222, 246, 0.88);
+}
+
+.bus-board-footer-update {
+  margin: 0;
+  font-size: clamp(0.68rem, 0.64rem + 0.16vw, 0.8rem);
+  color: rgba(188, 203, 232, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .status-group {
@@ -1225,13 +1296,29 @@ body {
 
   .bus-stations {
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    gap: 20px;
     padding-right: 0;
   }
 
-  .bus-station-card {
-    padding: 16px 18px;
-    gap: 12px;
+  .bus-board-header {
+    padding: 16px 20px 14px;
+  }
+
+  .bus-board-clock {
+    padding: 8px 14px;
+  }
+
+  .bus-board-row {
+    padding: 12px 20px;
+    gap: 16px;
+  }
+
+  .bus-board-line-traffic {
+    padding: 10px 20px 12px;
+  }
+
+  .bus-board-footer {
+    padding: 12px 20px 16px;
   }
 
   .time-chip {
@@ -1294,8 +1381,36 @@ body {
     padding-right: 0;
   }
 
-  .bus-station-card {
-    padding: 14px 16px;
+  .bus-board-header {
+    padding: 14px 18px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .bus-board-clock {
+    width: 100%;
+    align-items: center;
+  }
+
+  .bus-board-row {
+    padding: 10px 18px;
+    gap: 12px;
+    grid-template-columns: minmax(56px, auto) minmax(0, 1fr) minmax(0, 0.85fr);
+  }
+
+  .bus-board-line-traffic {
+    padding: 10px 18px;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bus-board-times {
+    justify-content: flex-start;
+  }
+
+  .bus-board-footer {
+    padding: 10px 18px 14px;
   }
 
   .time-chip {

@@ -203,6 +203,22 @@ function trimStatusList(tags = []) {
   return tags;
 }
 
+function mergeStatusTags(...groups) {
+  const seen = new Set();
+  const merged = [];
+
+  groups.forEach(group => {
+    (group || []).forEach(tag => {
+      if (!tag || !tag.type) return;
+      if (seen.has(tag.type)) return;
+      seen.add(tag.type);
+      merged.push(tag);
+    });
+  });
+
+  return merged;
+}
+
 function getStationStatusClass(tags = []) {
   if (!tags?.length) return "ok";
   if (tags.some(tag => tag.type === "unknown")) return "unknown";
@@ -231,10 +247,15 @@ function renderEmpty(container, message) {
 }
 
 function setClock() {
-  const el = document.getElementById("clock");
-  if (!el) return;
   const now = new Date();
-  el.textContent = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const label = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const el = document.getElementById("clock");
+  if (el) {
+    el.textContent = label;
+  }
+  document.querySelectorAll(".board-clock").forEach(node => {
+    node.textContent = label;
+  });
 }
 
 function setLastUpdate() {
@@ -835,6 +856,61 @@ function deriveStationSummary(stop, statuses, trafficMap) {
   return { text, className };
 }
 
+function formatAlertList(items) {
+  const list = Array.from(items || []);
+  if (!list.length) return "";
+  const max = 3;
+  const display = list.slice(0, max).join(" · ");
+  return list.length > max ? `${display}…` : display;
+}
+
+function collectStationAlerts(stop) {
+  if (!stop) return [];
+
+  const ended = new Set();
+  const delays = new Set();
+  const unknown = new Set();
+
+  (stop.lines || []).forEach(line => {
+    const metaId = line.lineId || line.lineRef;
+    const meta =
+      (line.lineId && lineMetaCache.get(line.lineId)) || fallbackLineMeta(metaId);
+    const lineLabel = meta?.code || meta?.id || metaId || "Ligne";
+
+    (line.destinations || []).forEach(dest => {
+      const destination = dest.display || dest.fullDestination || "Destination";
+      const label = `${lineLabel} → ${destination}`;
+      const statuses = trimStatusList(dest.statusSummary);
+
+      statuses.forEach(tag => {
+        if (tag.type === "cancelled" || tag.type === "ended") {
+          ended.add(label);
+        } else if (tag.type === "delay") {
+          delays.add(label);
+        } else if (tag.type === "unknown") {
+          unknown.add(label);
+        }
+      });
+    });
+  });
+
+  const messages = [];
+  const endedText = formatAlertList(ended);
+  if (endedText) {
+    messages.push(`Non desservis : ${endedText}`);
+  }
+  const delaysText = formatAlertList(delays);
+  if (delaysText) {
+    messages.push(`Retards : ${delaysText}`);
+  }
+  const unknownText = formatAlertList(unknown);
+  if (unknownText) {
+    messages.push(`Temps réel partiel : ${unknownText}`);
+  }
+
+  return messages;
+}
+
 function buildBusSummary(processedStops, trafficMap) {
   if (!processedStops.length) {
     return { text: "Données bus indisponibles pour le moment.", className: "unknown" };
@@ -963,6 +1039,9 @@ async function renderBusBoard(visits, trafficMap = {}) {
     summaryEl.className = `block-sub bus-summary ${summaryInfo.className}`;
   }
 
+  const currentClock = document.getElementById("clock")?.textContent || "--:--";
+  const lastUpdateText = document.getElementById("lastUpdate")?.textContent || "";
+
   processedStops.forEach(({ stop, statuses }) => {
     const card = document.createElement("article");
     card.className = "bus-station-card";
@@ -970,135 +1049,196 @@ async function renderBusBoard(visits, trafficMap = {}) {
     card.setAttribute("aria-label", `Station ${stop.name || "bus"}`);
 
     const header = document.createElement("div");
-    header.className = "bus-station-header";
+    header.className = "bus-board-header";
 
     const heading = document.createElement("div");
-    heading.className = "bus-station-heading";
+    heading.className = "bus-board-heading";
 
     const title = document.createElement("h3");
-    title.className = "bus-station-title";
+    title.className = "bus-board-title";
     title.textContent = stop.name || "Station";
     heading.appendChild(title);
 
     const stationSummary = deriveStationSummary(stop, statuses, busTrafficMap);
     const summary = document.createElement("p");
-    summary.className = `bus-station-summary ${stationSummary.className}`;
+    summary.className = `bus-board-summary ${stationSummary.className}`;
     summary.textContent = stationSummary.text;
     heading.appendChild(summary);
 
-    header.appendChild(heading);
-
     if (statuses.length) {
       const statusWrap = document.createElement("div");
-      statusWrap.className = "status-group bus-station-status";
+      statusWrap.className = "status-group bus-board-status";
       statuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
-      header.appendChild(statusWrap);
+      heading.appendChild(statusWrap);
     }
+
+    header.appendChild(heading);
+
+    const clockWrap = document.createElement("div");
+    clockWrap.className = "bus-board-clock";
+
+    const clockLabel = document.createElement("span");
+    clockLabel.className = "bus-board-clock-label";
+    clockLabel.textContent = "Temps d’attente en minutes";
+    clockWrap.appendChild(clockLabel);
+
+    const clockValue = document.createElement("span");
+    clockValue.className = "bus-board-clock-value board-clock";
+    clockValue.textContent = currentClock;
+    clockWrap.appendChild(clockValue);
+
+    header.appendChild(clockWrap);
 
     card.appendChild(header);
 
-    const linesWrap = document.createElement("div");
-    linesWrap.className = "bus-lines";
+    const table = document.createElement("div");
+    table.className = "bus-board-table";
 
     const sortedLines = stop.lines
       .slice()
       .sort((a, b) => {
         const idA = a.lineId || a.lineRef;
         const idB = b.lineId || b.lineRef;
-        const metaA = a.lineId ? lineMetaCache.get(a.lineId) || fallbackLineMeta(idA) : fallbackLineMeta(idA);
-        const metaB = b.lineId ? lineMetaCache.get(b.lineId) || fallbackLineMeta(idB) : fallbackLineMeta(idB);
-        return (metaA.code || idA || "").localeCompare(metaB.code || idB || "", "fr", { numeric: true });
+        const metaA =
+          (a.lineId && lineMetaCache.get(a.lineId)) || fallbackLineMeta(idA);
+        const metaB =
+          (b.lineId && lineMetaCache.get(b.lineId)) || fallbackLineMeta(idB);
+        return (metaA.code || idA || "").localeCompare(metaB.code || idB || "", "fr", {
+          numeric: true
+        });
       });
 
     if (!sortedLines.length) {
-      linesWrap.appendChild(makeInfoBadge("Pas de passage suivi pour le moment."));
+      const empty = document.createElement("div");
+      empty.className = "bus-board-empty";
+      empty.appendChild(makeInfoBadge("Pas de passage suivi pour le moment."));
+      table.appendChild(empty);
     }
 
     sortedLines.forEach(line => {
       const metaId = line.lineId || line.lineRef;
-      const meta = line.lineId ? lineMetaCache.get(line.lineId) || fallbackLineMeta(metaId) : fallbackLineMeta(metaId);
-      const lineCard = document.createElement("article");
-      lineCard.className = "bus-line-card";
-
-      const lineHeader = document.createElement("div");
-      lineHeader.className = "bus-line-header";
-
-      const badge = document.createElement("span");
-      badge.className = "line-pill";
-      badge.textContent = meta.code || meta.id || line.lineRef || "—";
-      badge.style.setProperty("--line-color", meta.color);
-      badge.style.setProperty("--line-text", meta.textColor);
-
-      const trafficWrap = document.createElement("div");
-      trafficWrap.className = "bus-line-traffic";
-      const trafficKey = line.lineId || line.lineRef;
-      const trafficItem = busTrafficMap[trafficKey];
-      const trafficStatus = trafficItem?.status || "unknown";
-      const trafficText = document.createElement("span");
-      trafficText.className = `line-alert-text ${trafficStatus}`;
-      trafficText.textContent =
-        trafficItem?.message ||
-        (trafficStatus === "alert"
-          ? `Perturbations sur ${trafficItem?.label || badge.textContent}.`
-          : trafficStatus === "ok"
-          ? "Trafic normal"
-          : "Information trafic indisponible");
-      trafficWrap.appendChild(trafficText);
-
-      lineHeader.appendChild(badge);
-      lineHeader.appendChild(trafficWrap);
-      lineCard.appendChild(lineHeader);
-
+      const meta =
+        (line.lineId && lineMetaCache.get(line.lineId)) || fallbackLineMeta(metaId);
       const lineStatuses = trimStatusList(line.statusSummary);
-      if (lineStatuses.length) {
-        const statusWrap = document.createElement("div");
-        statusWrap.className = "status-group";
-        lineStatuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
-        lineCard.appendChild(statusWrap);
-      }
+      const destinations = Array.isArray(line.destinations) ? line.destinations : [];
 
-      const destinationsWrap = document.createElement("div");
-      destinationsWrap.className = "bus-destinations";
-
-      line.destinations.forEach(dest => {
+      destinations.forEach((dest, destIndex) => {
         const row = document.createElement("div");
-        row.className = "bus-destination-row";
+        row.className = "bus-board-row";
 
-        const info = document.createElement("div");
-        info.className = "bus-destination-info";
+        const lineCell = document.createElement("div");
+        lineCell.className = "bus-board-line";
+        const badge = document.createElement("span");
+        badge.className = "line-pill";
+        badge.textContent = meta.code || meta.id || line.lineRef || "—";
+        badge.style.setProperty("--line-color", meta.color);
+        badge.style.setProperty("--line-text", meta.textColor);
+        lineCell.appendChild(badge);
+        row.appendChild(lineCell);
 
-        const destName = document.createElement("span");
+        const destCell = document.createElement("div");
+        destCell.className = "bus-board-destination";
+
+        const destName = document.createElement("div");
         destName.className = "destination-name";
         destName.textContent = dest.display || dest.fullDestination || "Destination à préciser";
-        info.appendChild(destName);
+        destCell.appendChild(destName);
 
-        const destStatuses = trimStatusList(dest.statusSummary);
-        if (destStatuses.length) {
-          const statusGroup = document.createElement("div");
-          statusGroup.className = "status-group";
-          destStatuses.forEach(tag => statusGroup.appendChild(createStatusChip(tag)));
-          info.appendChild(statusGroup);
+        if (dest.fullDestination && dest.fullDestination !== dest.display) {
+          const alt = document.createElement("div");
+          alt.className = "destination-alt";
+          alt.textContent = dest.fullDestination;
+          destCell.appendChild(alt);
+        } else if (dest.direction) {
+          const dir = document.createElement("div");
+          dir.className = "destination-alt";
+          dir.textContent = dest.direction;
+          destCell.appendChild(dir);
         }
 
-        row.appendChild(info);
+        const destStatuses = mergeStatusTags(
+          destIndex === 0 ? lineStatuses : [],
+          trimStatusList(dest.statusSummary)
+        );
+        if (destStatuses.length) {
+          const statusWrap = document.createElement("div");
+          statusWrap.className = "status-group destination-status";
+          destStatuses.forEach(tag => statusWrap.appendChild(createStatusChip(tag)));
+          destCell.appendChild(statusWrap);
+        }
+
+        row.appendChild(destCell);
 
         const times = document.createElement("div");
-        times.className = "bus-times";
+        times.className = "bus-board-times";
         if (dest.departures.length) {
           dest.departures.forEach(dep => times.appendChild(createDepartureChip(dep)));
         } else {
           times.appendChild(makeInfoBadge("--"));
         }
-
         row.appendChild(times);
-        destinationsWrap.appendChild(row);
+
+        table.appendChild(row);
       });
 
-      lineCard.appendChild(destinationsWrap);
-      linesWrap.appendChild(lineCard);
+      const trafficKey =
+        line.lineId ||
+        (line.lineRef && line.lineRef.match(/C\d{5}/)?.[0]) ||
+        line.lineRef;
+      const trafficItem = busTrafficMap[trafficKey];
+      const trafficStatus = trafficItem?.status || "unknown";
+      const trafficMessage =
+        trafficItem?.message ||
+        (trafficStatus === "alert"
+          ? `Perturbations sur ${trafficItem?.label || meta.code || meta.id}.`
+          : trafficStatus === "ok"
+          ? "Trafic normal"
+          : "Information trafic indisponible");
+
+      const trafficRow = document.createElement("div");
+      trafficRow.className = `bus-board-line-traffic ${trafficStatus}`;
+
+      const label = document.createElement("span");
+      label.className = "traffic-label";
+      label.textContent = `Ligne ${meta.code || meta.id || trafficKey}`;
+      trafficRow.appendChild(label);
+
+      const text = document.createElement("span");
+      text.className = "traffic-text";
+      text.textContent = trafficMessage;
+      trafficRow.appendChild(text);
+
+      table.appendChild(trafficRow);
     });
 
-    card.appendChild(linesWrap);
+    card.appendChild(table);
+
+    const footer = document.createElement("div");
+    footer.className = "bus-board-footer";
+
+    const footerMessages = collectStationAlerts(stop);
+    if (footerMessages.length) {
+      footerMessages.forEach(text => {
+        const p = document.createElement("p");
+        p.className = "bus-board-footer-message";
+        p.textContent = text;
+        footer.appendChild(p);
+      });
+    } else {
+      const p = document.createElement("p");
+      p.className = "bus-board-footer-message";
+      p.textContent = "Tous les services annoncés.";
+      footer.appendChild(p);
+    }
+
+    if (lastUpdateText) {
+      const update = document.createElement("p");
+      update.className = "bus-board-footer-update";
+      update.textContent = lastUpdateText;
+      footer.appendChild(update);
+    }
+
+    card.appendChild(footer);
     container.appendChild(card);
   });
 }
