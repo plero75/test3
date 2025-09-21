@@ -1,3 +1,58 @@
+@media (orientation: portrait) {
+  /* Grid principal empilé en colonne unique */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important; /* Colonne unique */
+    grid-template-areas:
+      "rer"
+      "news"
+      "bus"
+      "courses"
+      "road"
+      "velib";
+    gap: 16px !important;
+    padding: 16px 20px !important;
+  }
+
+  /* Colonnes RER empilées verticalement */
+  .rer-body {
+    grid-template-columns: 1fr !important; /* Une seule colonne */
+  }
+
+  /* Stations de bus en grille simple colonne */
+  .bus-stations {
+    grid-template-columns: 1fr !important; /* Colonne unique */
+    gap: 16px !important;
+  }
+  
+  /* Ajustement général des blocs */
+  .block {
+    border-radius: 18px;
+    padding: 16px !important;
+  }
+
+  /* Réduction des marges/paddings pour petits écrans */
+  body {
+    padding: 0 8px;
+  }
+
+  /* Taille des polices adaptées */
+  h2, h3 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Ajuster les chips temps dans les listes */
+  .time-chip {
+    min-width: 56px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Adapter les tableaux horaires pour éviter débordement */
+  .bus-board-row {
+    grid-template-columns: minmax(56px, auto) minmax(0, 1fr) minmax(0, 0.75fr) !important;
+  }
+}
+
+
 :root {
   --bg: radial-gradient(circle at 15% 15%, #0f2042 0%, #06132b 32%, #030b1c 100%);
   --panel: #0a1f45;
