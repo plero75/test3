@@ -1,120 +1,88 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Affichage dynamique – Hippodrome Paris-Vincennes</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris-Vincennes">
-      <header class="app-header">
-        <div class="branding">
-          <p class="brand-title">Hippodrome Paris-Vincennes</p>
-          <p class="brand-sub">Tableau d'information voyageurs</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Hippodrome Paris-Vincennes</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="branding">
+        <h1>Hippodrome Paris-Vincennes</h1>
+        <p>Tableau d’information voyageurs</p>
+      </div>
+      <div id="clock">--:--</div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Bloc RER A -->
+      <div class="block rer">
+        <div class="block-header">
+          <h2>RER A</h2>
+          <span id="rer-status">Trafic normal</span>
         </div>
-        <div class="weather-widget" aria-live="polite">
-          <div id="weather-icon" class="weather-icon weather-unknown" aria-hidden="true">
-            <div class="weather-shape"></div>
-          </div>
-          <div class="weather-data">
-            <span id="weather-temp" class="weather-temp">--°</span>
-            <div class="weather-details">
-              <span id="weather-desc" class="weather-desc">Chargement...</span>
-              <span id="weather-extra" class="weather-extra"></span>
+        <div class="block-body rer-body" id="rer-body">
+          <!-- Colonnes “1er départ” remplies par app.js -->
+        </div>
+      </div>
+
+      <!-- Bloc Bus -->
+      <div class="block bus">
+        <div class="block-header">
+          <h2>Bus</h2>
+          <span id="bus-summary">3 stations suivies</span>
+        </div>
+        <div class="block-body bus-blocks" id="bus-blocks">
+          <!-- Sections “bus-block” générées par app.js -->
+        </div>
+      </div>
+
+      <!-- Bloc Info Rapide -->
+      <div class="block info">
+        <div class="block-header">
+          <h2>Info Rapide</h2>
+        </div>
+        <div class="block-body info-body">
+          <!-- Météo -->
+          <div class="weather-widget" id="weather-widget">
+            <div id="weather-icon" class="weather-icon"></div>
+            <div>
+              <div id="weather-temp">--°</div>
+              <div id="weather-desc">Météo indisponible</div>
             </div>
+          </div>
+
+          <!-- Vélib' -->
+          <div class="velib-card" id="velib-card">
+            <h3>Vélib'</h3>
+            <div id="velib-vincennes">🚲 -- méca  🔌 -- élec  🅿️ -- bornes</div>
+            <div id="velib-breuil">🚲 -- méca  🔌 -- élec  🅿️ -- bornes</div>
+          </div>
+
+          <!-- Actualités -->
+          <div class="news-item" id="news-item">
+            <h3>Actualités</h3>
+            <div id="news-content">Chargement...</div>
+          </div>
+
+          <!-- Courses hippiques -->
+          <div class="courses-list" id="courses-list">
+            <h3>Courses à Vincennes</h3>
+            <!-- Lignes de course générées par app.js -->
+          </div>
+
+          <!-- Trafic routier -->
+          <div class="road-list" id="road-list">
+            <h3>Info trafic Sytadin</h3>
+            <!-- Cartes trafic générées par app.js -->
           </div>
         </div>
-        <div class="header-right">
-          <div id="lastUpdate" class="last-update" aria-live="polite">Maj --:--</div>
-          <div id="clock" class="clock" aria-live="off">--:--</div>
-        </div>
-      </header>
-
-      <main class="dashboard-grid">
-        <section class="block block-rer" aria-labelledby="rer-title">
-          <div class="block-header block-header--stacked">
-            <div class="block-heading">
-              <h2 id="rer-title">RER A</h2>
-              <p id="rer-station-info" class="block-sub station-status">Station Joinville-le-Pont · chargement...</p>
-            </div>
-            <div id="traffic-rer-line" class="line-alert" aria-live="polite"></div>
-          </div>
-          <div class="block-body rer-body">
-            <div class="rer-column">
-              <h3>Vers Paris</h3>
-              <div id="rer-paris" class="rer-list" role="list"></div>
-            </div>
-            <div class="rer-column">
-              <h3>Vers Boissy / Marne-la-Vallée</h3>
-              <div id="rer-boissy" class="rer-list" role="list"></div>
-            </div>
-            <div class="rer-column">
-              <h3>Autres destinations</h3>
-              <div id="rer-other" class="rer-list" role="list"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="block block-bus" aria-labelledby="bus-title">
-          <div class="block-header block-header--stacked">
-            <div class="block-heading">
-              <h2 id="bus-title">Bus</h2>
-              <p id="bus-summary" class="block-sub bus-summary">Chargement...</p>
-            </div>
-            <div id="bus-traffic" class="bus-traffic" aria-live="polite"></div>
-          </div>
-          <div class="block-body bus-body">
-            <div id="bus-stations" class="bus-stations" role="list"></div>
-          </div>
-        </section>
-
-        <section class="block block-courses" aria-labelledby="courses-title">
-          <div class="block-header block-header--stacked">
-            <div class="block-heading">
-              <h2 id="courses-title">Courses à Vincennes</h2>
-              <p id="courses-date" class="block-sub">Chargement...</p>
-            </div>
-            <div id="courses-countdown" class="countdown-chip" aria-live="polite">--</div>
-          </div>
-          <div id="courses-list" class="block-body courses-list" role="list"></div>
-        </section>
-
-        <section class="block block-road" aria-labelledby="road-title">
-          <div class="block-header block-header--stacked">
-            <div class="block-heading">
-              <h2 id="road-title">Info trafic Sytadin</h2>
-              <p id="sytadin-update" class="block-sub">Chargement...</p>
-            </div>
-          </div>
-          <div id="sytadin-content" class="block-body road-body">
-            <div id="sytadin-list" class="road-list" role="list"></div>
-          </div>
-        </section>
-
-        <section class="block block-news" aria-labelledby="news-title">
-          <div class="block-header">
-            <h2 id="news-title">Actualités</h2>
-            <span id="news-counter" class="news-counter" aria-live="polite">0/0</span>
-          </div>
-          <div class="block-body news-body">
-            <div id="news-content" class="news-content" aria-live="polite"></div>
-          </div>
-        </section>
-
-        <section class="block block-velib" aria-labelledby="velib-title">
-          <div class="block-header">
-            <h2 id="velib-title">Vélib'</h2>
-          </div>
-          <div class="block-body velib-body">
-            <div id="velib-vincennes" class="velib-card"></div>
-            <div id="velib-breuil" class="velib-card"></div>
-            <div id="velib-update" class="velib-update"></div>
-          </div>
-        </section>
-      </main>
+      </div>
     </div>
+  </div>
 
-    <script src="app.js"></script>
-  </body>
+  <script type="module" src="app.js"></script>
+</body>
 </html>
