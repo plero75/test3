@@ -1,3 +1,115 @@
+
+@media (orientation: portrait) {
+  /* Container principal : hauteur fixe 100vh */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 0.25fr) minmax(0, 0.45fr) minmax(0, 0.3fr) !important;
+    grid-template-areas:
+      "rer"
+      "bus" 
+      "info" !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  /* Fusionner météo + actualités + courses dans un bloc "info" */
+  .block-news,
+  .block-courses,
+  .block-road,
+  .block-velib {
+    grid-area: info !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* RER : version compacte */
+  .rer-body {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  
+  .rer-column:nth-child(3) {
+    display: none !important; /* Masquer 3e colonne */
+  }
+
+  /* Bus : limiter à 2 stations max */
+  .bus-stations {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .bus-station-card:nth-child(n+3) {
+    display: none !important; /* Masquer stations 3+ */
+  }
+
+  /* Réduire hauteurs et paddings */
+  .block {
+    border-radius: 12px !important;
+    min-height: 0 !important;
+  }
+
+  .block-header {
+    padding: 8px 12px !important;
+  }
+
+  .block-body {
+    padding: 8px 12px !important;
+  }
+
+  /* Textes plus compacts */
+  .block-header h2 {
+    font-size: 0.9rem !important;
+  }
+
+  .bus-board-title {
+    font-size: 1rem !important;
+  }
+
+  /* Lignes bus : format très compact */
+  .bus-board-row {
+    padding: 6px 12px !important;
+    grid-template-columns: 50px 1fr 80px !important;
+  }
+
+  /* Chips temps plus petits */
+  .time-chip {
+    min-width: 40px !important;
+    padding: 4px 8px !important;
+  }
+
+  .time-chip-main {
+    font-size: 0.8rem !important;
+  }
+
+  .time-chip-sub {
+    font-size: 0.6rem !important;
+  }
+
+  /* Limiter listes à 3-4 éléments max */
+  .rer-row:nth-child(n+4) {
+    display: none !important;
+  }
+
+  .course-row:nth-child(n+4) {
+    display: none !important;
+  }
+
+  /* Météo compacte */
+  .weather-widget {
+    min-width: auto !important;
+    padding: 8px 12px !important;
+  }
+
+  .weather-icon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+
 :root {
   --bg: radial-gradient(circle at 15% 15%, #0f2042 0%, #06132b 32%, #030b1c 100%);
   --panel: #0a1f45;
