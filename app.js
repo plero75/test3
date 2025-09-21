@@ -1,3 +1,39 @@
+// Limiter le nombre d'éléments affichés en mode portrait
+function isPortraitMode() {
+  return window.matchMedia("(orientation: portrait)").matches;
+}
+
+// Modifier les fonctions de rendu existantes
+function renderRerDirection(container, groups, emptyMessage = "Aucune donnée en temps réel.") {
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!groups?.length) {
+    container.appendChild(makeInfoBadge(emptyMessage));
+    return;
+  }
+
+  // Limiter à 3 éléments en portrait
+  const maxItems = isPortraitMode() ? 3 : 4;
+  groups.slice(0, maxItems).forEach(group => {
+    // ... reste du code existant
+  });
+}
+
+// Pareil pour les courses
+function renderCourses(courses) {
+  const container = document.getElementById("courses-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  coursesState = Array.isArray(courses) ? [...courses] : [];
+  
+  // Limiter à 3 courses en portrait
+  const maxCourses = isPortraitMode() ? 3 : 6;
+  const displayCourses = coursesState.slice(0, maxCourses);
+  
+  // ... reste du code
+}
 // Tableau d'affichage – Hippodrome Paris-Vincennes
 
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
