@@ -394,6 +394,7 @@ function startLoops(){
   setInterval(refreshCourses, 5 * 60 * 1000);
   setInterval(refreshNews, 15 * 60 * 1000);
   setInterval(nextNews, 12 * 1000);
+  setInterval(refreshEventsCirculation, 5 * 60 * 1000);
 
   setInterval(refreshHoroscopeCycle, 5 * 1000);
   setInterval(fetchGeneralMessages, 5 * 60 * 1000);
@@ -402,6 +403,10 @@ function startLoops(){
 }
 
 // === Init ===
+
+// dans startLoops
+setInterval(refreshEventsCirculation, 5 * 60 * 1000);
+
 (async function init(){
   setClock();
 
@@ -409,7 +414,7 @@ function startLoops(){
     renderRer(),
     renderBusByStop(),
     computeBestRouteJoinville(),
-
+    refreshEventsCirculation(),
     refreshVelib(),
     refreshWeather(),
     refreshCourses(),
