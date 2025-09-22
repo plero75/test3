@@ -2,95 +2,91 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Vincennes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Transports – Hippodrome de Vincennes</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <div class="logo-zone">
-      <img src="idfm.png" alt="Île-de-France Mobilités" class="logo">
-      <h1>📍 Dashboard Hippodrome de Vincennes</h1>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/IDFM_logo.svg" alt="IDFM" />
+      <span>Dashboard Transports – Hippodrome de Vincennes</span>
     </div>
-    <div id="clock"></div>
+    <div id="lastUpdate" class="last-update">Maj --:--</div>
   </header>
 
-  <main>
-    <!-- 🚉 RER -->
-    <section id="rer-block">
-      <h2>🚉 RER A – Joinville-le-Pont</h2>
-      <div id="rer-body" class="lines"></div>
-      <div id="rer-traffic" class="traffic-info">Chargement…</div>
+  <!-- ALERT BANNER -->
+  <div id="traffic-banner" class="traffic-banner ok">
+    ✅ Trafic normal sur les lignes suivies
+  </div>
+
+  <!-- GRID MAIN -->
+  <main class="grid">
+    <!-- Bloc RER A -->
+    <section class="card rer" id="rer-block">
+      <h2>🚇 RER A – Joinville-le-Pont</h2>
+      <div id="rer-body" class="card-body"></div>
+      <div class="footer-note" id="rer-info">Nation → Vincennes → Joinville</div>
     </section>
 
-    <!-- 🚌 Bus Joinville -->
-    <section id="bus-joinville">
+    <!-- Bloc Bus 77 -->
+    <section class="card bus77" id="bus77-block">
+      <h2>🚌 Bus 77 – Hippodrome</h2>
+      <div id="bus77-body" class="card-body"></div>
+    </section>
+
+    <!-- Bloc Bus 201 -->
+    <section class="card bus201" id="bus201-block">
+      <h2>🚌 Bus 201 – École du Breuil</h2>
+      <div id="bus201-body" class="card-body"></div>
+    </section>
+
+    <!-- Bloc Joinville Bus -->
+    <section class="card joinville" id="bus-joinville-block">
       <h2>🚌 Bus – Joinville-le-Pont</h2>
-      <div id="bus-joinville-body" class="lines"></div>
-      <div id="bus-joinville-traffic" class="traffic-info">Chargement…</div>
+      <div id="bus-joinville-body" class="card-body"></div>
     </section>
 
-    <!-- 🚌 Bus Hippodrome -->
-    <section id="bus-hippodrome">
-      <h2>🚌 Bus – Hippodrome de Vincennes</h2>
-      <div id="bus-hippodrome-body" class="lines"></div>
-      <div id="bus-hippodrome-traffic" class="traffic-info">Chargement…</div>
+    <!-- Bloc Vélib -->
+    <section class="card velib">
+      <h2>🚲 Vélib’</h2>
+      <div id="velib-vincennes">Vincennes : --</div>
+      <div id="velib-breuil">École du Breuil : --</div>
     </section>
 
-    <!-- 🚌 Bus Breuil -->
-    <section id="bus-breuil">
-      <h2>🚌 Bus – École du Breuil</h2>
-      <div id="bus-breuil-body" class="lines"></div>
-      <div id="bus-breuil-traffic" class="traffic-info">Chargement…</div>
-    </section>
-
-    <!-- 🚲 Vélib -->
-    <section id="velib">
-      <h2>🚲 Stations Vélib’</h2>
-      <div class="velib-station">Vincennes : <span id="velib-vincennes"></span></div>
-      <div class="velib-station">École du Breuil : <span id="velib-breuil"></span></div>
-    </section>
-
-    <!-- 🌤️ Météo -->
-    <section id="weather">
+    <!-- Bloc météo -->
+    <section class="card meteo">
       <h2>🌤️ Météo locale</h2>
-      <div id="weather-emoji"></div>
-      <div id="weather-temp"></div>
-      <div id="weather-desc"></div>
+      <div class="weather">
+        <span id="weather-emoji">☀️</span>
+        <span id="weather-temp">--°C</span>
+      </div>
+      <div id="weather-desc">--</div>
     </section>
 
-    <!-- 📰 Actus -->
-    <section id="news">
-      <h2>📰 Actus</h2>
-      <div id="news-carousel"></div>
+    <!-- Bloc trafic routier -->
+    <section class="card road">
+      <h2>🚗 Trafic routier</h2>
+      <div id="road-list">Chargement...</div>
     </section>
 
-    <!-- 🚦 Trafic routier -->
-    <section id="road">
-      <h2>🚦 Trafic routier</h2>
-      <div id="road-list"></div>
+    <!-- Bloc événements circulation -->
+    <section class="card events">
+      <h2>🚧 Événements circulation</h2>
+      <div id="events-list">Chargement...</div>
     </section>
 
-    <!-- ⚠️ Événements circulation -->
-    <section id="events">
-      <h2>⚠️ Événements circulation</h2>
-      <div id="events-list"></div>
-    </section>
-
-    <!-- 🏇 Courses -->
-    <section id="courses">
-      <h2>🏇 Courses Vincennes</h2>
-      <div id="courses-list"></div>
-    </section>
-
-    <!-- 🎯 Meilleur parcours -->
-    <section id="best-route">
-      <h2>🎯 Meilleur parcours vers Joinville RER</h2>
+    <!-- Bloc meilleur itinéraire -->
+    <section class="card best-route">
+      <h2>⭐ Meilleur parcours → Joinville RER</h2>
+      <div id="best-route">Calcul en cours...</div>
     </section>
   </main>
 
-  <footer>
-    <div id="ticker-slot">Chargement…</div>
-    <div id="lastUpdate"></div>
+  <!-- FOOTER -->
+  <footer class="footer">
+    Mentions légales – Données open data Île-de-France Mobilités, Paris Open Data, PMU
   </footer>
 
   <script src="app.js"></script>
