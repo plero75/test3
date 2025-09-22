@@ -85,19 +85,28 @@ async function renderRer(){
 // === BUS par arrêt ===
 async function renderBusForStop(stopId, bodyId, trafficId) {
   const cont = document.getElementById(bodyId);
+  const tEl  = document.getElementById(trafficId);
   if (!cont) return;
-  cont.innerHTML = "";
 
-  const data = await fetchJSON(PROXY + encodeURIComponent(
-    `https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stopId}`
-  ));
+  cont.innerHTML = "Chargement…";
+  if (tEl) { tEl.style.display = "none"; tEl.className = "traffic-sub ok"; tEl.textContent = ""; }
+
+  const data = await fetchJSON(
+    PROXY + encodeURIComponent(
+      `https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stopId}`
+    ),
+    12000
+  );
+
   const visits = parseStop(data);
+  cont.innerHTML = "";
 
   if (!visits.length) {
     cont.innerHTML = `<div class="traffic-sub alert">🚧 Aucun passage prévu</div>`;
     return;
   }
 
+  // Regrouper par ligne puis par destination
   const byLine = {};
   visits.forEach(v => {
     if (!byLine[v.lineId]) byLine[v.lineId] = [];
@@ -105,18 +114,27 @@ async function renderBusForStop(stopId, bodyId, trafficId) {
   });
 
   for (const [lineId, rows] of Object.entries(byLine)) {
-    const lineHeader = document.createElement("div");
-    lineHeader.className = "bus-line-header";
-    lineHeader.innerHTML = `<span class="line-pill">${lineId||"??"}</span>`;
-    cont.appendChild(lineHeader);
+    // Métadonnées de ligne (couleur, code) si tu as la fonction; sinon fallback
+    let meta = { code: lineId || "?", color: "#2450a4", textColor: "#fff" };
+    if (typeof fetchLineMetadata === "function") {
+      try { meta = await fetchLineMetadata(lineId); } catch {}
+    }
 
+    // En-tête de ligne
+    const header = document.createElement("div");
+    header.className = "bus-line-header";
+    header.innerHTML = `<span class="line-pill" style="background:${meta.color};color:${meta.textColor}">${meta.code}</span>`;
+    cont.appendChild(header);
+
+    // Regroupement par destination
     const byDest = {};
     rows.forEach(r => {
-      if (!byDest[r.dest]) byDest[r.dest] = [];
-      byDest[r.dest].push(r);
+      const key = r.dest || "—";
+      if (!byDest[key]) byDest[key] = [];
+      byDest[key].push(r);
     });
 
-    for (const [dest, destRows] of Object.entries(byDest)) {
+    for (const [dest, list] of Object.entries(byDest)) {
       const row = document.createElement("div");
       row.className = "row";
 
@@ -127,33 +145,30 @@ async function renderBusForStop(stopId, bodyId, trafficId) {
 
       const timesEl = document.createElement("div");
       timesEl.className = "times";
-      destRows.slice(0, 4).forEach(r => {
-        const timeBox = document.createElement("div");
-        timeBox.className = "time-box";
-        if (r.status === "cancelled") {
-          timeBox.classList.add("time-cancelled");
-          timeBox.textContent = "❌";
-        } else if (r.status === "delayed") {
-          timeBox.classList.add("time-delay");
-          timeBox.textContent = r.minutes != null ? `${r.minutes} min` : "--";
-        } else {
-          timeBox.textContent = r.minutes != null ? `${r.minutes} min` : "--";
-        }
-        timesEl.appendChild(timeBox);
-      });
+
+      list
+        .sort((a,b)=>(a.minutes??9e9)-(b.minutes??9e9))
+        .slice(0,4)
+        .forEach(it => {
+          const box = document.createElement("div");
+          box.className = "time-box";
+          box.textContent = it?.minutes!=null ? `${it.minutes} min` : "--";
+          timesEl.appendChild(box);
+        });
+
       row.appendChild(timesEl);
       cont.appendChild(row);
     }
   }
 
-  if (trafficId) {
-    const tEl = document.getElementById(trafficId);
-    if (tEl) {
-      tEl.textContent = "Trafic normal";
-      tEl.className = "traffic-sub ok";
-    }
+  // (Optionnel) message trafic par arrêt — ici “normal” si rien d’IDFM GeneralMessage mappé
+  if (tEl) {
+    tEl.textContent = "Trafic normal";
+    tEl.className = "traffic-sub ok";
+    tEl.style.display = "inline-block";
   }
 }
+
 
 // === Trajet optimal ===
 async function computeBestRouteJoinville(){
@@ -190,23 +205,25 @@ async function computeBestRouteJoinville(){
 function startLoops(){
   setInterval(setClock,1000);
   setInterval(renderRer,60000);
-  setInterval(()=>renderBusForStop(STOP_IDS.JOINVILLE,"bus-joinville-body","bus-joinville-traffic"),60000);
-  setInterval(()=>renderBusForStop(STOP_IDS.HIPPODROME,"bus-hippodrome-body","bus-hippodrome-traffic"),60000);
-  setInterval(()=>renderBusForStop(STOP_IDS.BREUIL,"bus-breuil-body","bus-breuil-traffic"),60000);
+setInterval(() => renderBusForStop(STOP_IDS.JOINVILLE,  "bus-joinville-body",  "bus-joinville-traffic"), 60000);
+setInterval(() => renderBusForStop(STOP_IDS.HIPPODROME, "bus-hippodrome-body", "bus-hippodrome-traffic"), 60000);
+setInterval(() => renderBusForStop(STOP_IDS.BREUIL,     "bus-breuil-body",     "bus-breuil-traffic"),    60000);
+
   setInterval(computeBestRouteJoinville,120000);
 }
 
 // === Init ===
 (async function init(){
   setClock();
-  await Promise.allSettled([
-    renderRer(),
-    renderBusForStop(STOP_IDS.JOINVILLE,"bus-joinville-body","bus-joinville-traffic"),
-    renderBusForStop(STOP_IDS.HIPPODROME,"bus-hippodrome-body","bus-hippodrome-traffic"),
-    renderBusForStop(STOP_IDS.BREUIL,"bus-breuil-body","bus-breuil-traffic"),
-    computeBestRouteJoinville()
+await Promise.allSettled([
+  renderRer(),
+  renderBusForStop(STOP_IDS.JOINVILLE,  "bus-joinville-body",  "bus-joinville-traffic"),
+  renderBusForStop(STOP_IDS.HIPPODROME, "bus-hippodrome-body", "bus-hippodrome-traffic"),
+  renderBusForStop(STOP_IDS.BREUIL,     "bus-breuil-body",     "bus-breuil-traffic"),
+     computeBestRouteJoinville()
   ]);
   updateTicker();
   setLastUpdate();
   startLoops();
 })();
+
