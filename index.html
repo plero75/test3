@@ -1,78 +1,95 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Affichage Dynamique – Hippodrome Paris-Vincennes</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tableau d'affichage – Hippodrome Paris‑Vincennes</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris-Vincennes">
-    <header>
-      <div class="brand">Dashboard Hippodrome <small>– LIVE via Proxy</small></div>
-      <div class="spacer"></div>
-      <div id="lastUpdate" class="muted" aria-live="polite"></div>
-      <div id="clock" class="clock" aria-label="Heure"></div>
-    </header>
-
-    <div class="dashboard-container">
-
-      <!-- RER A -->
-      <div class="block" id="rer-section">
-        <h3>RER A - Joinville-le-Pont</h3>
-        <div id="rer-paris"></div>
-        <div id="rer-boissy"></div>
-        <div id="traffic-rer" class="traffic-container"></div>
+  <!-- Bandeau global: heure + météo + fête + horoscope (carousel) + trafic -->
+  <header class="topbar">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" class="logo-idfm" aria-label="IDFM">
+        <rect rx="7" width="34" height="34" fill="#00A0E2"/>
+        <text x="17" y="22" text-anchor="middle" font-family="Inter, Arial" font-size="16" font-weight="700" fill="#fff">IDFM</text>
+      </svg>
+      <svg width="34" height="34" viewBox="0 0 64 64" class="logo-hippo" aria-label="Hippodrome">
+        <rect rx="10" width="64" height="64" fill="#1f2937"/>
+        <path d="M10 40 Q22 35 30 34 T54 36 L52 28 Q45 20 34 22 Q28 16 18 18 L12 26" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="20" cy="46" r="6" fill="#fff"/>
+        <circle cx="44" cy="46" r="6" fill="#fff"/>
+      </svg>
+      <div class="brand-text">
+        <div class="title">Hippodrome Paris‑Vincennes</div>
+        <div class="subtitle">Tableau d’affichage</div>
       </div>
-
-      <!-- Météo -->
-      <div class="block" id="meteo-panel">
-        <h3>Météo Locale</h3>
-        <div id="weather-temp">--</div>
-        <div id="weather-desc">Météo indisponible</div>
-        <div id="weather-extra"></div>
-      </div>
-
-      <!-- Bus Joinville -->
-      <div class="block" id="bus-joinville-list">
-        <h3>Bus Joinville-le-Pont</h3>
-        <div id="traffic-77" class="traffic-container"></div>
-        <div id="traffic-201" class="traffic-container"></div>
-      </div>
-
-      <!-- Bus Hippodrome -->
-      <div class="block" id="bus-hippodrome-list">
-        <h3>Bus Hippodrome</h3>
-      </div>
-
-      <!-- Bus École du Breuil -->
-      <div class="block" id="bus-breuil-list">
-        <h3>Bus École du Breuil</h3>
-      </div>
-
-      <!-- Vélib -->
-      <div class="block" id="velib-section">
-<div id="velib-vincennes"></div>
-<div id="velib-breuil"></div>
-<div id="velib-update" class="muted"></div>
-
-      </div>
-
-      <!-- Courses -->
-      <div class="block" id="courses-section">
-        <h3>Prochaines Courses Vincennes</h3>
-        <div id="courses-list"></div>
-      </div>
-
-      <!-- Actualités -->
-      <div class="block" id="actualites-section">
-        <h3>Actualités</h3>
-        <div id="news-content"></div>
-        <span id="news-counter">0/0</span>
-      </div>
-
     </div>
-  </div>
+    <div class="ticker">
+      <span id="ticker-slot">Chargement…</span>
+    </div>
+    <div class="now">
+      <div id="clock">--:--</div>
+      <div id="lastUpdate" class="muted">Maj --:--</div>
+    </div>
+  </header>
+  <div id="traffic-banner" class="traffic-banner ok">Vérification du trafic…</div>
+
+  <main class="grid">
+    <!-- Transports -->
+    <section class="panel">
+      <h2>🚆 RER A – Joinville‑le‑Pont</h2>
+      <div id="rer-body" class="board"></div>
+    </section>
+
+    <section class="panel">
+      <h2>🚌 Bus (autour de l’hippodrome)</h2>
+      <div id="bus-blocks" class="board"></div>
+    </section>
+
+    <section class="panel">
+      <h2>🚀 Meilleur itinéraire vers Joinville‑le‑Pont</h2>
+      <div id="best-route" class="best-route">Calcul en cours…</div>
+    </section>
+
+    <!-- Vélib + Météo -->
+    <section class="panel">
+      <h2>🚲 Vélib’</h2>
+      <div class="velib-row">
+        <div id="velib-vincennes" class="velib-card"></div>
+        <div id="velib-breuil" class="velib-card"></div>
+      </div>
+      <div class="spacer"></div>
+      <h2>🌤 Météo</h2>
+      <div class="weather-card">
+        <div id="weather-emoji" class="weather-emoji">—</div>
+        <div class="weather-info">
+          <div id="weather-temp" class="weather-temp">--°</div>
+          <div id="weather-desc" class="weather-desc muted">Météo indisponible</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Courses -->
+    <section class="panel">
+      <h2>🏇 Courses Vincennes (aujourd’hui)</h2>
+      <div id="courses-list" class="courses-board"></div>
+    </section>
+
+    <!-- Actus -->
+    <section class="panel">
+      <h2>📰 Actualités</h2>
+      <div id="news-carousel" class="news-carousel"></div>
+    </section>
+
+    <!-- Trafic routier -->
+    <section class="panel">
+      <h2>🚗 Trafic routier</h2>
+      <div id="road-list" class="road-list"></div>
+    </section>
+  </main>
+
+  <footer class="footer muted">© Hippodrome Paris‑Vincennes</footer>
   <script src="app.js"></script>
 </body>
 </html>

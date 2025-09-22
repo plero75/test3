@@ -1,191 +1,94 @@
-/* ---------- Global ---------- */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #001952; /* Bleu IDFM foncé */
-}
 
-.app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+*{box-sizing:border-box}
+:root{
+  --bg:#f3f6fb;
+  --panel:#ffffff;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --blue:#0a2f7f;
+  --idfm-red:#e2001a;
+  --time-box-bg:#000;
+  --time-box-fg:#ffcc00;
+  --ok:#10b981;
+  --warn:#f59e0b;
+  --alert:#dc2626;
+  --shadow:0 6px 18px rgba(2,6,23,.08);
+  --radius:12px;
 }
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 
-/* ---------- Header ---------- */
-header {
-  background: #001952; /* Bleu IDFM */
-  color: #ffffff;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 14px;
-  font-size: 20px;
-}
+/* Header */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--panel);box-shadow:var(--shadow);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .title{font-weight:800}
+.brand .subtitle{font-size:.9em;color:var(--muted)}
+.logo-idfm,.logo-hippo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}
+.ticker{flex:1;text-align:center;overflow:hidden;white-space:nowrap}
+#ticker-slot{display:inline-block;animation:fadeIn .5s both}
+.now{text-align:right}
+#clock{font-size:1.4em;font-weight:800}
+.muted{color:var(--muted)}
 
-.brand small {
-  font-size: 14px;
-  font-weight: normal;
-  color: #b0c4e6;
-  margin-left: 6px;
-}
+.traffic-banner{margin:8px auto;max-width:1200px;text-align:center;font-weight:700;border-radius:10px;padding:8px 12px}
+.traffic-banner.ok{background:var(--ok);color:#fff}
+.traffic-banner.alert{background:var(--alert);color:#fff}
 
-.clock {
-  background: #000;
-  color: #ffd400; /* Jaune IDFM */
-  font-size: 18px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
 
-/* ---------- Dashboard grid ---------- */
-.dashboard-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 16px;
-  padding: 16px;
-  flex: 1;
-  box-sizing: border-box;
-}
+.panel{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+.panel h2{margin:4px 0 10px 0;font-size:1.05rem}
 
-/* ---------- Blocks ---------- */
-.block {
-  background: #f8f9fb;
-  border: 2px solid #dde6f5;
-  border-radius: 6px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-}
+/* Board (IDFM-like) */
+.board .row{display:flex;align-items:center;border-bottom:1px solid #e5e7eb;padding:6px 0}
+.line-pill{min-width:38px;height:26px;border-radius:6px;color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;padding:0 6px}
+.line-pill.rer-a{background:var(--idfm-red)}
+.dest{flex:1;color:var(--blue);font-weight:700}
+.times{display:flex;gap:6px}
+.time-box{background:var(--time-box-bg);color:var(--time-box-fg);font-weight:900;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:6px;min-width:40px;text-align:center}
 
-.block h3 {
-  margin: 0 0 8px 0;
-  padding-bottom: 4px;
-  font-size: 16px;
-  font-weight: bold;
-  border-bottom: 2px solid #dde6f5;
-  color: #001952;
-}
+/* Best route */
+.best-route{background:#0f172a;color:#fff;border-radius:10px;padding:10px}
+.best-option{display:flex;gap:10px;align-items:center}
+.tag{border-radius:8px;padding:2px 8px;font-weight:800}
 
-/* ---------- Lignes style IDFM ---------- */
-.line-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #dde6f5;
-  padding: 6px;
-}
+/* Velib */
+.velib-row{display:flex;gap:12px}
+.velib-card{flex:1;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;text-align:center}
+.velib-icon{font-size:26px;line-height:1;animation:pulse 2.2s ease-in-out infinite}
+.velib-value{font-size:1.4rem;font-weight:800}
+.velib-label{font-size:.82rem;color:var(--muted)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 
-.badge {
-  font-weight: bold;
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-right: 10px;
-  color: #fff;
-  min-width: 32px;
-  text-align: center;
-}
+/* Weather */
+.weather-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.weather-emoji{font-size:36px;line-height:1}
+.weather-temp{font-size:2rem;font-weight:900}
+.weather-desc{font-size:.95rem}
 
-.badge.rer-a { background: #e51c23; }   /* Rouge RER A */
-.badge.bus-77 { background: #2E8B57; }  /* Vert Bus 77 */
-.badge.bus-201 { background: #DAA520; } /* Doré Bus 201 */
+/* Courses */
+.courses-board{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;padding-right:6px}
+.course{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#fff;border-radius:10px;padding:10px;box-shadow:var(--shadow);animation:fadeInUp .6s both}
+.badge-time{background:#0ea5e9;color:#fff;font-weight:800;border-radius:8px;padding:6px 10px;text-align:center}
+.course-name{font-weight:800}
+.course-meta{font-size:.9rem;color:var(--muted)}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.destination {
-  flex: 1;
-  font-size: 16px;
-  font-weight: bold;
-  color: #001952;
-}
+/* News */
+.news-carousel{min-height:110px}
+.news-card{background:#fff;border-radius:10px;box-shadow:var(--shadow);padding:12px;display:none}
+.news-card.active{display:block;animation:fadeIn .6s ease both}
+.news-title{font-weight:800;margin-bottom:4px}
+.news-desc{color:var(--muted)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.time-box {
-  background: #000;
-  color: #ffd400;
-  font-weight: bold;
-  font-size: 16px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-left: 8px;
-  min-width: 50px;
-  text-align: center;
-}
+/* Road */
+.road-list .road{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #eee}
+.badge{font-weight:800;border-radius:6px;padding:2px 6px}
+.badge.ok{background:#e8f8f1;color:#065f46}
+.badge.warn{background:#fff5f5;color:#7f1d1d}
 
-/* ---------- Courses Vincennes ---------- */
-.course-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #dde6f5;
-  padding: 6px;
-}
-.course-time {
-  background: #8B4513;
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
-  margin-right: 8px;
-}
-.course-info {
-  flex: 1;
-}
-.course-name {
-  font-weight: bold;
-  font-size: 14px;
-}
-.course-details {
-  font-size: 12px;
-  color: #555;
-}
-.course-prize {
-  font-size: 13px;
-  font-weight: bold;
-  color: #001952;
-}
-
-/* ---------- Vélib ---------- */
-.velib-block {
-  background: #fefefe;
-  border: 1px solid #dde6f5;
-  border-left: 6px solid #00aa55;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* ---------- News ---------- */
-.news-item {
-  margin-bottom: 10px;
-}
-.news-title {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-.news-text {
-  font-size: 13px;
-  color: #444;
-}
-
-/* ---------- Traffic Banner ---------- */
-.traffic-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #dde6f5;
-  color: #001952;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  border-top: 2px solid #001952;
-}
-.traffic-alert {
-  color: #d9534f;
-  font-weight: bold;
-}
-.traffic-ok {
-  color: #2e8b57;
-  font-weight: bold;
-}
+/* Anim */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
