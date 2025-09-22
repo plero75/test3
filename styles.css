@@ -1,97 +1,131 @@
-/* Reset & base */
-body {
-  margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f9fafb;
-  color: #222;
-}
 
-h1, h2 {
-  margin: 0 0 10px;
-  font-weight: 600;
+*{box-sizing:border-box}
+:root{
+  --bg:#f3f6fb;
+  --panel:#ffffff;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --blue:#0a2f7f;
+  --idfm-red:#e2001a;
+  --time-box-bg:#000;
+  --time-box-fg:#ffcc00;
+  --ok:#10b981;
+  --warn:#f59e0b;
+  --alert:#dc2626;
+  --shadow:0 6px 18px rgba(2,6,23,.08);
+  --radius:12px;
 }
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 
 /* Header */
-header {
-  background: #2450a4;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
-#clock, #lastUpdate {
-  font-size: 14px;
-}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--panel);box-shadow:var(--shadow);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .title{font-weight:800}
+.brand .subtitle{font-size:.9em;color:var(--muted)}
+.logo-idfm,.logo-hippo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}
+.ticker{flex:1;text-align:center;overflow:hidden;white-space:nowrap}
+#ticker-slot{display:inline-block;animation:fadeIn .5s both}
+.now{text-align:right}
+#clock{font-size:1.4em;font-weight:800}
+.muted{color:var(--muted)}
 
-/* Layout principal */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
+.traffic-banner{margin:8px auto;max-width:1200px;text-align:center;font-weight:700;border-radius:10px;padding:8px 12px}
+.traffic-banner.ok{background:var(--ok);color:#fff}
+.traffic-banner.alert{background:var(--alert);color:#fff}
 
-/* Cartes */
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
 
-.card h2 {
-  font-size: 18px;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
-}
+.panel{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+.panel h2{margin:4px 0 10px 0;font-size:1.05rem}
 
-/* Listes horaires */
-.list .row {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-.list .row:last-child {
-  border-bottom: none;
-}
+/* Board (IDFM-like) */
+.board .row{display:flex;align-items:center;border-bottom:1px solid #e5e7eb;padding:6px 0}
+.line-pill{min-width:38px;height:26px;border-radius:6px;color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;padding:0 6px}
+.line-pill.rer-a{background:var(--idfm-red)}
+.dest{flex:1;color:var(--blue);font-weight:700}
+.times{display:flex;gap:6px}
+.time-box{background:var(--time-box-bg);color:var(--time-box-fg);font-weight:900;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:6px;min-width:40px;text-align:center}
 
-/* Ligne RATP */
-.line-pill {
-  display: inline-block;
-  min-width: 32px;
+/* Best route */
+.best-route{background:#0f172a;color:#fff;border-radius:10px;padding:10px}
+.best-option{display:flex;gap:10px;align-items:center}
+.tag{border-radius:8px;padding:2px 8px;font-weight:800}
+
+/* Velib */
+.velib-row{display:flex;gap:12px}
+.velib-card{flex:1;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;text-align:center}
+.velib-icon{font-size:26px;line-height:1;animation:pulse 2.2s ease-in-out infinite}
+.velib-value{font-size:1.4rem;font-weight:800}
+.velib-label{font-size:.82rem;color:var(--muted)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+/* Weather */
+.weather-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.weather-emoji{font-size:36px;line-height:1}
+.weather-temp{font-size:2rem;font-weight:900}
+.weather-desc{font-size:.95rem}
+
+/* Courses */
+.courses-board{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;padding-right:6px}
+.course{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#fff;border-radius:10px;padding:10px;box-shadow:var(--shadow);animation:fadeInUp .6s both}
+.badge-time{background:#0ea5e9;color:#fff;font-weight:800;border-radius:8px;padding:6px 10px;text-align:center}
+.course-name{font-weight:800}
+.course-meta{font-size:.9rem;color:var(--muted)}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* News */
+.news-carousel{min-height:110px}
+.news-card{background:#fff;border-radius:10px;box-shadow:var(--shadow);padding:12px;display:none}
+.news-card.active{display:block;animation:fadeIn .6s ease both}
+.news-title{font-weight:800;margin-bottom:4px}
+.news-desc{color:var(--muted)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Road */
+.road-list .road{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #eee}
+.badge{font-weight:800;border-radius:6px;padding:2px 6px}
+.badge.ok{background:#e8f8f1;color:#065f46}
+.badge.warn{background:#fff5f5;color:#7f1d1d}
+
+/* Anim */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* Sous-bannière trafic spécifique à un arrêt */
+.traffic-sub {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
-  font-weight: bold;
-  text-align: center;
-  font-size: 14px;
-  margin-right: 8px;
 }
+.traffic-sub.ok { background:#e8f8f1; color:#065f46; }
+.traffic-sub.alert { background:#fee2e2; color:#991b1b; }
 
-/* Messages trafic */
-.traffic-msg {
-  font-size: 14px;
-  margin-top: 8px;
-  color: #d9534f;
+/* Horaires enrichis */
+.board .row .times {
+  display: flex;
+  gap: 8px;
 }
-.traffic-msg.ok {
-  color: #28a745;
+.time-scheduled {
+  text-decoration: line-through;
+  color: var(--muted);
 }
-
-/* Ticker */
-footer#ticker {
-  background: #222;
-  color: white;
-  text-align: center;
-  padding: 10px;
-  font-size: 16px;
+.time-estimated {S
+                 
+  font-weight: 800;
 }
-.fade-in {
-  animation: fadeIn 1s;
+.time-delay {
+  color: var(--warn);
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.time-cancelled {
+  color: var(--alert);
+  font-weight: 800;
+}
+.time-last {
+  background: var(--warn);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
