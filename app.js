@@ -161,31 +161,33 @@ async function renderBusForStop(stopId, bodyId, trafficId) {
       byDest[key].push(r);
     });
 
-    for (const [dest, list] of Object.entries(byDest)) {
-      const row = document.createElement("div");
-      row.className = "row";
+   for (const [dest, list] of Object.entries(byDest)) {
+  const row = document.createElement("div");
+  row.className = "row";
 
-      const destEl = document.createElement("div");
-      destEl.className = "dest";
-      destEl.textContent = dest;
-      row.appendChild(destEl);
+  // Nom de la destination
+  const destEl = document.createElement("div");
+  destEl.className = "dest";
+  destEl.textContent = dest;
+  row.appendChild(destEl);
 
-      const timesEl = document.createElement("div");
-      timesEl.className = "times";
+  // Horaires regroupés
+  const timesEl = document.createElement("div");
+  timesEl.className = "times";
 
-      list
-        .sort((a,b)=>(a.minutes??9e9)-(b.minutes??9e9))
-        .slice(0,4)
-        .forEach(it => {
-          const box = document.createElement("div");
-          box.className = "time-box";
-timesEl.innerHTML = formatTimeBox(r);
-          timesEl.appendChild(box);
-        });
+  list
+    .sort((a,b)=>(a.minutes??9e9)-(b.minutes??9e9))
+    .slice(0,4)
+    .forEach(it => {
+      const box = document.createElement("div");
+      box.innerHTML = formatTimeBox(it);
+      timesEl.appendChild(box);
+    });
 
-      row.appendChild(timesEl);
-      cont.appendChild(row);
-    }
+  row.appendChild(timesEl);
+  cont.appendChild(row);
+}
+
   }
 
   // (Optionnel) message trafic par arrêt — ici “normal” si rien d’IDFM GeneralMessage mappé
@@ -253,5 +255,6 @@ await Promise.allSettled([
   setLastUpdate();
   startLoops();
 })();
+
 
 
