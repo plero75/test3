@@ -1,481 +1,161 @@
-:root {
-  --bg: radial-gradient(circle at 15% 15%, #0f2042 0%, #06132b 32%, #030b1c 100%);
-  --panel: #0a1f45;
-  --panel-alt: #112b5e;
-  --border: rgba(90, 133, 206, 0.22);
-  --text: #f4f7ff;
-  --muted: #a6b8d9;
-  --accent: #ffd43b;
-  --chip-bg: rgba(76, 110, 178, 0.2);
-  --success: #3dd6b5;
-  --warning: #f6c65b;
-  --danger: #ff8f8f;
-  --info: #4dabff;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
+/* ----------------- Layout global ------------------ */
+body {
   margin: 0;
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  background-color: #030b1c;
-  background-image: var(--bg);
-  color: var(--text);
-  overflow: hidden;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: #f9fafc;
+  color: #111;
+  padding: 10px;
 }
 
-.app {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100vh;
-  min-height: 0;
-}
-
-.app-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(18, 45, 98, 0.96), rgba(6, 18, 42, 0.92));
-  border-bottom: 1px solid rgba(94, 138, 210, 0.28);
-}
-
-.branding h1 {
-  margin: 0;
-  font-size: clamp(1rem, 0.8rem + 0.4vw, 1.3rem);
-  font-weight: 700;
-}
-
-.branding p {
-  margin: 0;
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
-  color: var(--muted);
-}
-
-.header-right {
+header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.clock {
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: rgba(13, 27, 51, 0.85);
-  font-size: clamp(0.9rem, 0.8rem + 0.2vw, 1.1rem);
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.weather-widget {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: linear-gradient(150deg, rgba(15, 38, 84, 0.86), rgba(8, 21, 52, 0.8));
-  border: 1px solid rgba(96, 138, 212, 0.22);
-}
-
-.weather-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ffe066 0%, #ff922b 70%);
-}
-
-.weather-data {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.weather-temp {
-  font-size: clamp(1.2rem, 1rem + 0.4vw, 1.6rem);
-  font-weight: 700;
-}
-
-.weather-desc {
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
-  color: var(--muted);
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-areas:
-    "rer"
-    "bus"
-    "info";
-  grid-template-rows: auto auto 1fr;
-  gap: 4px;
-  padding: 8px;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.block {
-  background: linear-gradient(165deg, rgba(12, 31, 68, 0.94), rgba(7, 21, 47, 0.92));
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.block-header {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-  border-bottom: 1px solid rgba(116, 156, 228, 0.18);
+  margin-bottom: 10px;
 }
 
-.block-header h2 {
-  margin: 0;
-  font-size: clamp(0.9rem, 0.8rem + 0.3vw, 1.1rem);
-  font-weight: 700;
+h2 {
+  margin: 8px 0;
+  font-size: 1.2em;
 }
 
-.block-sub {
-  margin: 0;
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  color: var(--muted);
-}
-
-.block-body {
-  flex: 1;
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.rer { grid-area: rer; }
-.bus { grid-area: bus; }
-.info { grid-area: info; }
-
-.rer-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  height: 100%;
-}
-
-.rer-column {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.rer-column h3 {
-  margin: 0;
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
+h3 {
+  margin: 0 0 0.3em 0;
+  font-size: 1.1em;
   font-weight: 600;
-  color: rgba(196, 210, 240, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.rer-column:nth-child(3) {
-  display: none;
+/* ----------------- Horloge ------------------ */
+#clock {
+  font-size: 1.4em;
+  font-weight: bold;
 }
 
-.rer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
+#lastUpdate {
+  font-size: 0.9em;
+  color: #555;
 }
 
-.rer-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: linear-gradient(145deg, rgba(14, 38, 86, 0.86), rgba(9, 26, 58, 0.74));
-  border: 1px solid rgba(100, 140, 214, 0.18);
-}
-
-.rer-destination {
-  flex: 1;
-  font-weight: 600;
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
-}
-
-.rer-status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.rer-times {
-  display: flex;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-
-.first-depart {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  font-weight: 600;
-  color: var(--accent);
-  margin-right: 4px;
-}
-
+/* ----------------- Chips horaires ------------------ */
 .time-chip {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
+  min-width: 50px;
+  margin: 0 4px;
   padding: 4px 6px;
   border-radius: 8px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.28), rgba(59, 130, 246, 0.12));
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  gap: 1px;
+  background: #e9eef5;
+  font-size: 0.9em;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.time-chip-main {
-  font-size: clamp(0.8rem, 0.7rem + 0.2vw, 1rem);
-  font-weight: 700;
-  line-height: 1;
-}
+.time-chip-main { font-weight: 600; font-size: 1.2em; }
+.time-chip-sub { font-size: 0.75em; opacity: 0.8; }
+.time-chip-small { font-size: 0.7em; color: #555; margin-top: 2px; }
+.time-chip-aimed { font-size: 0.7em; text-decoration: line-through; color: #a33; margin-top: 2px; }
 
-.time-chip-sub {
-  font-size: clamp(0.6rem, 0.55rem + 0.1vw, 0.7rem);
-  font-weight: 600;
-  color: rgba(214, 222, 247, 0.85);
-}
+/* Variants */
+.time-chip--soon { background: #ffe08a; }
+.time-chip--now { background: #ff7675; color: #fff; }
+.time-chip--long { background: #dbeafe; }
+.time-chip--unknown { background: #e5e7eb; color: #555; }
 
-.time-chip-small {
-  font-size: clamp(0.55rem, 0.5rem + 0.1vw, 0.65rem);
-  color: var(--muted);
-}
-
-.time-chip--soon {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.16));
-  color: #042f2e;
-}
-
-.time-chip--now {
-  background: linear-gradient(180deg, #ffd43b 0%, #ff922b 95%);
-  color: #221605;
-}
-
-.time-chip--long {
-  background: linear-gradient(180deg, rgba(148, 163, 184, 0.25), rgba(148, 163, 184, 0.12));
-}
-
-.time-chip--unknown {
-  background: rgba(100, 116, 139, 0.2);
-  color: rgba(226, 232, 240, 0.95);
-}
-
+/* ----------------- Status chips ------------------ */
 .status-chip {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
+  margin-left: 4px;
   padding: 2px 6px;
-  border-radius: 4px;
-  font-size: clamp(0.55rem, 0.5rem + 0.1vw, 0.65rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.status-chip.status-normal {
-  background: rgba(20, 184, 166, 0.16);
-  color: var(--success);
-}
-
-.status-chip.status-delay {
-  background: rgba(245, 158, 11, 0.18);
-  color: var(--warning);
-}
-
-.status-chip.status-cancelled {
-  background: rgba(248, 113, 113, 0.18);
-  color: var(--danger);
-}
-
-.status-chip.status-first,
-.status-chip.status-last {
-  background: rgba(56, 189, 248, 0.18);
-  color: var(--info);
-}
-
-.status-chip.status-ended {
-  background: rgba(255, 150, 128, 0.2);
-  color: #ff8787;
-}
-
-.status-chip.status-unknown {
-  background: rgba(148, 163, 184, 0.18);
-  color: var(--muted);
-}
-
-.bus-blocks {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
-}
-
-.bus-block {
-  background: linear-gradient(160deg, rgba(15, 46, 120, 0.92), rgba(8, 22, 58, 0.88));
-  border: 1px solid rgba(86, 131, 210, 0.4);
-  border-radius: 10px;
-  padding: 8px 10px;
-  min-height: 0;
-}
-
-.bus-block h3 {
-  margin: 0 0 6px 0;
-  font-size: clamp(0.8rem, 0.7rem + 0.2vw, 1rem);
-  font-weight: 700;
-}
-
-.bus-summary {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  color: var(--muted);
-  margin: 0 0 6px 0;
-}
-
-.bus-summary.ok { color: var(--success); }
-.bus-summary.alert { color: var(--warning); }
-.bus-summary.unknown { color: var(--danger); }
-
-.bus-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.bus-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
   border-radius: 6px;
-  background: rgba(5, 22, 58, 0.7);
-  border: 1px solid rgba(84, 132, 210, 0.22);
-}
-
-.line-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  background: var(--line-color, rgba(255, 255, 255, 0.12));
-  color: var(--line-text, var(--text));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-}
-
-.bus-destination {
-  flex: 1;
+  font-size: 0.75em;
   font-weight: 600;
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
 }
 
-.bus-times {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
+.status-cancelled { background: #dc2626; color: #fff; }
+.status-delay     { background: #f59e0b; color: #111; }
+.status-ended     { background: #9ca3af; color: #fff; }
+.status-first     { background: #3b82f6; color: #fff; }
+.status-last      { background: #6d28d9; color: #fff; }
+.status-imminent  { background: #16a34a; color: #fff; }
+.status-normal    { background: #10b981; color: #fff; }
+.status-unknown   { background: #9ca3af; color: #fff; }
 
-.info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
+/* ----------------- RER ------------------ */
+.rer-body { display: flex; }
+.rer-column { flex: 1; margin: 0 8px; }
+.rer-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+.rer-destination { flex: 1; font-weight: 600; }
+.rer-status { margin-left: 6px; }
+.rer-times { display: flex; flex-wrap: wrap; gap: 4px; }
+.rer-stops-marquee { margin-top: 3px; font-size: 0.8em; color: #444; white-space: nowrap; overflow: hidden; animation: scroll-left 20s linear infinite; }
 
-.info-block {
-  background: var(--panel);
-  border-radius: 8px;
-  padding: 6px 8px;
-  min-height: 0;
-}
+@keyframes scroll-left { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-.info-block h4 {
-  margin: 0 0 4px 0;
-  font-size: clamp(0.7rem, 0.65rem + 0.15vw, 0.85rem);
-  font-weight: 700;
-}
-
-.velib-card {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-}
-
-.news-item {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  overflow: hidden;
-}
-
-.courses-list {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-}
-
-.road-list {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-}
-
-.empty-message {
-  font-size: clamp(0.65rem, 0.6rem + 0.15vw, 0.8rem);
-  color: var(--muted);
-  text-align: center;
+/* ----------------- Bus ------------------ */
+.bus-block {
+  margin-bottom: 12px;
   padding: 8px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
-@media (orientation: portrait) and (max-height: 800px) {
-  .dashboard-grid {
-    grid-template-rows: minmax(0, 0.3fr) minmax(0, 0.5fr) minmax(0, 0.2fr);
-  }
-  
-  .block-header {
-    padding: 6px 8px;
-  }
-  
-  .block-body {
-    padding: 6px 8px;
-    gap: 4px;
-  }
-  
-  .info {
-    grid-template-columns: 1fr;
-  }
+.bus-line { display: flex; align-items: center; padding: 4px 0; border-top: 1px solid #eee; }
+.line-pill { min-width: 30px; font-weight: bold; padding: 2px 6px; border-radius: 6px; color: var(--line-text,#fff); background: var(--line-color,#2450a4); margin-right: 6px; }
+.bus-destination { flex: 1; }
+.bus-times { display: flex; gap: 4px; }
+
+/* ----------------- Vélib ------------------ */
+.velib-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px;
+  margin: 8px 0;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 
-@media (max-width: 600px) {
-  .app-header {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    gap: 8px;
-    padding: 8px 12px;
-  }
-  
-  .dashboard-grid {
-    padding: 4px;
-    gap: 2px;
-  }
-  
-  .info {
-    grid-template-columns: 1fr;
-  }
+.velib-title { font-size: 1em; font-weight: bold; margin-bottom: 8px; }
+.velib-row { display: flex; align-items: center; margin: 6px 0; }
+.velib-icon { font-size: 1.3em; width: 30px; text-align: center; }
+.velib-bar { flex: 1; height: 12px; border-radius: 6px; margin: 0 6px; background: #e5e7eb; overflow: hidden; }
+.velib-fill { height: 100%; border-radius: 6px; transform: scaleX(0); transform-origin: left; animation: fillBar 1s ease forwards; }
+.velib-fill.meca { background: #16a34a; }
+.velib-fill.elec { background: #3b82f6; }
+.velib-fill.docks { background: #6b7280; }
+.velib-value { font-size: 0.9em; min-width: 40px; text-align: right; font-weight: 600; }
+
+@keyframes fillBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ----------------- Courses ------------------ */
+.course-card {
+  background: #fff;
+  border-radius: 14px;
+  margin: 8px 0;
+  padding: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  animation: fadeInUp 0.6s ease both;
 }
+.course-time { font-size: 1.2em; font-weight: bold; color: #dc2626; }
+.course-name { font-weight: 600; margin: 4px 0; }
+.course-meta { font-size: 0.85em; color: #555; display: flex; justify-content: space-between; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ----------------- Actus ------------------ */
+.news-card {
+  background: #fff;
+  border-radius: 14px;
+  margin: 8px 0;
+  padding: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  animation: fadeIn 0.6s ease both;
+}
+.news-title { font-size: 1em; font-weight: 600; margin-bottom: 4px; }
+.news-desc { font-size: 0.85em; color: #555; }
+.news-source { margin-top: 6px; font-size: 0.75em; font-style: italic; color: #999; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ----------------- Trafic ------------------ */
+.traffic-banner { padding: 6px 10px; font-weight: bold; text-align: center; font-size: 0.9em; margin: 10px 0; border-radius: 6px; }
+.traffic-banner.ok { background: #10b981; color: #fff; }
+.traffic-banner.alert { background: #dc2626; color: #fff; }
+.traffic-ticker { white-space: nowrap; overflow: hidden; animation: scroll-left 25s linear infinite; }
