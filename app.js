@@ -10,11 +10,20 @@ const STOP_IDS = {
   BREUIL: "STIF:StopArea:SP:463644:"
 };
 
-const LINES = {
-  RER_A:   { id: "C01742", label: "RER A" },
-  BUS_77:  { id: "C02251", label: "77" },
-  BUS_201: { id: "C01219", label: "201" }
+// Pour stop-monitoring (horaires dynamiques)
+const LINES_NAVITIA = {
+  RER_A: "C01742",
+  BUS_77: "C02251",
+  BUS_201: "C01219"
 };
+
+// Pour general-message (trafic perturbé)
+const LINES_SIRI = {
+  RER_A: "STIF:Line::A:",
+  BUS_77: "STIF:Line::77:",
+  BUS_201: "STIF:Line::201:"
+};
+
 
 const VELIB_STATIONS = { VINCENNES: "12163", BREUIL: "12128" };
 
@@ -250,7 +259,7 @@ async function refreshRoad(){ try{ const data=await fetchJSON(PROXY+encodeURICom
 // === Messages trafic (IDFM GeneralMessage) ===
 async function fetchGeneralMessages() {
   const msgs = [];
-  const ids = Object.values(LINES).map(l => `line:IDFM:${l.id}`);
+const ids = Object.values(LINES_SIRI);
 
   await Promise.all(ids.map(async (lineRef) => {
     const url = PROXY + encodeURIComponent(
