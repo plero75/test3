@@ -1,502 +1,97 @@
-* { box-sizing: border-box; }
-
-:root {
-  --bg: #f8fafc;
-  --panel: #ffffff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --blue: #0a2f7f;
-  --idfm-red: #e2001a;
-  --time-box-bg: #000;
-  --time-box-fg: #ffcc00;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --alert: #dc2626;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --radius: 12px;
-  --border: #e2e8f0;
+/* Reset & base */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f9fafb;
+  color: #222;
 }
 
-html, body { 
-  height: 100%; 
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  line-height: 1.5;
+h1, h2 {
+  margin: 0 0 10px;
+  font-weight: 600;
 }
 
 /* Header */
-.topbar {
+header {
+  background: #2450a4;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+#clock, #lastUpdate {
+  font-size: 14px;
+}
+
+/* Layout principal */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Cartes */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.card h2 {
+  font-size: 18px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+/* Listes horaires */
+.list .row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--border);
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-text .title {
-  font-weight: 800;
-  font-size: 1.1em;
-}
-
-.brand-text .subtitle {
-  font-size: 0.85em;
-  color: var(--muted);
-}
-
-.ticker {
-  flex: 1;
-  text-align: center;
-  overflow: hidden;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-#ticker-slot {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.now {
-  text-align: right;
-}
-
-#clock {
-  font-size: 1.4em;
-  font-weight: 800;
-  color: var(--blue);
-}
-
-.muted { 
-  color: var(--muted); 
-  font-size: 0.9em;
-}
-
-/* Transport Grid */
-.transport-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 16px;
-  padding: 16px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .transport-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 12px;
-  }
-}
-
-/* Transport Blocks */
-.transport-block {
-  background: var(--panel);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  min-height: 200px;
-}
-
-.block-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
-}
-
-.block-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.1em;
-  font-weight: 700;
-  color: var(--blue);
-}
-
-.traffic-status {
-  font-size: 0.85em;
-  font-weight: 500;
-}
-
-.traffic-status.normal { color: var(--ok); }
-.traffic-status.disrupted { color: var(--alert); }
-.traffic-status.warning { color: var(--warn); }
-
-/* Transport Board */
-.transport-board {
-  min-height: 120px;
-  padding: 16px;
-}
-
-.departure-group {
-  margin-bottom: 20px;
-}
-
-.departure-group:last-child {
-  margin-bottom: 0;
-}
-
-.destination-header {
-  font-weight: 600;
-  color: var(--blue);
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid var(--border);
-  font-size: 0.95em;
-}
-
-.departure-row {
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.departure-row:last-child {
+.list .row:last-child {
   border-bottom: none;
 }
 
-.line-badge {
-  min-width: 42px;
-  height: 30px;
+/* Ligne RATP */
+.line-pill {
+  display: inline-block;
+  min-width: 32px;
+  padding: 4px 8px;
   border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+/* Messages trafic */
+.traffic-msg {
+  font-size: 14px;
+  margin-top: 8px;
+  color: #d9534f;
+}
+.traffic-msg.ok {
+  color: #28a745;
+}
+
+/* Ticker */
+footer#ticker {
+  background: #222;
   color: white;
-  font-weight: 800;
-  font-size: 0.9em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.line-badge.rer-a { background: var(--idfm-red); }
-.line-badge.bus-77 { background: #4f46e5; }
-.line-badge.bus-201 { background: #059669; }
-.line-badge.bus-other { background: var(--muted); }
-
-.departure-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.time-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.scheduled-time {
-  text-decoration: line-through;
-  color: var(--muted);
-  font-size: 0.85em;
-}
-
-.estimated-time {
-  font-weight: 600;
-  color: var(--ink);
-  font-size: 0.95em;
-}
-
-.countdown {
-  background: var(--time-box-bg);
-  color: var(--time-box-fg);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 700;
-  font-size: 0.85em;
-  min-width: 50px;
   text-align: center;
+  padding: 10px;
+  font-size: 16px;
 }
-
-.status-indicator {
-  font-size: 0.8em;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 500;
+.fade-in {
+  animation: fadeIn 1s;
 }
-
-.status-indicator.delayed {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-indicator.cancelled {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.status-indicator.imminent {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-indicator.last {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-indicator.terminated {
-  background: #f3f4f6;
-  color: var(--muted);
-}
-
-.status-indicator.soon {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-/* Messages d'état */
-.loading, .no-service, .error {
-  text-align: center;
-  color: var(--muted);
-  padding: 30px 20px;
-  font-style: italic;
-}
-
-.no-service {
-  color: var(--warn);
-}
-
-.error {
-  color: var(--alert);
-}
-
-/* Service Info */
-.service-info {
-  padding: 12px 16px;
-  background: #f8fafc;
-  font-size: 0.85em;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-}
-
-.service-hours {
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.traffic-message {
-  font-weight: 500;
-}
-
-.traffic-message.disrupted {
-  color: var(--alert);
-}
-
-.lines-served {
-  font-weight: 500;
-}
-
-/* Optimal Route Block */
-.optimal-route {
-  grid-column: span 2;
-}
-
-@media (max-width: 768px) {
-  .optimal-route {
-    grid-column: span 1;
-  }
-}
-
-.optimal-route .route-comparison {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 16px;
-}
-
-.route-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 12px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: white;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.route-option.optimal {
-  border-color: var(--ok);
-  background: #f0fdf4;
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-}
-
-.route-option:hover {
-  border-color: var(--blue);
-  background: #f8fafc;
-}
-
-.route-icon {
-  font-size: 1.8em;
-  margin-bottom: 6px;
-}
-
-.route-time {
-  font-weight: 700;
-  font-size: 1.2em;
-  color: var(--ink);
-  margin-bottom: 2px;
-}
-
-.route-label {
-  font-size: 0.85em;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-.next-departure, .availability {
-  font-size: 0.75em;
-  margin-top: 4px;
-  padding: 3px 6px;
-  border-radius: 3px;
-  text-align: center;
-  min-width: 80px;
-}
-
-.next-departure {
-  background: var(--ok);
-  color: white;
-}
-
-.availability.available {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.availability.limited {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.availability.unavailable {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-/* Info Block */
-.info-block {
-  grid-column: span 1;
-}
-
-.info-block .info-content {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.weather, .general-traffic {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.weather-icon, .traffic-icon {
-  font-size: 1.4em;
-}
-
-.weather-temp {
-  font-weight: 600;
-  color: var(--ink);
-  font-size: 1.1em;
-}
-
-.weather-desc, .traffic-summary {
-  color: var(--muted);
-  font-size: 0.9em;
-}
-
-/* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.departure-row {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-#ticker-slot.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Responsive adjustments */
-@media (max-width: 900px) {
-  .optimal-route .route-comparison {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .optimal-route .route-comparison {
-    grid-template-columns: 1fr;
-  }
-
-  .departure-row {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .time-info {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .route-option {
-    padding: 12px 8px;
-  }
-
-  .transport-grid {
-    padding: 8px;
-    gap: 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .topbar {
-    padding: 8px 12px;
-  }
-
-  .brand {
-    gap: 8px;
-  }
-
-  .brand-text .title {
-    font-size: 0.95em;
-  }
-
-  #clock {
-    font-size: 1.2em;
-  }
-
-  .block-header {
-    padding: 12px;
-  }
-
-  .transport-board {
-    padding: 12px;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
