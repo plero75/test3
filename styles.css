@@ -1,130 +1,393 @@
-/* === Reset rapide === */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Roboto, sans-serif;
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --blue: #0a2f7f;
+  --idfm-red: #e2001a;
+  --time-box-bg: #000;
+  --time-box-fg: #ffcc00;
+  --ok: #10b981;
+  --warn: #f59e0b;
+  --alert: #dc2626;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --border: #e2e8f0;
 }
 
+html, body { height: 100%; }
 body {
-  background: #f9f9fb;
-  color: #333;
-  line-height: 1.4;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
 }
 
-/* === Header === */
-header {
-  background: #fff;
-  padding: 1rem 2rem;
-  border-bottom: 2px solid #eee;
+/* Header */
+.topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-}
-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-#clock, #lastUpdate {
-  font-size: 0.9rem;
-  color: #666;
-  margin-left: 1rem;
+  padding: 12px 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
 }
 
-/* === Grid layout === */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.2rem;
-  padding: 1.5rem;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-text .title {
+  font-weight: 800;
+  font-size: 1.1em;
+}
+
+.brand-text .subtitle {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.ticker {
   flex: 1;
-}
-
-/* === Cards === */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-}
-.card.wide {
-  grid-column: span 2;
-}
-
-.card h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.8rem;
-  color: #222;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.card .body {
-  font-size: 0.95rem;
-  color: #444;
-}
-
-/* === Rows de données === */
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.3rem 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-.row:last-child {
-  border-bottom: none;
-}
-.dest {
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
   font-weight: 500;
 }
-.times {
-  font-weight: bold;
+
+.now {
+  text-align: right;
 }
 
-/* === Pills lignes === */
-.line-pill {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  margin-right: 0.5rem;
-  color: #fff;
+#clock {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: var(--blue);
 }
-.rer-a { background: #e2231a; }
 
-/* === Traffic status === */
+.muted { color: var(--muted); }
+
+/* Transport Grid */
+.transport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .transport-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+/* Transport Blocks */
+.transport-block {
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.block-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.block-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--blue);
+}
+
 .traffic-status {
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.85em;
+  font-weight: 500;
 }
-.traffic-status.ok { color: #2e7d32; }
-.traffic-status.alert { color: #c62828; }
 
-/* === Footer ticker === */
-footer {
-  background: #fff;
-  border-top: 2px solid #eee;
-  padding: 0.8rem 1rem;
-  font-size: 1rem;
+.traffic-status.normal { color: var(--ok); }
+.traffic-status.disrupted { color: var(--alert); }
+.traffic-status.warning { color: var(--warn); }
+
+/* Transport Board */
+.transport-board {
+  min-height: 120px;
+  padding: 12px;
+}
+
+.departure-group {
+  margin-bottom: 16px;
+}
+
+.destination-header {
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.departure-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.departure-row:last-child {
+  border-bottom: none;
+}
+
+.line-badge {
+  min-width: 40px;
+  height: 28px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 800;
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.line-badge.rer-a { background: var(--idfm-red); }
+.line-badge.bus-77 { background: #4f46e5; }
+.line-badge.bus-201 { background: #059669; }
+.line-badge.bus-other { background: var(--muted); }
+
+.departure-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scheduled-time {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.estimated-time {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.countdown {
+  background: var(--time-box-bg);
+  color: var(--time-box-fg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+.status-indicator {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-indicator.delayed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-indicator.cancelled {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.status-indicator.imminent {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-indicator.last {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-indicator.terminated {
+  background: #f3f4f6;
+  color: var(--muted);
+}
+
+/* Service Info */
+.service-info {
+  padding: 12px 16px;
+  background: #f8fafc;
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.service-hours {
+  margin-bottom: 6px;
+}
+
+.traffic-message {
+  font-weight: 500;
+}
+
+.traffic-message.disrupted {
+  color: var(--alert);
+}
+
+/* Optimal Route Block */
+.optimal-route .route-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.route-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.route-option.optimal {
+  border-color: var(--ok);
+  background: #f0fdf4;
+}
+
+.route-option:hover {
+  border-color: var(--blue);
+}
+
+.route-icon {
+  font-size: 1.5em;
+  margin-bottom: 4px;
+}
+
+.route-time {
+  font-weight: 700;
+  font-size: 1.1em;
+  color: var(--ink);
+}
+
+.route-label {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.next-departure, .availability {
+  font-size: 0.75em;
+  margin-top: 4px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.next-departure {
+  background: var(--ok);
+  color: white;
+}
+
+.availability.available {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.availability.limited {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.availability.unavailable {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+/* Info Block */
+.info-block .info-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.weather, .general-traffic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.weather-icon, .traffic-icon {
+  font-size: 1.2em;
+}
+
+.weather-temp {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.weather-desc, .traffic-summary {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.loading {
   text-align: center;
+  color: var(--muted);
+  padding: 20px;
+  font-style: italic;
 }
-#ticker-slot {
-  animation: fade-in 0.6s ease-in-out;
-}
-.fade-in {
-  opacity: 1;
-  transition: opacity 0.6s;
-}
-@keyframes fade-in {
+
+/* Animations */
+@keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.departure-row {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .optimal-route .route-comparison {
+    grid-template-columns: 1fr;
+  }
+  
+  .departure-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .time-info {
+    flex-wrap: wrap;
+  }
 }
