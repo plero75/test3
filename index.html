@@ -1,82 +1,64 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Affichage dynamique – Hippodrome Paris-Vincennes</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Tableau d'affichage – Hippodrome Paris-Vincennes</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
-    <header class="app-header">
-      <div class="branding">
-        <h1>Hippodrome Paris-Vincennes</h1>
-        <p>Tableau d'information voyageurs</p>
-      </div>
-      <div class="header-right">
-        <div id="lastUpdate" class="last-update">Maj --:--</div>
-        <div id="clock" class="clock">--:--</div>
-      </div>
-      <div class="weather-widget">
-        <div id="weather-icon" class="weather-icon"></div>
-        <div class="weather-data">
-          <div id="weather-temp" class="weather-temp">--°</div>
-          <div id="weather-desc" class="weather-desc">Météo indisponible</div>
-        </div>
-      </div>
-    </header>
+  <header>
+    <div id="clock"></div>
+    <div id="lastUpdate"></div>
+  </header>
 
-    <div class="dashboard-grid">
-      <!-- Bloc RER A -->
-      <div class="block rer">
-        <div class="block-header">
-          <h2>RER A</h2>
-          <div class="block-sub" id="rer-station-info">Station Joinville-le-Pont · chargement...</div>
-        </div>
-        <div class="block-body rer-body" id="rer-body">
-          <!-- Colonnes générées par JS -->
-        </div>
-      </div>
+  <!-- Trafic global -->
+  <div id="traffic-banner" class="traffic-banner"></div>
 
-      <!-- Bloc Bus -->
-      <div class="block bus">
-        <div class="block-header">
-          <h2>Bus</h2>
-          <div class="block-sub" id="bus-summary">Chargement...</div>
-        </div>
-        <div class="block-body bus-blocks" id="bus-blocks">
-          <!-- Stations de bus générées par JS -->
-        </div>
-      </div>
+  <!-- Bloc RER -->
+  <section id="rer">
+    <h2>🚆 RER A – Joinville-le-Pont</h2>
+    <div id="rer-body" class="rer-body"></div>
+  </section>
 
-      <!-- Bloc Info -->
-      <div class="block info">
-        <div class="info-block">
-          <h4>Vélib'</h4>
-          <div class="velib-card">
-            <div id="velib-vincennes">Hippodrome: chargement...</div>
-            <div id="velib-breuil">École du Breuil: chargement...</div>
-          </div>
-        </div>
+  <!-- Bloc Bus -->
+  <section id="bus">
+    <h2>🚌 Bus</h2>
+    <div id="bus-blocks"></div>
+  </section>
 
-        <div class="info-block">
-          <h4>Actualités</h4>
-          <div class="news-item" id="news-content">Chargement...</div>
-        </div>
+  <!-- Bloc Vélib -->
+  <section id="velib">
+    <h2>🚲 Vélib’</h2>
+    <div id="velib-vincennes" class="velib-card"></div>
+    <div id="velib-breuil" class="velib-card"></div>
+  </section>
 
-        <div class="info-block">
-          <h4>Courses Vincennes</h4>
-          <div class="courses-list" id="courses-list">Chargement...</div>
-        </div>
+  <!-- Bloc Météo -->
+  <section id="weather">
+    <h2>🌤 Météo</h2>
+    <div id="weather-temp">--°</div>
+    <div id="weather-desc">Météo indisponible</div>
+  </section>
 
-        <div class="info-block">
-          <h4>Info trafic</h4>
-          <div class="road-list" id="road-list">Chargement...</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Bloc Courses -->
+  <section id="courses">
+    <h2>🏇 Prochaines courses – Vincennes</h2>
+    <div id="courses-list"></div>
+  </section>
 
-  <script type="module" src="app.js"></script>
+  <!-- Bloc Actualités -->
+  <section id="news">
+    <h2>📰 Actualités</h2>
+    <div id="news-content"></div>
+  </section>
+
+  <!-- Bloc Trafic routier -->
+  <section id="road">
+    <h2>🚗 Trafic routier</h2>
+    <div id="road-list"></div>
+  </section>
+
+  <script src="app.js"></script>
 </body>
 </html>
+
