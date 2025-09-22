@@ -249,7 +249,6 @@ async function refreshSaint(){
     if(data?.response?.prenoms) tickerData.saint = `🎂 Ste ${data.response.prenoms}`;
   }catch{ tickerData.saint="🎂 Fête du jour indisponible"; }
 }
-async function fetchHoroscope(sign){ try{ const d=await fetchJSON(`https://ohmanda.com/api/horoscope/${sign}`,10000); return d?.horoscope||""; }catch{ return ""; } }
 async function refreshHoroscopeCycle(){
   const sign=SIGNS[signIdx]; const text=await fetchHoroscope(sign);
   const label = sign.charAt(0).toUpperCase()+sign.slice(1);
