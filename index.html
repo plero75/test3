@@ -1,35 +1,116 @@
-<main class="grid">
-  <!-- RER -->
-  <section class="panel">
-    <h2>🚆 RER A – Joinville-le-Pont</h2>
-    <div id="rer-joinville" class="board"></div>
-    <div id="rer-joinville-traffic" class="traffic-sub"></div>
-  </section>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Transports Vincennes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="topbar">
+    <div class="brand">
+      <img src="logo-idfm.png" alt="IDFM" class="logo-idfm" height="32">
+      <div>
+        <div class="title">Dashboard Vincennes</div>
+        <div class="subtitle">Transports & Infos Live</div>
+      </div>
+    </div>
+    <div class="ticker"><span id="ticker-slot">Chargement…</span></div>
+    <div class="now">
+      <div id="clock">--:--</div>
+      <div id="lastUpdate" class="muted">Maj --:--</div>
+    </div>
+  </div>
 
-  <!-- Bus Joinville -->
-  <section class="panel">
-    <h2>🚌 Bus – Joinville-le-Pont</h2>
-    <div id="bus-joinville" class="board"></div>
-    <div id="bus-joinville-traffic" class="traffic-sub"></div>
-  </section>
+  <!-- Bandeau trafic global -->
+  <div id="traffic-banner" class="traffic-banner ok">Chargement du trafic…</div>
 
-  <!-- Bus Hippodrome -->
-  <section class="panel">
-    <h2>🚌 Bus – Hippodrome de Vincennes</h2>
-    <div id="bus-hippodrome" class="board"></div>
-    <div id="bus-hippodrome-traffic" class="traffic-sub"></div>
-  </section>
+  <!-- Grille principale -->
+  <div class="grid">
 
-  <!-- Bus Breuil -->
-  <section class="panel">
-    <h2>🚌 Bus – École du Breuil</h2>
-    <div id="bus-breuil" class="board"></div>
-    <div id="bus-breuil-traffic" class="traffic-sub"></div>
-  </section>
+    <!-- Bloc RER Joinville -->
+    <div class="panel board">
+      <h2>🚆 RER A – Joinville-le-Pont</h2>
+      <div id="rer-body"></div>
+    </div>
 
-  <!-- Meilleur itinéraire -->
-  <section class="panel">
-    <h2>🚀 Trajet optimal vers Joinville-le-Pont</h2>
-    <div id="best-route" class="best-route">Calcul en cours…</div>
-  </section>
-</main>
+    <!-- Bloc Bus Joinville -->
+    <div class="panel board">
+      <h2>🚌 Bus – Joinville-le-Pont</h2>
+      <div id="bus-joinville-body"></div>
+    </div>
+
+    <!-- Bloc Bus Hippodrome -->
+    <div class="panel board">
+      <h2>🚌 Bus – Hippodrome de Vincennes</h2>
+      <div id="bus-hippodrome-body"></div>
+    </div>
+
+    <!-- Bloc Bus Breuil -->
+    <div class="panel board">
+      <h2>🚌 Bus – École du Breuil</h2>
+      <div id="bus-breuil-body"></div>
+    </div>
+
+    <!-- Bloc meilleur itinéraire -->
+    <div class="panel best-route">
+      <h2>🚀 Trajet optimal → Joinville RER</h2>
+      <div id="best-route">Calcul en cours…</div>
+    </div>
+
+    <!-- Bloc Vélib -->
+    <div class="panel">
+      <h2>🚲 Vélib’</h2>
+      <div class="velib-row">
+        <div class="velib-card">
+          <div class="velib-icon">🚲</div>
+          <div class="velib-value" id="velib-vincennes">--</div>
+          <div class="velib-label">Vincennes</div>
+        </div>
+        <div class="velib-card">
+          <div class="velib-icon">🚲</div>
+          <div class="velib-value" id="velib-breuil">--</div>
+          <div class="velib-label">Breuil</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloc météo -->
+    <div class="panel weather-card">
+      <div id="weather-emoji" class="weather-emoji">⛅</div>
+      <div>
+        <div id="weather-temp" class="weather-temp">--°C</div>
+        <div id="weather-desc" class="weather-desc">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- Bloc courses Vincennes -->
+    <div class="panel">
+      <h2>🏇 Courses – Vincennes</h2>
+      <div id="courses-list" class="courses-board">Chargement…</div>
+    </div>
+
+    <!-- Bloc événements circulation -->
+    <div class="panel">
+      <h2>🚧 Circulation</h2>
+      <div id="events-list">Chargement…</div>
+    </div>
+
+    <!-- Bloc trafic routier -->
+    <div class="panel">
+      <h2>🚗 Trafic routier</h2>
+      <div id="road-list" class="road-list">Chargement…</div>
+    </div>
+
+    <!-- Bloc actualités -->
+    <div class="panel">
+      <h2>📰 Actus France Info</h2>
+      <div id="news-carousel" class="news-carousel">Chargement…</div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
