@@ -51,15 +51,42 @@ function parseStop(data){
 
 // === Statuts départ ===
 function renderStatus(status, minutes){
+  if (minutes === 0) {
+    return `<span class="time-imminent">🚉 À quai</span>`;
+  }
+  if (minutes !== null && minutes <= 1) {
+    return `<span class="time-imminent">🟢 Imminent</span>`;
+  }
   switch(status){
-    case "cancelled": return `<span class="time-cancelled">❌ Supprimé</span>`;
-    case "delayed": return `<span class="time-delay">⏳ Retard +${minutes} min</span>`;
-    case "last": return `<span class="time-last">Dernier passage</span>`;
+    case "cancelled":   return `<span class="time-cancelled">❌ Supprimé</span>`;
+    case "delayed":     return `<span class="time-delay">⏳ Retardé</span>`;
+    case "last":        return `<span class="time-last">🔴 Dernier passage</span>`;
     case "notStopping": return `<span class="time-cancelled">🚫 Non desservi</span>`;
-    case "noService": return `<span class="time-cancelled">⚠️ Service terminé</span>`;
-    default: return `<span class="time-estimated">🟢 OK</span>`;
+    case "noService":   return `<span class="time-cancelled">⚠️ Service terminé</span>`;
+    default:            return `<span class="time-estimated">🟢 OK</span>`;
   }
 }
+
+function formatTimeBox(v){
+  if (v.minutes === 0) {
+    return `<div class="time-box time-imminent">🚉 À quai</div>`;
+  }
+  if (v.minutes !== null && v.minutes <= 1) {
+    return `<div class="time-box time-imminent">🟢 Imminent</div>`;
+  }
+  if (v.status === "cancelled") {
+    return `<div class="time-box time-cancelled">❌ Supprimé</div>`;
+  }
+  if (v.status === "last") {
+    return `<div class="time-box time-last">🔴 Dernier passage</div>`;
+  }
+  if (v.status === "delayed") {
+    return `<div class="time-box time-delay">⏳ Retardé</div>`;
+  }
+  return `<div class="time-box">${v.minutes} min</div>`;
+}
+
+
 
 // === RER Joinville ===
 async function renderRer(){
@@ -76,7 +103,7 @@ async function renderRer(){
     const row=document.createElement("div"); row.className="row";
     row.innerHTML=`<span class="line-pill rer-a">A</span>
       <div class="dest">${v.dest}</div>
-      <div class="times">${v.minutes!=null?`${v.minutes} min`:"--"}</div>
+timesEl.innerHTML = formatTimeBox(r);
       <div class="status">${renderStatus(v.status, v.minutes)}</div>`;
     cont.appendChild(row);
   });
@@ -152,7 +179,7 @@ async function renderBusForStop(stopId, bodyId, trafficId) {
         .forEach(it => {
           const box = document.createElement("div");
           box.className = "time-box";
-          box.textContent = it?.minutes!=null ? `${it.minutes} min` : "--";
+timesEl.innerHTML = formatTimeBox(r);
           timesEl.appendChild(box);
         });
 
@@ -226,4 +253,5 @@ await Promise.allSettled([
   setLastUpdate();
   startLoops();
 })();
+
 
