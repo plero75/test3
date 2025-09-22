@@ -27,31 +27,36 @@
   <div id="traffic-banner" class="traffic-banner ok">Chargement du trafic…</div>
 
   <!-- Grille principale -->
-  <div class="grid">
+ <!-- ===== Transit ===== -->
+<section class="grid">
+  <!-- RER A – Joinville-le-Pont -->
+  <article class="panel">
+    <h2>RER A — Joinville-le-Pont</h2>
+    <div id="rer-traffic" class="traffic-sub ok" style="display:none"></div>
+    <div id="rer-body" class="board"></div>
+  </article>
 
-    <!-- Bloc RER Joinville -->
-    <div class="panel board">
-      <h2>🚆 RER A – Joinville-le-Pont</h2>
-      <div id="rer-body"></div>
-    </div>
+  <!-- Bus — Joinville-le-Pont -->
+  <article class="panel">
+    <h2>Bus — Joinville-le-Pont</h2>
+    <div id="bus-joinville-traffic" class="traffic-sub ok" style="display:none"></div>
+    <div id="bus-joinville-body" class="board"></div>
+  </article>
 
-    <!-- Bloc Bus Joinville -->
-    <div class="panel board">
-      <h2>🚌 Bus – Joinville-le-Pont</h2>
-      <div id="bus-joinville-body"></div>
-    </div>
+  <!-- Bus — Hippodrome de Vincennes -->
+  <article class="panel">
+    <h2>Bus — Hippodrome de Vincennes</h2>
+    <div id="bus-hippodrome-traffic" class="traffic-sub ok" style="display:none"></div>
+    <div id="bus-hippodrome-body" class="board"></div>
+  </article>
 
-    <!-- Bloc Bus Hippodrome -->
-    <div class="panel board">
-      <h2>🚌 Bus – Hippodrome de Vincennes</h2>
-      <div id="bus-hippodrome-body"></div>
-    </div>
-
-    <!-- Bloc Bus Breuil -->
-    <div class="panel board">
-      <h2>🚌 Bus – École du Breuil</h2>
-      <div id="bus-breuil-body"></div>
-    </div>
+  <!-- Bus — École du Breuil -->
+  <article class="panel">
+    <h2>Bus — École du Breuil</h2>
+    <div id="bus-breuil-traffic" class="traffic-sub ok" style="display:none"></div>
+    <div id="bus-breuil-body" class="board"></div>
+  </article>
+</section>
 
     <!-- Bloc meilleur itinéraire -->
     <div class="panel best-route">
