@@ -168,20 +168,30 @@ const SIGNS = [
   { fr: "Verseau", en: "Aquarius" },
   { fr: "Poissons", en: "Pisces" }
 ];
-let signIdx=0;
-async function fetchHoroscope(sign) {
-  const target = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=today`;
+let signIdx = 0;
+
+async function fetchHoroscope(signEn) {
+  const target = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${signEn}&day=today`;
   const url = PROXY + encodeURIComponent(target);
-  try { const res = await fetch(url); if(!res.ok) throw new Error(); const data = await res.json(); return data?.data?.horoscope_data || "Horoscope indisponible."; }
-  catch { return "Erreur horoscope"; }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data?.data?.horoscope_data || "Horoscope indisponible.";
+  } catch (e) {
+    console.error("fetchHoroscope", signEn, e);
+    return "Erreur horoscope";
+  }
 }
+
 async function refreshHoroscopeCycle() {
-  const sign = SIGNS[signIdx];
-  const text = await fetchHoroscope(sign);
-  const label = sign.charAt(0).toUpperCase() + sign.slice(1);
-  tickerData.horoscope = `🔮 ${label} : ${text}`;
-  signIdx=(signIdx+1)%SIGNS.length;
+  const { fr, en } = SIGNS[signIdx];
+  const text = await fetchHoroscope(en);
+  tickerData.horoscope = `🔮 ${fr} : ${text}`;
+  signIdx = (signIdx + 1) % SIGNS.length;
 }
+
 
 // === Saint du jour ===
 async function refreshSaint(){
