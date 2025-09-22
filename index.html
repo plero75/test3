@@ -2,94 +2,97 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tableau d'affichage – Hippodrome Paris‑Vincennes</title>
+  <title>Dashboard Vincennes</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Bandeau global: heure + météo + fête + horoscope (carousel) + trafic -->
-  <header class="topbar">
-    <div class="brand">
-      <svg width="34" height="34" viewBox="0 0 34 34" class="logo-idfm" aria-label="IDFM">
-        <rect rx="7" width="34" height="34" fill="#00A0E2"/>
-        <text x="17" y="22" text-anchor="middle" font-family="Inter, Arial" font-size="16" font-weight="700" fill="#fff">IDFM</text>
-      </svg>
-      <svg width="34" height="34" viewBox="0 0 64 64" class="logo-hippo" aria-label="Hippodrome">
-        <rect rx="10" width="64" height="64" fill="#1f2937"/>
-        <path d="M10 40 Q22 35 30 34 T54 36 L52 28 Q45 20 34 22 Q28 16 18 18 L12 26" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="20" cy="46" r="6" fill="#fff"/>
-        <circle cx="44" cy="46" r="6" fill="#fff"/>
-      </svg>
-      <div class="brand-text">
-        <div class="title">Hippodrome Paris‑Vincennes</div>
-        <div class="subtitle">Tableau d’affichage</div>
-      </div>
+  <header>
+    <div class="logo-zone">
+      <img src="idfm.png" alt="Île-de-France Mobilités" class="logo">
+      <h1>📍 Dashboard Hippodrome de Vincennes</h1>
     </div>
-    <div class="ticker">
-      <span id="ticker-slot">Chargement…</span>
-    </div>
-    <div class="now">
-      <div id="clock">--:--</div>
-      <div id="lastUpdate" class="muted">Maj --:--</div>
-    </div>
+    <div id="clock"></div>
   </header>
-  <div id="traffic-banner" class="traffic-banner ok">Vérification du trafic…</div>
 
-  <main class="grid">
-    <!-- Transports -->
-    <section class="panel">
-      <h2>🚆 RER A – Joinville‑le‑Pont</h2>
-      <div id="rer-body" class="board"></div>
+  <main>
+    <!-- 🚉 RER -->
+    <section id="rer-block">
+      <h2>🚉 RER A – Joinville-le-Pont</h2>
+      <div id="rer-body" class="lines"></div>
+      <div id="rer-traffic" class="traffic-info">Chargement…</div>
     </section>
 
-    <section class="panel">
-      <h2>🚌 Bus (autour de l’hippodrome)</h2>
-      <div id="bus-blocks" class="board"></div>
+    <!-- 🚌 Bus Joinville -->
+    <section id="bus-joinville">
+      <h2>🚌 Bus – Joinville-le-Pont</h2>
+      <div id="bus-joinville-body" class="lines"></div>
+      <div id="bus-joinville-traffic" class="traffic-info">Chargement…</div>
     </section>
 
-    <section class="panel">
-      <h2>🚀 Meilleur itinéraire vers Joinville‑le‑Pont</h2>
-      <div id="best-route" class="best-route">Calcul en cours…</div>
+    <!-- 🚌 Bus Hippodrome -->
+    <section id="bus-hippodrome">
+      <h2>🚌 Bus – Hippodrome de Vincennes</h2>
+      <div id="bus-hippodrome-body" class="lines"></div>
+      <div id="bus-hippodrome-traffic" class="traffic-info">Chargement…</div>
     </section>
 
-    <!-- Vélib + Météo -->
-    <section class="panel">
-      <h2>🚲 Vélib’</h2>
-      <div class="velib-row">
-        <div id="velib-vincennes" class="velib-card"></div>
-        <div id="velib-breuil" class="velib-card"></div>
-      </div>
-      <div class="spacer"></div>
-      <h2>🌤 Météo</h2>
-      <div class="weather-card">
-        <div id="weather-emoji" class="weather-emoji">—</div>
-        <div class="weather-info">
-          <div id="weather-temp" class="weather-temp">--°</div>
-          <div id="weather-desc" class="weather-desc muted">Météo indisponible</div>
-        </div>
-      </div>
+    <!-- 🚌 Bus Breuil -->
+    <section id="bus-breuil">
+      <h2>🚌 Bus – École du Breuil</h2>
+      <div id="bus-breuil-body" class="lines"></div>
+      <div id="bus-breuil-traffic" class="traffic-info">Chargement…</div>
     </section>
 
-    <!-- Courses -->
-    <section class="panel">
-      <h2>🏇 Courses Vincennes (aujourd’hui)</h2>
-      <div id="courses-list" class="courses-board"></div>
+    <!-- 🚲 Vélib -->
+    <section id="velib">
+      <h2>🚲 Stations Vélib’</h2>
+      <div class="velib-station">Vincennes : <span id="velib-vincennes"></span></div>
+      <div class="velib-station">École du Breuil : <span id="velib-breuil"></span></div>
     </section>
 
-    <!-- Actus -->
-    <section class="panel">
-      <h2>📰 Actualités</h2>
-      <div id="news-carousel" class="news-carousel"></div>
+    <!-- 🌤️ Météo -->
+    <section id="weather">
+      <h2>🌤️ Météo locale</h2>
+      <div id="weather-emoji"></div>
+      <div id="weather-temp"></div>
+      <div id="weather-desc"></div>
     </section>
 
-    <!-- Trafic routier -->
-    <section class="panel">
-      <h2>🚗 Trafic routier</h2>
-      <div id="road-list" class="road-list"></div>
+    <!-- 📰 Actus -->
+    <section id="news">
+      <h2>📰 Actus</h2>
+      <div id="news-carousel"></div>
+    </section>
+
+    <!-- 🚦 Trafic routier -->
+    <section id="road">
+      <h2>🚦 Trafic routier</h2>
+      <div id="road-list"></div>
+    </section>
+
+    <!-- ⚠️ Événements circulation -->
+    <section id="events">
+      <h2>⚠️ Événements circulation</h2>
+      <div id="events-list"></div>
+    </section>
+
+    <!-- 🏇 Courses -->
+    <section id="courses">
+      <h2>🏇 Courses Vincennes</h2>
+      <div id="courses-list"></div>
+    </section>
+
+    <!-- 🎯 Meilleur parcours -->
+    <section id="best-route">
+      <h2>🎯 Meilleur parcours vers Joinville RER</h2>
     </section>
   </main>
 
-  <footer class="footer muted">© Hippodrome Paris‑Vincennes</footer>
+  <footer>
+    <div id="ticker-slot">Chargement…</div>
+    <div id="lastUpdate"></div>
+  </footer>
+
   <script src="app.js"></script>
 </body>
 </html>
