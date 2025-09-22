@@ -1,99 +1,35 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard Vincennes</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header>
-    <h1>🚊 Dashboard Transports – Vincennes</h1>
-    <div id="clock"></div>
-    <div id="lastUpdate"></div>
-  </header>
+<main class="grid">
+  <!-- RER -->
+  <section class="panel">
+    <h2>🚆 RER A – Joinville-le-Pont</h2>
+    <div id="rer-joinville" class="board"></div>
+    <div id="rer-joinville-traffic" class="traffic-sub"></div>
+  </section>
 
-  <main class="grid-container">
+  <!-- Bus Joinville -->
+  <section class="panel">
+    <h2>🚌 Bus – Joinville-le-Pont</h2>
+    <div id="bus-joinville" class="board"></div>
+    <div id="bus-joinville-traffic" class="traffic-sub"></div>
+  </section>
 
-    <!-- Bloc RER -->
-    <section class="card" id="rer-block">
-      <h2>🚆 RER A – Joinville-le-Pont</h2>
-      <div id="rer-body" class="list"></div>
-      <div id="rer-traffic" class="traffic-msg"></div>
-    </section>
+  <!-- Bus Hippodrome -->
+  <section class="panel">
+    <h2>🚌 Bus – Hippodrome de Vincennes</h2>
+    <div id="bus-hippodrome" class="board"></div>
+    <div id="bus-hippodrome-traffic" class="traffic-sub"></div>
+  </section>
 
-    <!-- Bloc Bus Joinville -->
-    <section class="card" id="bus-joinville-block">
-      <h2>🚌 Bus – Joinville-le-Pont</h2>
-      <div id="bus-joinville-body" class="list"></div>
-      <div id="bus-joinville-traffic" class="traffic-msg"></div>
-    </section>
+  <!-- Bus Breuil -->
+  <section class="panel">
+    <h2>🚌 Bus – École du Breuil</h2>
+    <div id="bus-breuil" class="board"></div>
+    <div id="bus-breuil-traffic" class="traffic-sub"></div>
+  </section>
 
-    <!-- Bloc Bus Hippodrome -->
-    <section class="card" id="bus-hippodrome-block">
-      <h2>🚌 Bus – Hippodrome de Vincennes</h2>
-      <div id="bus-hippodrome-body" class="list"></div>
-      <div id="bus-hippodrome-traffic" class="traffic-msg"></div>
-    </section>
-
-    <!-- Bloc Bus Breuil -->
-    <section class="card" id="bus-breuil-block">
-      <h2>🚌 Bus – École du Breuil</h2>
-      <div id="bus-breuil-body" class="list"></div>
-      <div id="bus-breuil-traffic" class="traffic-msg"></div>
-    </section>
-
-    <!-- Bloc Trajet optimal -->
-    <section class="card" id="route-block">
-      <h2>⭐ Trajet optimal vers Joinville-le-Pont RER</h2>
-      <div id="best-route">Calcul en cours…</div>
-    </section>
-
-    <!-- Bloc Vélib -->
-    <section class="card">
-      <h2>🚲 Vélib’ disponibles</h2>
-      <div>Vincennes : <span id="velib-vincennes"></span></div>
-      <div>École du Breuil : <span id="velib-breuil"></span></div>
-    </section>
-
-    <!-- Bloc Météo -->
-    <section class="card">
-      <h2>🌤️ Météo</h2>
-      <div id="weather-emoji"></div>
-      <div id="weather-temp"></div>
-      <div id="weather-desc"></div>
-    </section>
-
-    <!-- Bloc Courses -->
-    <section class="card">
-      <h2>🐎 Courses à Vincennes</h2>
-      <div id="courses-list" class="list"></div>
-    </section>
-
-    <!-- Bloc Actualités -->
-    <section class="card">
-      <h2>📰 Actualités</h2>
-      <div id="news-carousel"></div>
-    </section>
-
-    <!-- Bloc Circulation -->
-    <section class="card" id="road-block">
-      <h2>🚦 Trafic routier</h2>
-      <div id="road-list"></div>
-    </section>
-
-    <!-- Bloc Événements -->
-    <section class="card" id="events-block">
-      <h2>⚠️ Événements circulation</h2>
-      <div id="events-list"></div>
-    </section>
-
-  </main>
-
-  <!-- Bandeau ticker -->
-  <footer id="ticker">
-    <div id="ticker-slot">Chargement…</div>
-  </footer>
-
-  <script src="app.js"></script>
-</body>
-</html>
+  <!-- Meilleur itinéraire -->
+  <section class="panel">
+    <h2>🚀 Trajet optimal vers Joinville-le-Pont</h2>
+    <div id="best-route" class="best-route">Calcul en cours…</div>
+  </section>
+</main>
