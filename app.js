@@ -249,6 +249,29 @@ async function refreshSaint(){
     if(data?.response?.prenoms) tickerData.saint = `🎂 Ste ${data.response.prenoms}`;
   }catch{ tickerData.saint="🎂 Fête du jour indisponible"; }
 }
+// === Horoscope (via proxy Worker + clé cachée) ===
+async function fetchHoroscope(sign) {
+  const target = "https://api.freeastrologyapi.com/horoscope/daily";
+  const url = PROXY + encodeURIComponent(target);
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sunSign: sign,   // Exemple: "belier", "taureau", ...
+        day: "today"
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data?.prediction || "Horoscope indisponible.";
+  } catch (e) {
+    console.error("fetchHoroscope", sign, e);
+    return "Erreur horoscope";
+  }
+}
+
 async function refreshHoroscopeCycle(){
   const sign=SIGNS[signIdx]; const text=await fetchHoroscope(sign);
   const label = sign.charAt(0).toUpperCase()+sign.slice(1);
