@@ -320,14 +320,17 @@ const ids = Object.values(LINES_SIRI);
   }
 }
 // === Événements affectant la circulation parisienne ===
+// === Événements circulation (Open Data Paris) ===
 async function refreshEventsCirculation() {
   try {
     const url = PROXY + encodeURIComponent(
       "https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-datedebut&rows=5"
     );
+
     const data = await fetchJSON(url, 15000);
     const cont = document.getElementById("events-list");
     cont.innerHTML = "";
+
     if (!data || !data.records) throw new Error("Pas de données événements");
 
     data.records.forEach(rec => {
@@ -347,8 +350,7 @@ async function refreshEventsCirculation() {
     if (cont) cont.textContent = "Événements circulation indisponibles 🚧";
   }
 }
-
-    data.records.forEach(record => {
+data.records.forEach(record => {
       const fields = record.fields;
       const desc = fields.description || fields.type || "Événement";
       const rue = fields.rue || "";
