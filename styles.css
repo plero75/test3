@@ -1,191 +1,235 @@
-/* ---------- Global ---------- */
+/* -------------------------------------------------------
+   Styles – Tableau d'affichage Hippodrome Vincennes
+   ------------------------------------------------------- */
+
+/* Layout global */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #001952; /* Bleu IDFM foncé */
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: #f9fafc;
+  color: #111;
 }
 
-.app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+h3 {
+  margin: 0 0 0.3em 0;
+  font-size: 1.1em;
+  font-weight: 600;
 }
 
-/* ---------- Header ---------- */
-header {
-  background: #001952; /* Bleu IDFM */
-  color: #ffffff;
+/* Horloge & MAJ */
+#clock {
+  font-size: 1.4em;
   font-weight: bold;
+}
+
+#lastUpdate {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* ----------------- Chips horaires ------------------ */
+.time-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  margin: 0 4px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #e9eef5;
+  font-size: 0.9em;
+  text-align: center;
+  position: relative;
+}
+
+.time-chip-main {
+  font-weight: 600;
+  font-size: 1.2em;
+}
+
+.time-chip-sub {
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+.time-chip-small {
+  font-size: 0.7em;
+  color: #555;
+  margin-top: 2px;
+}
+
+.time-chip-aimed {
+  font-size: 0.7em;
+  text-decoration: line-through;
+  color: #a33;
+  margin-top: 2px;
+}
+
+/* Variants */
+.time-chip--regular { background: #e9eef5; }
+.time-chip--soon    { background: #ffe08a; }
+.time-chip--now     { background: #ff7675; color: #fff; }
+.time-chip--long    { background: #dbeafe; }
+.time-chip--unknown { background: #e5e7eb; color: #555; }
+
+/* ----------------- Status chips ------------------ */
+.status-chip {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+.status-cancelled { background: #dc2626; color: #fff; }
+.status-delay     { background: #f59e0b; color: #111; }
+.status-ended     { background: #9ca3af; color: #fff; }
+.status-first     { background: #3b82f6; color: #fff; }
+.status-last      { background: #6d28d9; color: #fff; }
+.status-imminent  { background: #16a34a; color: #fff; }
+.status-normal    { background: #10b981; color: #fff; }
+.status-unknown   { background: #9ca3af; color: #fff; }
+
+/* ----------------- RER ------------------ */
+.rer-column {
+  flex: 1;
+  margin: 0 8px;
+}
+
+.rer-list {
+  border-top: 1px solid #ddd;
+}
+
+.rer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
-  font-size: 20px;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
 }
 
-.brand small {
-  font-size: 14px;
-  font-weight: normal;
-  color: #b0c4e6;
+.rer-destination {
+  flex: 1;
+  font-weight: 600;
+}
+
+.rer-status {
+  flex-shrink: 0;
   margin-left: 6px;
 }
 
-.clock {
-  background: #000;
-  color: #ffd400; /* Jaune IDFM */
-  font-size: 18px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-/* ---------- Dashboard grid ---------- */
-.dashboard-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 16px;
-  padding: 16px;
-  flex: 1;
-  box-sizing: border-box;
-}
-
-/* ---------- Blocks ---------- */
-.block {
-  background: #f8f9fb;
-  border: 2px solid #dde6f5;
-  border-radius: 6px;
-  padding: 10px;
+.rer-times {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: 6px;
 }
 
-.block h3 {
-  margin: 0 0 8px 0;
-  padding-bottom: 4px;
-  font-size: 16px;
-  font-weight: bold;
-  border-bottom: 2px solid #dde6f5;
-  color: #001952;
+.rer-stops-marquee {
+  margin-top: 3px;
+  font-size: 0.8em;
+  color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: scroll-left 20s linear infinite;
 }
 
-/* ---------- Lignes style IDFM ---------- */
-.line-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #dde6f5;
-  padding: 6px;
+@keyframes scroll-left {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
-.badge {
-  font-weight: bold;
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-right: 10px;
-  color: #fff;
-  min-width: 32px;
-  text-align: center;
-}
-
-.badge.rer-a { background: #e51c23; }   /* Rouge RER A */
-.badge.bus-77 { background: #2E8B57; }  /* Vert Bus 77 */
-.badge.bus-201 { background: #DAA520; } /* Doré Bus 201 */
-
-.destination {
-  flex: 1;
-  font-size: 16px;
-  font-weight: bold;
-  color: #001952;
-}
-
-.time-box {
-  background: #000;
-  color: #ffd400;
-  font-weight: bold;
-  font-size: 16px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-left: 8px;
-  min-width: 50px;
-  text-align: center;
-}
-
-/* ---------- Courses Vincennes ---------- */
-.course-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #dde6f5;
-  padding: 6px;
-}
-.course-time {
-  background: #8B4513;
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
-  margin-right: 8px;
-}
-.course-info {
-  flex: 1;
-}
-.course-name {
-  font-weight: bold;
-  font-size: 14px;
-}
-.course-details {
-  font-size: 12px;
-  color: #555;
-}
-.course-prize {
-  font-size: 13px;
-  font-weight: bold;
-  color: #001952;
-}
-
-/* ---------- Vélib ---------- */
-.velib-block {
-  background: #fefefe;
-  border: 1px solid #dde6f5;
-  border-left: 6px solid #00aa55;
-  border-radius: 4px;
+/* ----------------- Bus ------------------ */
+.bus-block {
+  margin-bottom: 12px;
   padding: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  line-height: 1.5;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
-/* ---------- News ---------- */
-.news-item {
-  margin-bottom: 10px;
+.bus-summary {
+  font-size: 0.85em;
+  margin-bottom: 6px;
 }
-.news-title {
+
+.bus-summary.ok      { color: #16a34a; }
+.bus-summary.alert   { color: #dc2626; }
+.bus-summary.unknown { color: #9ca3af; }
+
+.bus-line {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-top: 1px solid #eee;
+}
+
+.line-pill {
+  display: inline-block;
+  min-width: 30px;
+  text-align: center;
   font-weight: bold;
-  margin-bottom: 4px;
+  font-size: 0.85em;
+  padding: 2px 6px;
+  margin-right: 6px;
+  border-radius: 6px;
+  color: var(--line-text, #fff);
+  background: var(--line-color, #2450a4);
 }
-.news-text {
-  font-size: 13px;
+
+.bus-destination {
+  flex: 1;
+}
+
+.bus-times {
+  display: flex;
+  gap: 4px;
+}
+
+/* ----------------- Autres blocs ------------------ */
+.empty-message {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.traffic-banner {
+  padding: 6px 10px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.traffic-banner.ok    { background: #10b981; color: #fff; }
+.traffic-banner.alert { background: #dc2626; color: #fff; }
+
+.traffic-ticker {
+  white-space: nowrap;
+  overflow: hidden;
+  animation: scroll-left 25s linear infinite;
+}
+
+/* Courses & météo */
+#courses-list div {
+  padding: 3px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#weather-temp {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+#weather-desc {
+  font-size: 0.9em;
   color: #444;
 }
 
-/* ---------- Traffic Banner ---------- */
-.traffic-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #dde6f5;
-  color: #001952;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  border-top: 2px solid #001952;
-}
-.traffic-alert {
-  color: #d9534f;
-  font-weight: bold;
-}
-.traffic-ok {
-  color: #2e8b57;
-  font-weight: bold;
+/* Vélib */
+[id^="velib-"] {
+  font-size: 0.85em;
+  padding: 3px 0;
 }
