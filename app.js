@@ -356,28 +356,6 @@ const ids = Object.values(LINES_SIRI);
   }
 }
  
-data.records.forEach(record => {
-      const fields = record.fields;
-      const desc = fields.description || fields.type || "Événement";
-      const rue = fields.rue || "";
-      const dateDebut = fields.date_debut;
-      const dateFin = fields.date_fin;
-      // Formater les heures
-      const debut = dateDebut ? new Date(dateDebut).toLocaleString("fr-FR",{ hour:"2-digit",minute:"2-digit"}) : "";
-      const fin = dateFin ? new Date(dateFin).toLocaleString("fr-FR",{ hour:"2-digit",minute:"2-digit"}) : "";
-
-      const div = document.createElement("div");
-      div.className = "event-row";
-      div.textContent = `${desc} ${rue ? "– " + rue : ""} (${debut}${fin ? " → " + fin : ""})`;
-      cont.appendChild(div);
-    });
-  } catch (e) {
-    console.error("refreshEventsCirculation", e);
-    const cont = document.getElementById("events-circulation-list");
-    if (cont) cont.textContent = "Informations circulation indisponibles.";
-  }
-}
-
 // === Ticker (alterne météo/heure, fête, horoscope, trafic) ===
 function updateTicker(){
   const slot = document.getElementById("ticker-slot");
