@@ -256,27 +256,23 @@ async function refreshCourses(){ const courses=await getVincennesCoursesToday();
 async function refreshRoad() {
   try {
     const url = PROXY + encodeURIComponent(
-      "https://static.data.gouv.fr/resources/temps-de-parcours-en-ile-de-france-sytadin/latest/data.csv"
+      "https://opendata.paris.fr/api/records/1.0/search/?dataset=comptages-routiers-permanents&sort=-date&rows=5"  // les 5 enregistrements les plus récents
     );
-
-    const csv = await fetchText(url, 15000);
-    if (!csv) throw new Error("CSV vide");
-
-    const rows = csv.split("\n").slice(1, 6); // ignorer l'entête, prendre 5 trajets
+    const data = await fetchJSON(url, 15000);
     const cont = document.getElementById("road-list");
     cont.innerHTML = "";
+    if (!data || !data.records) throw new Error("Pas de données trafic");
 
-    rows.forEach(line => {
-      const cols = line.split(";");
-      if (cols.length >= 3) {
-        const trajet = cols[0]?.trim();
-        const tempsActuel = cols[1]?.trim();
-        const tempsHabituel = cols[2]?.trim();
+    data.records.forEach(rec => {
+      const fields = rec.fields;
+      const libelle = fields.libelle || "Inconnu";
+      const debit = fields.debit || "-";
+      const taux = fields.taux_occupation_htps || fields.taux_occupation || "-";
+      const horodate = fields.date || "";
 
-        const div = document.createElement("div");
-        div.textContent = `${trajet} • ${tempsActuel} min (hab: ${tempsHabituel} min)`;
-        cont.appendChild(div);
-      }
+      const div = document.createElement("div");
+      div.textContent = `${libelle} • débit : ${debit} véhicules/h • taux : ${taux}% • ${new Date(horodate).toLocaleTimeString("fr-FR")}`;
+      cont.appendChild(div);
     });
   } catch (e) {
     console.error("refreshRoad", e);
@@ -285,7 +281,6 @@ async function refreshRoad() {
   }
 }
 
-// === Messages
 // === Messages trafic (IDFM GeneralMessage) ===
 async function fetchGeneralMessages() {
   const msgs = [];
@@ -320,6 +315,44 @@ const ids = Object.values(LINES_SIRI);
     banner.className = "traffic-banner alert";
     banner.textContent = msgs.join("  •  ");
     tickerData.traffic = `⚠️ ${msgs[0]}`;
+  }
+}
+// === Événements affectant la circulation parisienne ===
+async function refreshEventsCirculation() {
+  try {
+    // Appel à l'API OpenData Paris pour "circulation_evenement"
+    const url = PROXY + encodeURIComponent(
+      "https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-date_debut&rows=5"
+    );
+    const data = await fetchJSON(url, 15000);
+    const cont = document.getElementById("events-circulation-list");
+    if (!cont) return;
+    cont.innerHTML = "";
+
+    if (!data || !data.records || data.records.length === 0) {
+      cont.textContent = "Aucun événement de circulation actuellement.";
+      return;
+    }
+
+    data.records.forEach(record => {
+      const fields = record.fields;
+      const desc = fields.description || fields.type || "Événement";
+      const rue = fields.rue || "";
+      const dateDebut = fields.date_debut;
+      const dateFin = fields.date_fin;
+      // Formater les heures
+      const debut = dateDebut ? new Date(dateDebut).toLocaleString("fr-FR",{ hour:"2-digit",minute:"2-digit"}) : "";
+      const fin = dateFin ? new Date(dateFin).toLocaleString("fr-FR",{ hour:"2-digit",minute:"2-digit"}) : "";
+
+      const div = document.createElement("div");
+      div.className = "event-row";
+      div.textContent = `${desc} ${rue ? "– " + rue : ""} (${debut}${fin ? " → " + fin : ""})`;
+      cont.appendChild(div);
+    });
+  } catch (e) {
+    console.error("refreshEventsCirculation", e);
+    const cont = document.getElementById("events-circulation-list");
+    if (cont) cont.textContent = "Informations circulation indisponibles.";
   }
 }
 
