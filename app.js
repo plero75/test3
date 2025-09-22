@@ -1,4 +1,4 @@
-// Tableau d'affichage – Hippodrome Paris-Vincennes
+ // Tableau d'affichage – Hippodrome Paris-Vincennes
 
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
