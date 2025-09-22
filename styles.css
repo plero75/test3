@@ -1,8 +1,7 @@
-/* ----------------- Layout global ------------------ */
-body {
+   body {
   margin: 0;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: #f9fafc;
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
   color: #111;
   padding: 10px;
 }
@@ -11,151 +10,70 @@ header {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-}
-
-h2 {
-  margin: 8px 0;
-  font-size: 1.2em;
-}
-
-h3 {
-  margin: 0 0 0.3em 0;
-  font-size: 1.1em;
-  font-weight: 600;
-}
-
-/* ----------------- Horloge ------------------ */
-#clock {
-  font-size: 1.4em;
   font-weight: bold;
 }
 
-#lastUpdate {
-  font-size: 0.9em;
-  color: #555;
-}
+h2 { margin: 10px 0; font-size: 1.2em; }
 
-/* ----------------- Chips horaires ------------------ */
-.time-chip {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 50px;
-  margin: 0 4px;
-  padding: 4px 6px;
-  border-radius: 8px;
-  background: #e9eef5;
-  font-size: 0.9em;
+/* -------- RER & Bus style IDFM -------- */
+.rer-board, .bus-board { background: #fff; border-radius: 6px; padding: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.rer-row, .bus-line { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 4px 0; }
+.line-pill {
+  min-width: 28px;
   text-align: center;
-}
-
-.time-chip-main { font-weight: 600; font-size: 1.2em; }
-.time-chip-sub { font-size: 0.75em; opacity: 0.8; }
-.time-chip-small { font-size: 0.7em; color: #555; margin-top: 2px; }
-.time-chip-aimed { font-size: 0.7em; text-decoration: line-through; color: #a33; margin-top: 2px; }
-
-/* Variants */
-.time-chip--soon { background: #ffe08a; }
-.time-chip--now { background: #ff7675; color: #fff; }
-.time-chip--long { background: #dbeafe; }
-.time-chip--unknown { background: #e5e7eb; color: #555; }
-
-/* ----------------- Status chips ------------------ */
-.status-chip {
-  display: inline-block;
-  margin-left: 4px;
+  font-weight: bold;
   padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 0.75em;
-  font-weight: 600;
+  border-radius: 4px;
+  margin-right: 8px;
+  color: #fff;
+}
+.rer-destination, .bus-destination { flex: 1; font-weight: 600; color: #0a2f7f; }
+.time-box {
+  background: #000;
+  color: #ffcc00;
+  font-weight: bold;
+  font-size: 1.2em;
+  padding: 2px 8px;
+  margin-left: 4px;
+  border-radius: 4px;
 }
 
-.status-cancelled { background: #dc2626; color: #fff; }
-.status-delay     { background: #f59e0b; color: #111; }
-.status-ended     { background: #9ca3af; color: #fff; }
-.status-first     { background: #3b82f6; color: #fff; }
-.status-last      { background: #6d28d9; color: #fff; }
-.status-imminent  { background: #16a34a; color: #fff; }
-.status-normal    { background: #10b981; color: #fff; }
-.status-unknown   { background: #9ca3af; color: #fff; }
-
-/* ----------------- RER ------------------ */
-.rer-body { display: flex; }
-.rer-column { flex: 1; margin: 0 8px; }
-.rer-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
-.rer-destination { flex: 1; font-weight: 600; }
-.rer-status { margin-left: 6px; }
-.rer-times { display: flex; flex-wrap: wrap; gap: 4px; }
-.rer-stops-marquee { margin-top: 3px; font-size: 0.8em; color: #444; white-space: nowrap; overflow: hidden; animation: scroll-left 20s linear infinite; }
-
-@keyframes scroll-left { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
-/* ----------------- Bus ------------------ */
-.bus-block {
-  margin-bottom: 12px;
-  padding: 8px;
+/* -------- Vélib widgets -------- */
+.velib-row { display: flex; gap: 12px; }
+.velib-widget {
+  flex: 1;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-.bus-line { display: flex; align-items: center; padding: 4px 0; border-top: 1px solid #eee; }
-.line-pill { min-width: 30px; font-weight: bold; padding: 2px 6px; border-radius: 6px; color: var(--line-text,#fff); background: var(--line-color,#2450a4); margin-right: 6px; }
-.bus-destination { flex: 1; }
-.bus-times { display: flex; gap: 4px; }
-
-/* ----------------- Vélib ------------------ */
-.velib-card {
-  background: #ffffff;
-  border-radius: 14px;
   padding: 12px;
-  margin: 8px 0;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
+.velib-widget .icon { font-size: 2em; display: block; animation: pulse 2s infinite; }
+.velib-widget .value { font-size: 1.5em; font-weight: bold; }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
 
-.velib-title { font-size: 1em; font-weight: bold; margin-bottom: 8px; }
-.velib-row { display: flex; align-items: center; margin: 6px 0; }
-.velib-icon { font-size: 1.3em; width: 30px; text-align: center; }
-.velib-bar { flex: 1; height: 12px; border-radius: 6px; margin: 0 6px; background: #e5e7eb; overflow: hidden; }
-.velib-fill { height: 100%; border-radius: 6px; transform: scaleX(0); transform-origin: left; animation: fillBar 1s ease forwards; }
-.velib-fill.meca { background: #16a34a; }
-.velib-fill.elec { background: #3b82f6; }
-.velib-fill.docks { background: #6b7280; }
-.velib-value { font-size: 0.9em; min-width: 40px; text-align: right; font-weight: 600; }
-
-@keyframes fillBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
-/* ----------------- Courses ------------------ */
+/* -------- Courses -------- */
+.courses-board { display: flex; flex-direction: column; gap: 6px; }
 .course-card {
   background: #fff;
-  border-radius: 14px;
-  margin: 8px 0;
-  padding: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
   animation: fadeInUp 0.6s ease both;
 }
-.course-time { font-size: 1.2em; font-weight: bold; color: #dc2626; }
-.course-name { font-weight: 600; margin: 4px 0; }
-.course-meta { font-size: 0.85em; color: #555; display: flex; justify-content: space-between; }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.course-time { font-weight: bold; color: #c00; }
+.course-meta { font-size: 0.85em; color: #444; }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
 
-/* ----------------- Actus ------------------ */
-.news-card {
-  background: #fff;
-  border-radius: 14px;
-  margin: 8px 0;
-  padding: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-  animation: fadeIn 0.6s ease both;
-}
-.news-title { font-size: 1em; font-weight: 600; margin-bottom: 4px; }
-.news-desc { font-size: 0.85em; color: #555; }
-.news-source { margin-top: 6px; font-size: 0.75em; font-style: italic; color: #999; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* -------- News carousel -------- */
+.news-carousel { background: #fff; padding: 12px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-height: 80px; }
+.news-item { display: none; }
+.news-item.active { display: block; animation: fadeIn 1s ease; }
+.news-title { font-weight: bold; margin-bottom: 4px; }
+.news-desc { font-size: 0.9em; color: #444; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
-/* ----------------- Trafic ------------------ */
-.traffic-banner { padding: 6px 10px; font-weight: bold; text-align: center; font-size: 0.9em; margin: 10px 0; border-radius: 6px; }
-.traffic-banner.ok { background: #10b981; color: #fff; }
-.traffic-banner.alert { background: #dc2626; color: #fff; }
-.traffic-ticker { white-space: nowrap; overflow: hidden; animation: scroll-left 25s linear infinite; }
+/* -------- Trafic banner -------- */
+.traffic-banner { padding: 6px; margin: 8px 0; font-weight: bold; border-radius: 6px; text-align: center; }
+.traffic-banner.ok { background: #10b981; color:#fff; }
+.traffic-banner.alert { background: #dc2626; color:#fff; }
