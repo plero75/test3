@@ -250,34 +250,22 @@ async function refreshSaint(){
   }catch{ tickerData.saint="🎂 Fête du jour indisponible"; }
 }
 // === Horoscope (via proxy Worker + clé cachée) ===
+// === Horoscope (via proxy vers Horoscope-App API) ===
 async function fetchHoroscope(sign) {
-  const target = "https://api.freeastrologyapi.com/horoscope/daily";
+  const target = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=today`;
   const url = PROXY + encodeURIComponent(target);
 
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sunSign: sign,   // Exemple: "belier", "taureau", ...
-        day: "today"
-      })
-    });
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    return data?.prediction || "Horoscope indisponible.";
+    return data?.data?.horoscope_data || "Horoscope indisponible.";
   } catch (e) {
     console.error("fetchHoroscope", sign, e);
     return "Erreur horoscope";
   }
 }
 
-async function refreshHoroscopeCycle(){
-  const sign=SIGNS[signIdx]; const text=await fetchHoroscope(sign);
-  const label = sign.charAt(0).toUpperCase()+sign.slice(1);
-  tickerData.horoscope = `🔮 ${label} : ${text||"—"}`;
-  signIdx=(signIdx+1)%SIGNS.length;
-}
 function updateTicker(){
   const slot=document.getElementById("ticker-slot"); if(!slot) return;
   const pool=[tickerData.timeWeather, tickerData.saint, tickerData.horoscope, tickerData.traffic].filter(Boolean);
