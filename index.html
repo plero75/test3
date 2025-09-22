@@ -11,48 +11,50 @@
     <div id="lastUpdate"></div>
   </header>
 
-  <!-- Trafic global -->
+  <!-- Bandeau trafic -->
   <div id="traffic-banner" class="traffic-banner"></div>
 
-  <!-- Bloc RER -->
+  <!-- RER -->
   <section id="rer">
     <h2>🚆 RER A – Joinville-le-Pont</h2>
-    <div id="rer-body" class="rer-body"></div>
+    <div id="rer-body" class="rer-board"></div>
   </section>
 
-  <!-- Bloc Bus -->
+  <!-- Bus -->
   <section id="bus">
     <h2>🚌 Bus</h2>
-    <div id="bus-blocks"></div>
+    <div id="bus-blocks" class="bus-board"></div>
   </section>
 
-  <!-- Bloc Vélib -->
+  <!-- Vélib -->
   <section id="velib">
     <h2>🚲 Vélib’</h2>
-    <div id="velib-vincennes" class="velib-card"></div>
-    <div id="velib-breuil" class="velib-card"></div>
+    <div class="velib-row">
+      <div id="velib-vincennes" class="velib-widget"></div>
+      <div id="velib-breuil" class="velib-widget"></div>
+    </div>
   </section>
 
-  <!-- Bloc Météo -->
+  <!-- Météo -->
   <section id="weather">
     <h2>🌤 Météo</h2>
     <div id="weather-temp">--°</div>
     <div id="weather-desc">Météo indisponible</div>
   </section>
 
-  <!-- Bloc Courses -->
+  <!-- Courses -->
   <section id="courses">
-    <h2>🏇 Prochaines courses – Vincennes</h2>
-    <div id="courses-list"></div>
+    <h2>🏇 Courses Vincennes</h2>
+    <div id="courses-list" class="courses-board"></div>
   </section>
 
-  <!-- Bloc Actualités -->
+  <!-- Actualités -->
   <section id="news">
     <h2>📰 Actualités</h2>
-    <div id="news-content"></div>
+    <div id="news-carousel" class="news-carousel"></div>
   </section>
 
-  <!-- Bloc Trafic routier -->
+  <!-- Trafic routier -->
   <section id="road">
     <h2>🚗 Trafic routier</h2>
     <div id="road-list"></div>
@@ -61,4 +63,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
