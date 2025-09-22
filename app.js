@@ -1,3 +1,4 @@
+
 // Limiter le nombre d'éléments affichés en mode portrait
 function isPortraitMode() {
   return window.matchMedia("(orientation: portrait)").matches;
