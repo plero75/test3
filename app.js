@@ -256,7 +256,7 @@ async function refreshCourses(){ const courses=await getVincennesCoursesToday();
 async function refreshRoad() {
   try {
     const url = PROXY + encodeURIComponent(
-      "https://opendata.paris.fr/api/records/1.0/search/?dataset=comptages-routiers-permanents&sort=-date&rows=5"  // les 5 enregistrements les plus récents
+      "https://opendata.paris.fr/api/records/1.0/search/?dataset=comptages-routiers-permanents&sort=-horodate&rows=5"
     );
     const data = await fetchJSON(url, 15000);
     const cont = document.getElementById("road-list");
@@ -267,11 +267,12 @@ async function refreshRoad() {
       const fields = rec.fields;
       const libelle = fields.libelle || "Inconnu";
       const debit = fields.debit || "-";
-      const taux = fields.taux_occupation_htps || fields.taux_occupation || "-";
-      const horodate = fields.date || "";
+      const taux = fields.taux_occupation || fields.taux_occupation_htps || "-";
+      const hd = fields.horodate;  // champ horodate probable
+      const horodate = hd ? new Date(hd).toLocaleString("fr-FR",{ hour:"2-digit",minute:"2-digit"}) : "";
 
       const div = document.createElement("div");
-      div.textContent = `${libelle} • débit : ${debit} véhicules/h • taux : ${taux}% • ${new Date(horodate).toLocaleTimeString("fr-FR")}`;
+      div.textContent = `${libelle} • débit: ${debit} véhicules/h • taux: ${taux}% • ${horodate}`;
       cont.appendChild(div);
     });
   } catch (e) {
@@ -280,6 +281,7 @@ async function refreshRoad() {
     if (cont) cont.textContent = "Trafic routier indisponible 🚧";
   }
 }
+
 
 // === Messages trafic (IDFM GeneralMessage) ===
 async function fetchGeneralMessages() {
