@@ -1,114 +1,130 @@
-/* RESET */
+/* === Reset rapide === */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-body {
   font-family: "Segoe UI", Roboto, sans-serif;
-  background: #f0f3f8;
-  color: #222;
 }
 
-/* HEADER */
-.header {
+body {
+  background: #f9f9fb;
+  color: #333;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Header === */
+header {
+  background: #fff;
+  padding: 1rem 2rem;
+  border-bottom: 2px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #001f54;
-  color: #fff;
-  padding: 10px 20px;
+  flex-wrap: wrap;
 }
-.header .logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
 }
-.header .logo img {
-  height: 30px;
-}
-.last-update {
-  font-size: 0.9em;
-  opacity: 0.8;
+#clock, #lastUpdate {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 1rem;
 }
 
-/* ALERT BANNER */
-.traffic-banner {
-  text-align: center;
-  padding: 10px;
-  font-weight: bold;
-}
-.traffic-banner.ok {
-  background: #d4f8d4;
-  color: #065f08;
-}
-.traffic-banner.alert {
-  background: #ffdddd;
-  color: #a60000;
-}
-
-/* GRID */
-.grid {
+/* === Grid layout === */
+.grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.2rem;
+  padding: 1.5rem;
+  flex: 1;
 }
 
-/* CARD */
+/* === Cards === */
 .card {
   background: #fff;
   border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
 }
+.card.wide {
+  grid-column: span 2;
+}
+
 .card h2 {
-  font-size: 1.1em;
-  margin-bottom: 10px;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card .body {
+  font-size: 0.95rem;
+  color: #444;
 }
 
-/* COLORS PAR LIGNE */
-.card.rer { border-top: 5px solid #e63946; }
-.card.bus77 { border-top: 5px solid #2450a4; }
-.card.bus201 { border-top: 5px solid #2a9d8f; }
-.card.joinville { border-top: 5px solid #f4a261; }
-.card.velib { border-top: 5px solid #457b9d; }
-.card.meteo { border-top: 5px solid #00a8e8; }
-.card.road { border-top: 5px solid #6d6875; }
-.card.events { border-top: 5px solid #e76f51; }
-.card.best-route { border-top: 5px solid #7209b7; }
-
-/* BODY TEXT */
-.card-body .row {
+/* === Rows de données === */
+.row {
   display: flex;
   justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px dashed #eee;
+  align-items: center;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #f0f0f0;
 }
-.card-body .row:last-child {
+.row:last-child {
   border-bottom: none;
 }
 .dest {
-  flex: 1;
+  font-weight: 500;
 }
 .times {
   font-weight: bold;
-  min-width: 50px;
-  text-align: right;
 }
 
-/* WEATHER */
-.weather {
-  font-size: 1.5em;
-  margin-bottom: 5px;
-}
-
-/* FOOTER */
-.footer {
-  background: #001f54;
+/* === Pills lignes === */
+.line-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 0.5rem;
   color: #fff;
+}
+.rer-a { background: #e2231a; }
+
+/* === Traffic status === */
+.traffic-status {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.traffic-status.ok { color: #2e7d32; }
+.traffic-status.alert { color: #c62828; }
+
+/* === Footer ticker === */
+footer {
+  background: #fff;
+  border-top: 2px solid #eee;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
   text-align: center;
-  padding: 10px;
-  font-size: 0.85em;
-  margin-top: 20px;
+}
+#ticker-slot {
+  animation: fade-in 0.6s ease-in-out;
+}
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.6s;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
