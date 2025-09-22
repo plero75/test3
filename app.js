@@ -250,14 +250,14 @@ async function refreshRoad(){ try{ const data=await fetchJSON(PROXY+encodeURICom
 // === Messages trafic (IDFM GeneralMessage) ===
 async function fetchGeneralMessages() {
   const msgs = [];
-  // IMPORTANT: format attendu par PRIM = line:IDFM:<id>
   const ids = Object.values(LINES).map(l => `line:IDFM:${l.id}`);
 
   await Promise.all(ids.map(async (lineRef) => {
     const url = PROXY + encodeURIComponent(
-      `https://prim.iledefrance-mobilites.fr/marketplace/general-message?LineRef=${encodeURIComponent(lineRef)}`
+      `https://prim.iledefrance-mobilites.fr/marketplace/general-message?LineRef=${lineRef}`
     );
     const data = await fetchJSON(url, 12000);
+
     const deliveries = data?.Siri?.ServiceDelivery?.GeneralMessageDelivery || [];
     deliveries.forEach(del => {
       (del.InfoMessage || []).forEach(msg => {
@@ -265,7 +265,7 @@ async function fetchGeneralMessages() {
           cleanText(msg?.Content?.Message?.[0]?.MessageText?.[0]?.value ||
                     msg?.Content?.Message?.MessageText?.value ||
                     msg?.Description || "");
-        if (txt) msgs.push(txt);
+        if (txt) msgs.push(`[${lineRef}] ${txt}`);
       });
     });
   }));
