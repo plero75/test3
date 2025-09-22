@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Hippodrome Paris-Vincennes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Affichage dynamique – Hippodrome Paris-Vincennes</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -11,9 +11,19 @@
     <header class="app-header">
       <div class="branding">
         <h1>Hippodrome Paris-Vincennes</h1>
-        <p>Tableau d’information voyageurs</p>
+        <p>Tableau d'information voyageurs</p>
       </div>
-      <div id="clock">--:--</div>
+      <div class="header-right">
+        <div id="lastUpdate" class="last-update">Maj --:--</div>
+        <div id="clock" class="clock">--:--</div>
+      </div>
+      <div class="weather-widget">
+        <div id="weather-icon" class="weather-icon"></div>
+        <div class="weather-data">
+          <div id="weather-temp" class="weather-temp">--°</div>
+          <div id="weather-desc" class="weather-desc">Météo indisponible</div>
+        </div>
+      </div>
     </header>
 
     <div class="dashboard-grid">
@@ -21,10 +31,10 @@
       <div class="block rer">
         <div class="block-header">
           <h2>RER A</h2>
-          <span id="rer-status">Trafic normal</span>
+          <div class="block-sub" id="rer-station-info">Station Joinville-le-Pont · chargement...</div>
         </div>
         <div class="block-body rer-body" id="rer-body">
-          <!-- Colonnes “1er départ” remplies par app.js -->
+          <!-- Colonnes générées par JS -->
         </div>
       </div>
 
@@ -32,52 +42,36 @@
       <div class="block bus">
         <div class="block-header">
           <h2>Bus</h2>
-          <span id="bus-summary">3 stations suivies</span>
+          <div class="block-sub" id="bus-summary">Chargement...</div>
         </div>
         <div class="block-body bus-blocks" id="bus-blocks">
-          <!-- Sections “bus-block” générées par app.js -->
+          <!-- Stations de bus générées par JS -->
         </div>
       </div>
 
-      <!-- Bloc Info Rapide -->
+      <!-- Bloc Info -->
       <div class="block info">
-        <div class="block-header">
-          <h2>Info Rapide</h2>
+        <div class="info-block">
+          <h4>Vélib'</h4>
+          <div class="velib-card">
+            <div id="velib-vincennes">Hippodrome: chargement...</div>
+            <div id="velib-breuil">École du Breuil: chargement...</div>
+          </div>
         </div>
-        <div class="block-body info-body">
-          <!-- Météo -->
-          <div class="weather-widget" id="weather-widget">
-            <div id="weather-icon" class="weather-icon"></div>
-            <div>
-              <div id="weather-temp">--°</div>
-              <div id="weather-desc">Météo indisponible</div>
-            </div>
-          </div>
 
-          <!-- Vélib' -->
-          <div class="velib-card" id="velib-card">
-            <h3>Vélib'</h3>
-            <div id="velib-vincennes">🚲 -- méca  🔌 -- élec  🅿️ -- bornes</div>
-            <div id="velib-breuil">🚲 -- méca  🔌 -- élec  🅿️ -- bornes</div>
-          </div>
+        <div class="info-block">
+          <h4>Actualités</h4>
+          <div class="news-item" id="news-content">Chargement...</div>
+        </div>
 
-          <!-- Actualités -->
-          <div class="news-item" id="news-item">
-            <h3>Actualités</h3>
-            <div id="news-content">Chargement...</div>
-          </div>
+        <div class="info-block">
+          <h4>Courses Vincennes</h4>
+          <div class="courses-list" id="courses-list">Chargement...</div>
+        </div>
 
-          <!-- Courses hippiques -->
-          <div class="courses-list" id="courses-list">
-            <h3>Courses à Vincennes</h3>
-            <!-- Lignes de course générées par app.js -->
-          </div>
-
-          <!-- Trafic routier -->
-          <div class="road-list" id="road-list">
-            <h3>Info trafic Sytadin</h3>
-            <!-- Cartes trafic générées par app.js -->
-          </div>
+        <div class="info-block">
+          <h4>Info trafic</h4>
+          <div class="road-list" id="road-list">Chargement...</div>
         </div>
       </div>
     </div>
