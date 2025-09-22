@@ -322,19 +322,31 @@ const ids = Object.values(LINES_SIRI);
 // === Événements affectant la circulation parisienne ===
 async function refreshEventsCirculation() {
   try {
-    // Appel à l'API OpenData Paris pour "circulation_evenement"
     const url = PROXY + encodeURIComponent(
-      "https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-date_debut&rows=5"
+      "https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-datedebut&rows=5"
     );
     const data = await fetchJSON(url, 15000);
-    const cont = document.getElementById("events-circulation-list");
-    if (!cont) return;
+    const cont = document.getElementById("events-list");
     cont.innerHTML = "";
+    if (!data || !data.records) throw new Error("Pas de données événements");
 
-    if (!data || !data.records || data.records.length === 0) {
-      cont.textContent = "Aucun événement de circulation actuellement.";
-      return;
-    }
+    data.records.forEach(rec => {
+      const f = rec.fields;
+      const titre = f.objet || "Événement circulation";
+      const debut = f.datedebut ? new Date(f.datedebut).toLocaleDateString("fr-FR") : "";
+      const fin = f.datefin ? new Date(f.datefin).toLocaleDateString("fr-FR") : "";
+      const secteur = f.localisation || "";
+
+      const div = document.createElement("div");
+      div.textContent = `${titre} • ${secteur} (${debut} → ${fin})`;
+      cont.appendChild(div);
+    });
+  } catch (e) {
+    console.error("refreshEventsCirculation", e);
+    const cont = document.getElementById("events-list");
+    if (cont) cont.textContent = "Événements circulation indisponibles 🚧";
+  }
+}
 
     data.records.forEach(record => {
       const fields = record.fields;
