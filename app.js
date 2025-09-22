@@ -76,36 +76,77 @@ async function renderRer(){
 }
 
 // === BUS par arrêt ===
-async function renderBusForStop(stopId, containerId, trafficId) {
-  const cont=document.getElementById(containerId);
-  cont.innerHTML="Chargement…";
+// === BUS par arrêt ===
+async function renderBusByStop() {
+  const stops = [
+    { id: STOP_IDS.JOINVILLE, name: "Joinville-le-Pont", target: "bus-joinville-body" },
+    { id: STOP_IDS.HIPPODROME, name: "Hippodrome de Vincennes", target: "bus-hippodrome-body" },
+    { id: STOP_IDS.BREUIL, name: "École du Breuil", target: "bus-breuil-body" }
+  ];
 
-  const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stopId}`));
-  const visits = parseStop(data);
+  for (const stop of stops) {
+    const cont = document.getElementById(stop.target);
+    if (!cont) continue;
+    cont.innerHTML = "";
 
-  cont.innerHTML="";
-  if (!visits.length){ cont.textContent="Aucun passage"; return; }
+    // Appel API
+    const data = await fetchJSON(PROXY + encodeURIComponent(
+      `https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`
+    ));
+    const visits = parseStop(data);
 
-  const byDest = {};
-  visits.forEach(v=>{
-    if(!byDest[v.dest]) byDest[v.dest]=[];
-    byDest[v.dest].push(v);
-  });
+    if (!visits.length) {
+      cont.innerHTML = `<div class="traffic-sub alert">🚧 Aucun passage prévu</div>`;
+      continue;
+    }
 
-  for (const [dest, rows] of Object.entries(byDest)) {
-    const block=document.createElement("div");
-    block.className="dest-block";
-    block.innerHTML=`<div class="dest-title">${dest}</div>`;
-    rows.slice(0,4).forEach(r=>{
-      const div=document.createElement("div");
-      div.className="row";
-      div.innerHTML=`<span class="line-pill">${r.lineId}</span>
-        <div class="times">${r.minutes!=null?r.minutes+" min":"--"}</div>
-        <div class="status">${renderStatus(r.status)}</div>`;
-      block.appendChild(div);
+    // Regrouper par ligne
+    const byLine = {};
+    visits.forEach(v => {
+      if (!byLine[v.lineId]) byLine[v.lineId] = [];
+      byLine[v.lineId].push(v);
     });
-    cont.appendChild(block);
+
+    for (const [lineId, rows] of Object.entries(byLine)) {
+      const meta = await fetchLineMetadata(lineId);
+
+      // En-tête de ligne
+      const lineHeader = document.createElement("div");
+      lineHeader.className = "bus-line-header";
+      lineHeader.innerHTML = `<span class="line-pill" style="background:${meta.color};color:${meta.textColor}">${meta.code}</span>`;
+      cont.appendChild(lineHeader);
+
+      // Prochains passages regroupés par destination
+      const byDest = {};
+      rows.forEach(r => {
+        if (!byDest[r.dest]) byDest[r.dest] = [];
+        byDest[r.dest].push(r);
+      });
+
+      for (const [dest, destRows] of Object.entries(byDest)) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const destEl = document.createElement("div");
+        destEl.className = "dest";
+        destEl.textContent = dest;
+        row.appendChild(destEl);
+
+        const timesEl = document.createElement("div");
+        timesEl.className = "times";
+        destRows.slice(0, 4).forEach(r => {
+          const timeBox = document.createElement("div");
+          timeBox.className = "time-box";
+          timeBox.textContent = r.minutes != null ? `${r.minutes} min` : "--";
+          timesEl.appendChild(timeBox);
+        });
+        row.appendChild(timesEl);
+
+        cont.appendChild(row);
+      }
+    }
   }
+}
 
   // Messages trafic
   const tEl=document.getElementById(trafficId);
@@ -247,3 +288,4 @@ function startLoops(){
   setLastUpdate();
   startLoops();
 })();
+
