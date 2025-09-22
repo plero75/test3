@@ -154,7 +154,20 @@ async function computeBestRouteJoinville(){
 }
 
 // === Horoscope ===
-const SIGNS=["belier","taureau","gemeaux","cancer","lion","vierge","balance","scorpion","sagittaire","capricorne","verseau","poissons"];
+const SIGNS = [
+  { fr: "Bélier", en: "Aries" },
+  { fr: "Taureau", en: "Taurus" },
+  { fr: "Gémeaux", en: "Gemini" },
+  { fr: "Cancer", en: "Cancer" },
+  { fr: "Lion", en: "Leo" },
+  { fr: "Vierge", en: "Virgo" },
+  { fr: "Balance", en: "Libra" },
+  { fr: "Scorpion", en: "Scorpio" },
+  { fr: "Sagittaire", en: "Sagittarius" },
+  { fr: "Capricorne", en: "Capricorn" },
+  { fr: "Verseau", en: "Aquarius" },
+  { fr: "Poissons", en: "Pisces" }
+];
 let signIdx=0;
 async function fetchHoroscope(sign) {
   const target = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=today`;
