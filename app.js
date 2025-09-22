@@ -252,8 +252,38 @@ async function getVincennesCoursesToday(){
 }
 async function refreshCourses(){ const courses=await getVincennesCoursesToday(); const cont=document.getElementById("courses-list"); cont.innerHTML=""; courses.forEach(c=>{ const row=document.createElement("div"); row.textContent=`${c.heure} – ${c.nom}`; cont.appendChild(row); }); }
 
-// === Trafic routier ===
-async function refreshRoad(){ try{ const data=await fetchJSON(PROXY+encodeURIComponent("https://opendata.sytadin.fr/velc/SYTR.json"),15000); const cont=document.getElementById("road-list"); cont.innerHTML=""; (data||[]).slice(0,5).forEach(e=>{ const div=document.createElement("div"); div.textContent=`${e.libelle||""} • ${e.commentaire||""}`; cont.appendChild(div); }); }catch{} }
+// === Trafic routier (via data.gouv Sytadin) ===
+async function refreshRoad() {
+  try {
+    const url = PROXY + encodeURIComponent(
+      "https://static.data.gouv.fr/resources/temps-de-parcours-en-ile-de-france-sytadin/latest/data.csv"
+    );
+
+    const csv = await fetchText(url, 15000);
+    if (!csv) throw new Error("CSV vide");
+
+    const rows = csv.split("\n").slice(1, 6); // ignorer l'entête, prendre 5 trajets
+    const cont = document.getElementById("road-list");
+    cont.innerHTML = "";
+
+    rows.forEach(line => {
+      const cols = line.split(";");
+      if (cols.length >= 3) {
+        const trajet = cols[0]?.trim();
+        const tempsActuel = cols[1]?.trim();
+        const tempsHabituel = cols[2]?.trim();
+
+        const div = document.createElement("div");
+        div.textContent = `${trajet} • ${tempsActuel} min (hab: ${tempsHabituel} min)`;
+        cont.appendChild(div);
+      }
+    });
+  } catch (e) {
+    console.error("refreshRoad", e);
+    const cont = document.getElementById("road-list");
+    if (cont) cont.textContent = "Trafic routier indisponible 🚧";
+  }
+}
 
 // === Messages
 // === Messages trafic (IDFM GeneralMessage) ===
