@@ -92,3 +92,19 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sa
 
 /* Anim */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.bus-stop-block {
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.bus-stop-title {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+.bus-line-header {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
