@@ -100,11 +100,29 @@ async function renderRer(){
   if(!visits.length){ cont.textContent="Aucun passage"; return; }
 
   visits.forEach(v=>{
-    const row=document.createElement("div"); row.className="row";
-    row.innerHTML=`<span class="line-pill rer-a">A</span>
-      <div class="dest">${v.dest}</div>
-timesEl.innerHTML = formatTimeBox(r);
-      <div class="status">${renderStatus(v.status, v.minutes)}</div>`;
+    const row=document.createElement("div");
+    row.className="row";
+
+    const pill=document.createElement("span");
+    pill.className="line-pill rer-a";
+    pill.textContent="A";
+    row.appendChild(pill);
+
+    const destEl=document.createElement("div");
+    destEl.className="dest";
+    destEl.textContent=v.dest || "—";
+    row.appendChild(destEl);
+
+    const timesEl=document.createElement("div");
+    timesEl.className="times";
+    timesEl.innerHTML=formatTimeBox(v);
+    row.appendChild(timesEl);
+
+    const statusEl=document.createElement("div");
+    statusEl.className="status";
+    statusEl.innerHTML=renderStatus(v.status, v.minutes);
+    row.appendChild(statusEl);
+
     cont.appendChild(row);
   });
 }
