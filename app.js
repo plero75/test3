@@ -51,20 +51,26 @@ function parseStop(data){
 
 // === Statuts départ ===
 function renderStatus(status, minutes){
+  const normalized = (status || "").toLowerCase();
+
+  switch(normalized){
+    case "cancelled":
+      return `<span class="time-cancelled">❌ Supprimé</span>`;
+    case "delayed":
+      return `<span class="time-delay">⏳ Retardé</span>`;
+    case "last":
+      return `<span class="time-last">🔴 Dernier passage</span>`;
+    case "notstopping":
+      return `<span class="time-cancelled">🚫 Non desservi</span>`;
+    case "noservice":
+      return `<span class="time-cancelled">⚠️ Service terminé</span>`;
+  }
+
   if (minutes === 0) {
     return `<span class="time-imminent">🚉 À quai</span>`;
   }
-  if (minutes !== null && minutes <= 1) {
-    return `<span class="time-imminent">🟢 Imminent</span>`;
-  }
-  switch(status){
-    case "cancelled":   return `<span class="time-cancelled">❌ Supprimé</span>`;
-    case "delayed":     return `<span class="time-delay">⏳ Retardé</span>`;
-    case "last":        return `<span class="time-last">🔴 Dernier passage</span>`;
-    case "notStopping": return `<span class="time-cancelled">🚫 Non desservi</span>`;
-    case "noService":   return `<span class="time-cancelled">⚠️ Service terminé</span>`;
-    default:            return `<span class="time-estimated">🟢 OK</span>`;
-  }
+
+  return `<span class="time-estimated">🟢 OK</span>`;
 }
 
 function formatTimeBox(v){
