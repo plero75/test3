@@ -91,6 +91,39 @@ async function fetchLineMetadata(lineId){
   lineMetaCache.set(lineId, meta); return meta;
 }
 
+function normaliseLineLabel(label=""){
+  return label.replace(/\s+/g," ").trim();
+}
+
+function selectLineLabel(codes=[], meta={}){
+  const cleaned=codes.map(normaliseLineLabel).filter(Boolean);
+  const numericFirst=cleaned.sort((a,b)=>{
+    const aNum=/^\d+$/.test(a)?parseInt(a,10):Infinity;
+    const bNum=/^\d+$/.test(b)?parseInt(b,10):Infinity;
+    if(aNum!==Infinity || bNum!==Infinity){
+      if(aNum===bNum) return a.localeCompare(b,"fr",{sensitivity:"base"});
+      return aNum-bNum;
+    }
+    return a.localeCompare(b,"fr",{sensitivity:"base"});
+  });
+  if(numericFirst[0]) return numericFirst[0];
+  const fallback=normaliseLineLabel(meta?.code||meta?.id||"");
+  return fallback || "?";
+}
+
+function compareLineCodes(a="", b=""){
+  const normA=a.replace(/\s+/g,"").toUpperCase();
+  const normB=b.replace(/\s+/g,"").toUpperCase();
+  const aIsNum=/^\d+$/.test(normA);
+  const bIsNum=/^\d+$/.test(normB);
+  if(aIsNum && bIsNum){
+    return parseInt(normA,10)-parseInt(normB,10);
+  }
+  if(aIsNum) return -1;
+  if(bIsNum) return 1;
+  return normA.localeCompare(normB,"fr",{sensitivity:"base"});
+}
+
 // === Stops parsing ===
 function parseStop(data){
   const visits=data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit;
@@ -160,7 +193,13 @@ async function renderBusByStop() {
   for (const stop of stops) {
     const block = document.createElement("div");
     block.className = "bus-stop-block";
-    block.innerHTML = `<h3 class="bus-stop-title">🚏 ${stop.name}</h3>`;
+    const header = document.createElement("div");
+    header.className = "bus-stop-header";
+    const title = document.createElement("div");
+    title.className = "bus-stop-name";
+    title.textContent = stop.name;
+    header.appendChild(title);
+    block.appendChild(header);
 
     const content = document.createElement("div");
     content.className = "bus-stop-content";
@@ -178,70 +217,121 @@ async function renderBusByStop() {
       continue;
     }
 
-    const byDestination = new Map();
+    const linesMap = new Map();
     visits.forEach(v => {
-      const key = v.dest || "Destination inconnue";
-      if (!byDestination.has(key)) byDestination.set(key, []);
-      byDestination.get(key).push(v);
+      const lineKey = v.lineId || v.lineCode || "";
+      if (!linesMap.has(lineKey)) {
+        linesMap.set(lineKey, {
+          lineId: v.lineId,
+          lineCodes: new Set(),
+          destinations: new Map()
+        });
+      }
+      const group = linesMap.get(lineKey);
+      if (v.lineCode) group.lineCodes.add(v.lineCode);
+      const destName = v.dest || "Destination inconnue";
+      if (!group.destinations.has(destName)) group.destinations.set(destName, []);
+      group.destinations.get(destName).push(v);
     });
 
-    const sortedDestinations = [...byDestination.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr", { sensitivity: "base" }));
+    const lineEntries = [];
+    for (const group of linesMap.values()) {
+      const meta = await fetchLineMetadata(group.lineId);
+      const codes = [...group.lineCodes];
+      const label = selectLineLabel(codes, meta);
+      const rows = [];
+      group.destinations.forEach((list, destName) => {
+        const ordered = list.slice().sort((a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity));
+        const times = ordered.filter(v => Number.isFinite(v.minutes)).slice(0, 3).map(v => v.minutes);
+        const distance = ordered.find(v => !Number.isFinite(v.minutes) && v.distance)?.distance || null;
+        const status = ordered.find(v => v.statusLabel)?.statusLabel || null;
+        const next = Number.isFinite(ordered[0]?.minutes) ? ordered[0].minutes : (Number.isFinite(times[0]) ? times[0] : Infinity);
+        rows.push({ dest: destName, times, distance, status, next });
+      });
+      rows.sort((a, b) => a.next - b.next);
+      lineEntries.push({ label, meta, rows });
+    }
 
-    for (const [destination, rows] of sortedDestinations) {
-      const destGroup = document.createElement("div");
-      destGroup.className = "bus-destination-group";
-      const title = document.createElement("div");
-      title.className = "bus-destination-title";
-      title.textContent = `➡️ ${destination}`;
-      destGroup.appendChild(title);
+    lineEntries.sort((a, b) => compareLineCodes(a.label, b.label));
 
-      const orderedRows = rows.slice().sort((a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity));
-      for (const r of orderedRows) {
-        const meta = await fetchLineMetadata(r.lineId);
-        const lineLabel = r.lineCode && r.lineCode !== "?" ? r.lineCode : meta.code;
-        const row = document.createElement("div");
-        row.className = "row bus-row";
-        row.style.setProperty("--line-color", meta.color);
-        row.style.setProperty("--line-text-color", meta.textColor);
-        if (r.statusCodes?.some(code => /service.?terminated|completed/i.test(code))) {
-          row.classList.add("bus-row-ended");
+    const grid = document.createElement("div");
+    grid.className = "bus-line-grid";
+
+    lineEntries.forEach(entry => {
+      const card = document.createElement("div");
+      card.className = "bus-line-card";
+      card.style.setProperty("--line-color", entry.meta.color);
+      card.style.setProperty("--line-text-color", entry.meta.textColor);
+
+      const lineHeader = document.createElement("div");
+      lineHeader.className = "bus-line-header";
+
+      const pill = document.createElement("span");
+      pill.className = "line-pill";
+      pill.textContent = entry.label;
+      lineHeader.appendChild(pill);
+
+      const subtitle = document.createElement("div");
+      subtitle.className = "bus-line-title";
+      subtitle.textContent = `Ligne ${entry.label}`;
+      lineHeader.appendChild(subtitle);
+
+      card.appendChild(lineHeader);
+
+      const body = document.createElement("div");
+      body.className = "bus-line-body";
+
+      entry.rows.forEach(row => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "bus-line-row";
+        if (row.status && /terminé/i.test(row.status)) {
+          rowEl.classList.add("bus-line-row-ended");
         }
 
-        const pill = document.createElement("span");
-        pill.className = "line-pill";
-        pill.textContent = lineLabel;
-        row.appendChild(pill);
+        const destEl = document.createElement("div");
+        destEl.className = "bus-line-destination";
+        destEl.textContent = row.dest;
+        rowEl.appendChild(destEl);
 
-        const info = document.createElement("div");
-        info.className = "dest";
-        info.textContent = r.origin ? `Depuis ${r.origin}` : destination;
-        row.appendChild(info);
+        const timesEl = document.createElement("div");
+        timesEl.className = "bus-times";
 
-        const time = document.createElement("div");
-        time.className = "times";
-        if (r.statusLabel) {
+        if (row.status) {
           const statusSpan = document.createElement("span");
           statusSpan.className = "status-tag";
-          statusSpan.textContent = r.statusLabel;
-          time.appendChild(statusSpan);
+          statusSpan.textContent = row.status;
+          timesEl.appendChild(statusSpan);
         }
-        if (Number.isFinite(r.minutes)) {
-          const minuteSpan = document.createElement("span");
-          minuteSpan.textContent = `${r.minutes} min`;
-          time.appendChild(minuteSpan);
-        } else if (r.distance) {
+
+        if (row.times.length) {
+          row.times.forEach(min => {
+            const minuteSpan = document.createElement("span");
+            minuteSpan.className = "time-box";
+            minuteSpan.textContent = `${min}`;
+            timesEl.appendChild(minuteSpan);
+          });
+        }
+
+        if (row.distance) {
           const distanceSpan = document.createElement("span");
-          distanceSpan.textContent = r.distance;
-          time.appendChild(distanceSpan);
+          distanceSpan.className = "distance-tag";
+          distanceSpan.textContent = row.distance;
+          timesEl.appendChild(distanceSpan);
         }
-        if (!time.childNodes.length) time.textContent = "--";
-        row.appendChild(time);
 
-        destGroup.appendChild(row);
-      }
+        if (!timesEl.childNodes.length) {
+          timesEl.textContent = "--";
+        }
 
-      content.appendChild(destGroup);
-    }
+        rowEl.appendChild(timesEl);
+        body.appendChild(rowEl);
+      });
+
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+
+    content.appendChild(grid);
   }
 }
 
