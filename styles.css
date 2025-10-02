@@ -49,6 +49,42 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sa
 .times{display:flex;gap:6px}
 .time-box{background:var(--time-box-bg);color:var(--time-box-fg);font-weight:900;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:6px;min-width:40px;text-align:center}
 
+#rer-body{display:flex;justify-content:center}
+.rer-card{width:100%;max-width:400px;border-radius:20px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(15,23,42,.08);background:linear-gradient(150deg,rgba(0,160,226,.16),rgba(255,255,255,.92));display:flex;flex-direction:column}
+.rer-card-header{background:linear-gradient(130deg,#0a2f7f,#00a0e2);color:#fff;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.rer-card-header-main{display:flex;align-items:center;gap:14px}
+.rer-card-header-text{display:flex;flex-direction:column;gap:2px}
+.rer-card-header .line-pill{margin-right:0;min-width:44px;height:34px;font-size:1.05rem;background:var(--idfm-red)}
+.rer-card-title{font-size:1.05rem;font-weight:800;letter-spacing:.01em}
+.rer-card-subtitle{font-size:.85rem;opacity:.9}
+.rer-card-header-hint{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.8;font-weight:700}
+.rer-card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px}
+.rer-columns{display:grid;grid-template-columns:84px 1fr 112px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;padding:0 4px}
+.rer-col{display:flex;align-items:center}
+.rer-col-info{justify-content:flex-end}
+.rer-destination-group{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:inset 0 0 0 1px rgba(15,23,42,.05);display:flex;flex-direction:column;gap:12px}
+.rer-destination-title{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em}
+.rer-destination-count{font-size:.7rem;color:var(--muted);font-weight:600}
+.rer-train-list{display:flex;flex-direction:column;gap:10px}
+.rer-train-row{display:grid;grid-template-columns:84px 1fr 112px;gap:14px;align-items:center}
+.rer-train-wait{display:flex;align-items:center;gap:6px}
+.rer-wait-pill{background:var(--idfm-red);color:#fff;font-weight:800;border-radius:999px;padding:4px 14px;min-width:48px;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.04em;box-shadow:0 2px 6px rgba(226,0,26,.28)}
+.rer-wait-label{font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.14em}
+.rer-train-info{display:flex;flex-direction:column;gap:2px}
+.rer-train-origin{font-weight:600;color:var(--ink)}
+.rer-train-meta{font-size:.78rem;color:var(--muted);text-align:right}
+.rer-empty{background:rgba(255,255,255,.9);border-radius:16px;padding:20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:6px;box-shadow:inset 0 0 0 1px rgba(148,163,184,.2)}
+.rer-empty strong{font-size:.92rem;color:var(--ink)}
+.rer-empty-hint{font-size:.75rem}
+
+@media(max-width:720px){
+  #rer-body{justify-content:stretch}
+  .rer-card{max-width:none}
+  .rer-columns{grid-template-columns:74px 1fr 90px}
+  .rer-train-row{grid-template-columns:1fr;gap:6px}
+  .rer-train-meta{text-align:left}
+}
+
 #bus-blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:6px}
 #bus-blocks .row{border-bottom:none}
 .bus-stop-block{background:#f8fafc;border-radius:12px;padding:10px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:180px}
