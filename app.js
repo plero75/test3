@@ -134,11 +134,7 @@ async function renderRer(){
   card.className="rer-card";
   card.innerHTML=`
     <div class="rer-card-header">
-      <span class="line-pill rer-a">A</span>
-      <div class="rer-card-header-text">
-        <div class="rer-card-title">RER A</div>
-        <div class="rer-card-subtitle">Joinville-le-Pont → Paris</div>
-      </div>
+ 
     </div>
   `;
 
@@ -158,11 +154,12 @@ async function renderRer(){
   if(!visits.length){
     const empty=document.createElement("div");
     empty.className="rer-empty";
-    empty.textContent="Aucune desserte vers Paris pour le moment.";
+ 
     body.appendChild(empty);
     return;
   }
 
+ 
   const groupsMap=new Map();
   visits.forEach(v=>{
     const key=v.dest||"Destination inconnue";
@@ -189,8 +186,7 @@ async function renderRer(){
 
     const title=document.createElement("div");
     title.className="rer-destination-title";
-    title.textContent=group.dest;
-    groupEl.appendChild(title);
+     groupEl.appendChild(title);
 
     const list=document.createElement("div");
     list.className="rer-train-list";
