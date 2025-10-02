@@ -125,16 +125,113 @@ function parseStop(data){
 
 // === RER ===
 async function renderRer(){
+  const container=document.getElementById("rer-body");
+  if(!container) return;
+
+  container.innerHTML="";
+
+  const card=document.createElement("div");
+  card.className="rer-card";
+  card.innerHTML=`
+    <div class="rer-card-header">
+      <span class="line-pill rer-a">A</span>
+      <div class="rer-card-header-text">
+        <div class="rer-card-title">RER A</div>
+        <div class="rer-card-subtitle">Joinville-le-Pont → Paris</div>
+      </div>
+    </div>
+  `;
+
+  const body=document.createElement("div");
+  body.className="rer-card-body";
+  body.innerHTML=`<div class="rer-empty">Chargement des circulations…</div>`;
+  card.appendChild(body);
+  container.appendChild(card);
+
   const data=await fetchJSON(PROXY+encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`));
-  const visits=parseStop(data).filter(v=>/paris|nation|châtelet|haussmann/i.test(v.dest||"")).slice(0,6);
-  const cont=document.getElementById("rer-body");
-  cont.innerHTML="";
+  const visits=parseStop(data)
+    .filter(v=>/paris|nation|châtelet|haussmann/i.test(v.dest||""))
+    .slice(0,6);
+
+  body.innerHTML="";
+
+  if(!visits.length){
+    const empty=document.createElement("div");
+    empty.className="rer-empty";
+    empty.textContent="Aucune desserte vers Paris pour le moment.";
+    body.appendChild(empty);
+    return;
+  }
+
+  const groupsMap=new Map();
   visits.forEach(v=>{
-    const row=document.createElement("div"); row.className="row";
-    const pill=document.createElement("span"); pill.className="line-pill rer-a"; pill.textContent="A"; row.appendChild(pill);
-    const dest=document.createElement("div"); dest.className="dest"; dest.textContent=v.dest; row.appendChild(dest);
-    const time=document.createElement("div"); time.className="times"; time.textContent=(v.minutes!=null?`${v.minutes} min`:"--"); row.appendChild(time);
-    cont.appendChild(row);
+    const key=v.dest||"Destination inconnue";
+    if(!groupsMap.has(key)) groupsMap.set(key,[]);
+    groupsMap.get(key).push(v);
+  });
+
+  const groups=Array.from(groupsMap.entries()).map(([dest, list])=>{
+    const sorted=list.slice().sort((a,b)=>{
+      const aMin=a.minutes!=null?a.minutes:Number.POSITIVE_INFINITY;
+      const bMin=b.minutes!=null?b.minutes:Number.POSITIVE_INFINITY;
+      return aMin-bMin;
+    });
+    return { dest, visits: sorted };
+  }).sort((a,b)=>{
+    const aMin=a.visits[0]?.minutes!=null?a.visits[0].minutes:Number.POSITIVE_INFINITY;
+    const bMin=b.visits[0]?.minutes!=null?b.visits[0].minutes:Number.POSITIVE_INFINITY;
+    return aMin-bMin;
+  });
+
+  groups.forEach(group=>{
+    const groupEl=document.createElement("div");
+    groupEl.className="rer-destination-group";
+
+    const title=document.createElement("div");
+    title.className="rer-destination-title";
+    title.textContent=group.dest;
+    groupEl.appendChild(title);
+
+    const list=document.createElement("div");
+    list.className="rer-train-list";
+
+    group.visits.forEach(visit=>{
+      const row=document.createElement("div");
+      row.className="rer-train-row";
+
+      const waitCell=document.createElement("div");
+      waitCell.className="rer-train-wait";
+      const waitPill=document.createElement("span");
+      waitPill.className="rer-wait-pill";
+      waitPill.textContent=visit.minutes!=null?visit.minutes:"--";
+      waitCell.appendChild(waitPill);
+      if(visit.minutes!=null){
+        const waitLabel=document.createElement("span");
+        waitLabel.className="rer-wait-label";
+        waitLabel.textContent="min";
+        waitCell.appendChild(waitLabel);
+      }
+      row.appendChild(waitCell);
+
+      const info=document.createElement("div");
+      info.className="rer-train-info";
+      const origin=document.createElement("div");
+      origin.className="rer-train-origin";
+      origin.textContent=visit.origin||"Origine non communiquée";
+      info.appendChild(origin);
+      row.appendChild(info);
+
+      const meta=document.createElement("div");
+      meta.className="rer-train-meta";
+      const metaParts=[visit.statusLabel, visit.distance].filter(Boolean);
+      meta.textContent=metaParts.join(" · ");
+      row.appendChild(meta);
+
+      list.appendChild(row);
+    });
+
+    groupEl.appendChild(list);
+    body.appendChild(groupEl);
   });
 }
 
