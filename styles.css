@@ -50,28 +50,12 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sa
 .time-box{background:var(--time-box-bg);color:var(--time-box-fg);font-weight:900;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:6px;min-width:40px;text-align:center}
 
 #rer-body{display:flex;justify-content:center}
-.rer-card{width:100%;max-width:440px;background:linear-gradient(160deg,rgba(0,160,226,.08),rgba(226,0,26,.08));border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
-.rer-card-header{background:var(--idfm-red);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:14px}
-.rer-card-header-text{display:flex;flex-direction:column;gap:2px}
-.rer-card-header .line-pill{margin-right:0;min-width:44px;height:34px;font-size:1.05rem}
-.rer-card-title{font-size:1.05rem;font-weight:800;letter-spacing:.01em}
-.rer-card-subtitle{font-size:.85rem;opacity:.9}
-.rer-card-body{padding:18px;display:flex;flex-direction:column;gap:14px}
-.rer-destination-group{background:#fff;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1px rgba(15,23,42,.06);display:flex;flex-direction:column;gap:12px}
-.rer-destination-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
-.rer-train-list{display:flex;flex-direction:column;gap:12px}
-.rer-train-row{display:grid;grid-template-columns:80px 1fr 112px;gap:14px;align-items:center}
-.rer-train-wait{display:flex;align-items:center;gap:6px}
-.rer-wait-pill{background:var(--idfm-red);color:#fff;font-weight:800;border-radius:999px;padding:4px 14px;min-width:48px;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.rer-wait-label{font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.14em}
-.rer-train-info{display:flex;flex-direction:column;gap:2px}
-.rer-train-origin{font-weight:600;color:var(--ink)}
-.rer-train-meta{font-size:.8rem;color:var(--muted);text-align:right}
-.rer-empty{background:rgba(255,255,255,.78);border-radius:14px;padding:18px;text-align:center;font-weight:600;color:var(--muted)}
+ 
 
 @media(max-width:720px){
   #rer-body{justify-content:stretch}
   .rer-card{max-width:none}
+ 
   .rer-train-row{grid-template-columns:1fr;gap:6px}
   .rer-train-meta{text-align:left}
 }
