@@ -141,22 +141,34 @@ async function renderRer(){
 // === BUS par arrêt ===
 async function renderBusByStop() {
   const stops = [
+    { id: STOP_IDS.JOINVILLE, name: "Joinville-le-Pont RER" },
     { id: STOP_IDS.HIPPODROME, name: "Hippodrome de Vincennes" },
-    { id: STOP_IDS.BREUIL, name: "École du Breuil" },
-    { id: STOP_IDS.JOINVILLE, name: "Joinville-le-Pont" }
+    { id: STOP_IDS.BREUIL, name: "École du Breuil" }
   ];
 
   const container = document.getElementById("bus-blocks");
   container.innerHTML = "";
 
   for (const stop of stops) {
-    const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`));
-    const visits = parseStop(data);
-    if (!visits.length) continue;
-
     const block = document.createElement("div");
     block.className = "bus-stop-block";
     block.innerHTML = `<h3 class="bus-stop-title">🚏 ${stop.name}</h3>`;
+
+    const content = document.createElement("div");
+    content.className = "bus-stop-content";
+    block.appendChild(content);
+    container.appendChild(block);
+
+    const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`));
+    const visits = parseStop(data);
+
+    if (!visits.length) {
+      const empty = document.createElement("div");
+      empty.className = "bus-empty";
+      empty.textContent = "Aucun passage affiché";
+      content.appendChild(empty);
+      continue;
+    }
 
     const byDestination = new Map();
     visits.forEach(v => {
@@ -165,7 +177,9 @@ async function renderBusByStop() {
       byDestination.get(key).push(v);
     });
 
-    for (const [destination, rows] of byDestination.entries()) {
+    const sortedDestinations = [...byDestination.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr", { sensitivity: "base" }));
+
+    for (const [destination, rows] of sortedDestinations) {
       const destGroup = document.createElement("div");
       destGroup.className = "bus-destination-group";
       const title = document.createElement("div");
@@ -217,9 +231,8 @@ async function renderBusByStop() {
         destGroup.appendChild(row);
       }
 
-      block.appendChild(destGroup);
+      content.appendChild(destGroup);
     }
-    container.appendChild(block);
   }
 }
 
