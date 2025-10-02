@@ -52,6 +52,33 @@ function minutesFromISO(iso){ if(!iso) return null; return Math.max(0, Math.roun
 function setClock(){ const el=document.getElementById("clock"); if(el) el.textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
 function setLastUpdate(){ const el=document.getElementById("lastUpdate"); if(el) el.textContent=`Maj ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`; }
 
+function flattenStatuses(...values){
+  const out=[];
+  const pushVal=(val)=>{
+    if(val==null) return;
+    if(Array.isArray(val)){
+      val.forEach(pushVal);
+    }else if(typeof val==="object" && "value" in val){
+      pushVal(val.value);
+    }else{
+      out.push(String(val));
+    }
+  };
+  values.forEach(pushVal);
+  return out;
+}
+
+function statusLabelFromCodes(codes){
+  if(!codes?.length) return null;
+  const normalized=codes.map(c=>c.toLowerCase());
+  if(normalized.some(c=>/service.?terminated|completed/.test(c))) return "Service terminé";
+  if(normalized.some(c=>/cancel/.test(c))) return "Course annulée";
+  if(normalized.some(c=>/not.?yet.?operating/.test(c))) return "Pas encore en service";
+  if(normalized.some(c=>/no.?report/.test(c))) return "Pas d'information";
+  if(normalized.some(c=>/arrived|departed/.test(c))) return "Passage effectué";
+  return null;
+}
+
 // === Référentiel lignes (couleurs IDFM) ===
 function normaliseColor(hex){ if(!hex) return null; const c=hex.toString().trim().replace(/^#/,""); return /^[0-9a-fA-F]{6}$/.test(c)?`#${c}`:null; }
 function fallbackLineMeta(id){ return { id, code:id, color:"#2450a4", textColor:"#fff" }; }
@@ -71,9 +98,36 @@ function parseStop(data){
   return visits.map(v=>{
     const mv=v.MonitoredVehicleJourney||{}; const call=mv.MonitoredCall||{};
     const lineRef=mv.LineRef?.value||mv.LineRef||""; const lineId=(lineRef.match(/C\d{5}/)||[null])[0];
+    const publishedLineName = cleanText(
+      mv.PublishedLineName?.[0]?.value ||
+      mv.PublishedLineName?.value ||
+      ""
+    );
+    const shortRefMatch = (lineRef.match(/::([^:]+):?$/) || [null, ""])[1];
+    const lineCode = publishedLineName || shortRefMatch || (lineId ? lineId.replace(/^C0+/, "") : "");
     const destDisplay=cleanText(call.DestinationDisplay?.[0]?.value||"");
     const expected=call.ExpectedDepartureTime||call.ExpectedArrivalTime||null;
-    return { lineId, dest: destDisplay, minutes: minutesFromISO(expected) };
+    const originName=cleanText(mv.OriginName?.[0]?.value||mv.OriginName?.value||"");
+    const distanceText=cleanText(call.Extensions?.Distances?.PresentableDistance||"");
+    const statusCodes=flattenStatuses(
+      call.DepartureStatus,
+      call.ArrivalStatus,
+      mv.ProgressStatus,
+      call.Extensions?.CallStatus?.Status,
+      call.Extensions?.CallStatus?.Statuses,
+      call.Extensions?.StopCallStatus?.Status,
+      call.Extensions?.StopCallStatus?.Statuses
+    );
+    return {
+      lineId,
+      dest: destDisplay || "Destination inconnue",
+      lineCode: lineCode || "?",
+      origin: originName,
+      minutes: minutesFromISO(expected),
+      distance: distanceText,
+      statusCodes,
+      statusLabel: statusLabelFromCodes(statusCodes)
+    };
   });
 }
 
@@ -95,44 +149,99 @@ async function renderRer(){
 // === BUS par arrêt ===
 async function renderBusByStop() {
   const stops = [
+    { id: STOP_IDS.JOINVILLE, name: "Joinville-le-Pont RER" },
     { id: STOP_IDS.HIPPODROME, name: "Hippodrome de Vincennes" },
-    { id: STOP_IDS.BREUIL, name: "École du Breuil" },
-    { id: STOP_IDS.JOINVILLE, name: "Joinville-le-Pont" }
+    { id: STOP_IDS.BREUIL, name: "École du Breuil" }
   ];
 
   const container = document.getElementById("bus-blocks");
   container.innerHTML = "";
 
   for (const stop of stops) {
-    const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`));
-    const visits = parseStop(data);
-    if (!visits.length) continue;
-
     const block = document.createElement("div");
     block.className = "bus-stop-block";
     block.innerHTML = `<h3 class="bus-stop-title">🚏 ${stop.name}</h3>`;
 
-    const byLine = {};
+    const content = document.createElement("div");
+    content.className = "bus-stop-content";
+    block.appendChild(content);
+    container.appendChild(block);
+
+    const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`));
+    const visits = parseStop(data);
+
+    if (!visits.length) {
+      const empty = document.createElement("div");
+      empty.className = "bus-empty";
+      empty.textContent = "Aucun passage affiché";
+      content.appendChild(empty);
+      continue;
+    }
+
+    const byDestination = new Map();
     visits.forEach(v => {
-      if (!byLine[v.lineId]) byLine[v.lineId] = [];
-      byLine[v.lineId].push(v);
+      const key = v.dest || "Destination inconnue";
+      if (!byDestination.has(key)) byDestination.set(key, []);
+      byDestination.get(key).push(v);
     });
 
-    for (const [lineId, rows] of Object.entries(byLine)) {
-      const meta = await fetchLineMetadata(lineId);
-      const lineHeader = document.createElement("div");
-      lineHeader.className = "bus-line-header";
-      lineHeader.innerHTML = `<span class="line-pill" style="background:${meta.color};color:${meta.textColor}">${meta.code}</span>`;
-      block.appendChild(lineHeader);
+    const sortedDestinations = [...byDestination.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr", { sensitivity: "base" }));
 
-      rows.slice(0, 4).forEach(r => {
+    for (const [destination, rows] of sortedDestinations) {
+      const destGroup = document.createElement("div");
+      destGroup.className = "bus-destination-group";
+      const title = document.createElement("div");
+      title.className = "bus-destination-title";
+      title.textContent = `➡️ ${destination}`;
+      destGroup.appendChild(title);
+
+      const orderedRows = rows.slice().sort((a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity));
+      for (const r of orderedRows) {
+        const meta = await fetchLineMetadata(r.lineId);
+        const lineLabel = r.lineCode && r.lineCode !== "?" ? r.lineCode : meta.code;
         const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `<div class="dest">${r.dest}</div><div class="times">${r.minutes != null ? r.minutes + " min" : "--"}</div>`;
-        block.appendChild(row);
-      });
+        row.className = "row bus-row";
+        row.style.setProperty("--line-color", meta.color);
+        row.style.setProperty("--line-text-color", meta.textColor);
+        if (r.statusCodes?.some(code => /service.?terminated|completed/i.test(code))) {
+          row.classList.add("bus-row-ended");
+        }
+
+        const pill = document.createElement("span");
+        pill.className = "line-pill";
+        pill.textContent = lineLabel;
+        row.appendChild(pill);
+
+        const info = document.createElement("div");
+        info.className = "dest";
+        info.textContent = r.origin ? `Depuis ${r.origin}` : destination;
+        row.appendChild(info);
+
+        const time = document.createElement("div");
+        time.className = "times";
+        if (r.statusLabel) {
+          const statusSpan = document.createElement("span");
+          statusSpan.className = "status-tag";
+          statusSpan.textContent = r.statusLabel;
+          time.appendChild(statusSpan);
+        }
+        if (Number.isFinite(r.minutes)) {
+          const minuteSpan = document.createElement("span");
+          minuteSpan.textContent = `${r.minutes} min`;
+          time.appendChild(minuteSpan);
+        } else if (r.distance) {
+          const distanceSpan = document.createElement("span");
+          distanceSpan.textContent = r.distance;
+          time.appendChild(distanceSpan);
+        }
+        if (!time.childNodes.length) time.textContent = "--";
+        row.appendChild(time);
+
+        destGroup.appendChild(row);
+      }
+
+      content.appendChild(destGroup);
     }
-    container.appendChild(block);
   }
 }
 
