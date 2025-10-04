@@ -1,158 +1,79 @@
+:root{
+  --bg:#f5f5f5; --panel:#fff; --text:#222; --muted:#666;
+  --line-pill-radius:12px; --shadow:0 2px 6px #0001;
+  --ok:#eaf7ee; --ok-b:#2b7;
+  --alert:#fff4e6; --alert-b:#c66;
+  --border:#e6e6e6; --sub:#f2f2f2;
+  --accent:#2450a4;
+}
 
 *{box-sizing:border-box}
-:root{
-  --bg:#f3f6fb;
-  --panel:#ffffff;
-  --ink:#0f172a;
-  --muted:#6b7280;
-  --blue:#0a2f7f;
-  --idfm-red:#e2001a;
-  --time-box-bg:#000;
-  --time-box-fg:#ffcc00;
-  --ok:#10b981;
-  --warn:#f59e0b;
-  --alert:#dc2626;
-  --shadow:0 6px 18px rgba(2,6,23,.08);
-  --radius:12px;
-}
 html,body{height:100%}
-body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 
 /* Header */
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--panel);box-shadow:var(--shadow);position:sticky;top:0;z-index:10}
-.brand{display:flex;align-items:center;gap:10px}
-.brand .title{font-weight:800}
-.brand .subtitle{font-size:.9em;color:var(--muted)}
-.logo-idfm,.logo-hippo{filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}
-.ticker{flex:1;text-align:center;overflow:hidden;white-space:nowrap}
-#ticker-slot{display:inline-block;animation:fadeIn .5s both}
-.now{text-align:right}
-#clock{font-size:1.4em;font-weight:800}
-.muted{color:var(--muted)}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:12px 16px;background:#444;color:#fff}
+.brand-title{font-weight:700}
+.brand-sub{font-size:12px;opacity:.85}
+.meta{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.meta-row{display:flex;gap:10px;align-items:center}
+#date{opacity:.9}
+.saint{margin-left:8px;opacity:.9}
+.muted{color:#888}
 
-.traffic-banner{margin:8px auto;max-width:1200px;text-align:center;font-weight:700;border-radius:10px;padding:8px 12px}
-.traffic-banner.ok{background:var(--ok);color:#fff}
-.traffic-banner.alert{background:var(--alert);color:#fff}
+/* Banners */
+.traffic-banner{margin:12px 16px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--ok)}
+.traffic-banner.ok{border-color:var(--ok-b)}
+.traffic-banner.alert{background:var(--alert);border-color:var(--alert-b)}
+.traffic-sub{margin:6px 0;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--sub)}
+.traffic-sub.ok{background:var(--ok);border-color:var(--ok-b)}
+.traffic-sub.alert{background:var(--alert);border-color:var(--alert-b)}
 
-/* Grid */
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px}
-@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+/* Layout */
+.grid{display:grid;gap:12px;margin:12px 16px}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.grid-1{grid-template-columns:1fr}
+.panel{background:var(--panel);border-radius:10px;box-shadow:var(--shadow);padding:12px 14px}
+h2{margin:0 0 8px;font-size:16px;font-weight:700;color:#111}
 
-.panel{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
-.panel h2{margin:4px 0 10px 0;font-size:1.05rem}
+/* Boards */
+.board{display:block}
+.row{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed var(--border)}
+.row:first-child{border-top:none}
 
-/* Board (IDFM-like) */
-.board .row{display:flex;align-items:center;border-bottom:1px solid #e5e7eb;padding:6px 0}
-.line-pill{min-width:38px;height:26px;border-radius:6px;color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;padding:0 6px}
-.line-pill.rer-a{background:var(--idfm-red)}
-.dest{flex:1;color:var(--blue);font-weight:700}
-.times{display:flex;gap:6px}
-.time-box{background:var(--time-box-bg);color:var(--time-box-fg);font-weight:900;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:6px;min-width:40px;text-align:center}
+/* Line pills */
+.line-pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:var(--line-pill-radius);font-weight:700;color:#fff;min-width:28px;text-align:center}
+.rer-a{background:#c21e3a;color:#fff}
 
-/* Best route */
-.best-route{background:#0f172a;color:#fff;border-radius:10px;padding:10px}
-.best-option{display:flex;gap:10px;align-items:center}
-.tag{border-radius:8px;padding:2px 8px;font-weight:800}
+/* Dest & times */
+.dest{font-weight:600}
+.times{display:flex;gap:6px;flex-wrap:wrap}
+.time-box{min-width:64px;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:#fafafa;text-align:center;font-variant-numeric:tabular-nums}
+.time-imminent{background:#eef5ff;border-color:#b5cdf7}
+.time-delay{background:#fff8e1;border-color:#e7d28a}
+.time-cancelled{background:#fff1f1;border-color:#e3a0a0;text-decoration:line-through}
+.time-last{background:#ffe9e0;border-color:#e3b9a0}
 
-/* Velib */
-.velib-row{display:flex;gap:12px}
-.velib-card{flex:1;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;text-align:center}
-.velib-icon{font-size:26px;line-height:1;animation:pulse 2.2s ease-in-out infinite}
-.velib-value{font-size:1.4rem;font-weight:800}
-.velib-label{font-size:.82rem;color:var(--muted)}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+/* Status column (neutre, sans émoticônes) */
+.status{font-size:12px;color:#444}
 
-/* Weather */
-.weather-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:12px;box-shadow:var(--shadow)}
-.weather-emoji{font-size:36px;line-height:1}
-.weather-temp{font-size:2rem;font-weight:900}
-.weather-desc{font-size:.95rem}
+/* Bus cards (2ème ligne – tous bus) */
+.bus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.bus-card{border:1px solid var(--border);border-radius:10px;padding:8px}
+.bus-card-header{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.bus-card-dest{font-weight:600}
 
-/* Courses */
-.courses-board{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto;padding-right:6px}
-.course{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#fff;border-radius:10px;padding:10px;box-shadow:var(--shadow);animation:fadeInUp .6s both}
-.badge-time{background:#0ea5e9;color:#fff;font-weight:800;border-radius:8px;padding:6px 10px;text-align:center}
-.course-name{font-weight:800}
-.course-meta{font-size:.9rem;color:var(--muted)}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* Vélib & News */
+.news-carousel{display:flex;gap:8px;overflow:auto;padding:4px}
+.news-card{min-width:260px;border:1px solid var(--border);border-radius:10px;padding:8px;background:#fafafa}
+.news-card.active{outline:2px solid var(--accent)}
 
-/* News */
-.news-carousel{min-height:110px}
-.news-card{background:#fff;border-radius:10px;box-shadow:var(--shadow);padding:12px;display:none}
-.news-card.active{display:block;animation:fadeIn .6s ease both}
-.news-title{font-weight:800;margin-bottom:4px}
-.news-desc{color:var(--muted)}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* Roads */
+.road{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px dashed var(--border)}
+.road:first-child{border-top:none}
+.road-name{font-weight:600}
+.road-meta{font-size:12px;color:var(--muted)}
 
-/* Road */
-.road-list .road{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #eee}
-.badge{font-weight:800;border-radius:6px;padding:2px 6px}
-.badge.ok{background:#e8f8f1;color:#065f46}
-.badge.warn{background:#fff5f5;color:#7f1d1d}
-
-/* Anim */
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-/* Sous-bannière trafic spécifique à un arrêt */
-.traffic-sub {
-  margin-top: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-.traffic-sub.ok { background:#e8f8f1; color:#065f46; }
-.traffic-sub.alert { background:#fee2e2; color:#991b1b; }
-
-/* Horaires enrichis */
-.board .row .times {
-  display: flex;
-  gap: 8px;
-}
-.time-scheduled {
-  text-decoration: line-through;
-  color: var(--muted);
-}
-.time-estimated {S
-                 
-  font-weight: 800;
-}
-.time-delay {
-  color: var(--warn);
-}
-.time-cancelled {
-  color: var(--alert);
-  font-weight: 800;
-}
-.time-last {
-  background: var(--warn);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.time-imminent {
-  background: #10b981;
-  color: #fff;
-  font-weight: 800;
-}
-.time-cancelled {
-  background: #dc2626;
-  color: #fff;
-  font-weight: 800;
-}
-.time-delay {
-  background: #f59e0b;
-  color: #fff;
-}
-.time-last {
-  background: #991b1b;
-  color: #fff;
-}
-.board.bus-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.bus-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:10px;min-height:96px}
-.bus-card-header{display:flex;align-items:center;gap:10px}
-.bus-card-dest{font-weight:700;color:var(--blue);flex:1}
-.board.bus-grid .times{flex-wrap:wrap}
-.board.bus-grid .time-box{min-width:60px}
-.board.bus-grid .line-pill{margin-right:0}
-.bus-card .line-pill{min-width:32px;height:24px;font-size:.9rem}
-.board.bus-grid .traffic-sub{grid-column:1/-1}
+/* Ticker */
+.ticker{margin:12px 16px;color:#333}
