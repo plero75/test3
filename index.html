@@ -2,24 +2,23 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard — Hippodrome Vincennes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="styles.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Hippodrome de Vincennes</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <!-- Header principal -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-title">Hippodrome Vincennes</div>
+      <div class="brand-title">Hippodrome de Vincennes</div>
       <div class="brand-sub">Tableau de bord temps réel</div>
     </div>
     <div class="meta">
       <div class="meta-row">
-        <span id="date"></span>
-        <span id="clock"></span>
+        <span id="date">--</span>
+        <span id="clock">--:--</span>
       </div>
       <div class="meta-row">
-        <span id="weather-emoji" aria-hidden="true"></span>
         <span id="weather-temp"></span>
         <span id="weather-desc"></span>
         <span id="saint" class="saint"></span>
@@ -28,31 +27,26 @@
     </div>
   </header>
 
-  <!-- Header bis : messages PRIM /general-message -->
+  <!-- Header bis -->
   <div id="traffic-banner" class="traffic-banner ok">Trafic normal</div>
 
   <!-- Ligne 1 : 3 colonnes -->
   <section class="grid grid-3">
     <article class="panel">
       <h2>Hippodrome de Vincennes — Bus 77</h2>
-      <div id="bus-hippodrome-traffic" class="traffic-sub ok" style="display:none"></div>
       <div id="bus-hippodrome-body" class="board"></div>
     </article>
-
     <article class="panel">
       <h2>École du Breuil — Bus 77 & 201</h2>
-      <div id="bus-breuil-traffic" class="traffic-sub ok" style="display:none"></div>
       <div id="bus-breuil-body" class="board"></div>
     </article>
-
     <article class="panel">
       <h2>Joinville-le-Pont — RER A</h2>
-      <div id="rer-traffic" class="traffic-sub ok" style="display:none"></div>
       <div id="rer-body" class="board"></div>
     </article>
   </section>
 
-  <!-- Ligne 2 : 2 colonnes -->
+  <!-- Ligne 2 -->
   <section class="grid grid-2">
     <article class="panel">
       <h2>Joinville-le-Pont — RER A (2 directions)</h2>
@@ -60,7 +54,6 @@
     </article>
     <article class="panel">
       <h2>Joinville-le-Pont — Tous les bus</h2>
-      <div id="bus-joinville-traffic" class="traffic-sub ok" style="display:none"></div>
       <div id="bus-joinville-body" class="board"></div>
     </article>
   </section>
@@ -78,7 +71,6 @@
     <article class="panel">
       <h2>Trafic routier & perturbations locales</h2>
       <div id="road-list" class="board"></div>
-      <div id="events-list" class="board"></div>
     </article>
   </section>
 
@@ -98,12 +90,14 @@
     </article>
     <article class="panel">
       <h2>Prochaines courses — Enghien</h2>
-      <div id="courses-enghien" class="board muted">À brancher si besoin (même logique que Vincennes).</div>
+      <div id="courses-enghien" class="board">À venir…</div>
     </article>
   </section>
 
-  <!-- Ticker discret (texte) -->
-  <div class="ticker"><span id="ticker-slot">Chargement…</span></div>
+  <!-- Bandeau bas -->
+  <footer class="ticker">
+    <span id="ticker-slot">Chargement…</span>
+  </footer>
 
   <script src="app.js"></script>
 </body>
