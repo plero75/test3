@@ -1,33 +1,3 @@
- // Fonction utilitaire pour décoder les entités HTML
-function decodeEntities(str = "") {
-  return str
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/'/gi, "'")
-    .replace(/&apos;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .trim();
-}
-
-// Fonction utilitaire pour nettoyer du texte HTML/rich
-function cleanText(str = "") {
-  return decodeEntities(str)
-    .replace(/<[^>]*>/g, " ")
-    .replace(/[<>]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// Fonction utilitaire pour calculer le nombre de minutes restantes
-function minutesFromISO(iso) {
-  if (!iso) return null;
-  return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
-}
-
-
-
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const API_BASE = "https://prim.iledefrance-mobilites.fr/marketplace";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
@@ -604,4 +574,3 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
