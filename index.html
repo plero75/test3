@@ -1,104 +1,194 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard – Hippodrome de Vincennes</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <title>Dashboard IDFM – Vincennes / Joinville</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <style>
+    :root {
+      --main-blue: #12255b; --panel: #fff; --pale-bg: #e5eaf7;
+      --alert-bg: #ffe7e7; --alert-txt: #b30808; --card-radius: 12px;
+      --shadow: 0 1px 8px #abc1db15;
+    }
+    html, body { margin:0; padding:0; background:var(--pale-bg); color:#001858; min-height:100vh; }
+    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; }
+
+    .header { background:var(--main-blue); color:#fff; padding:8px 4vw; display:flex; flex-wrap:wrap;
+      align-items:center; justify-content:space-between; font-size:1.08rem; }
+    .header .left { font-size:1.18rem; font-weight:700; }
+    .header .right { display:flex; gap:1.5vw; align-items:center; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-gap: 18px;
+      padding: min(3vw,28px);
+      grid-template-columns: repeat(3,1fr);
+      grid-template-rows: auto;
+    }
+    .module-panel {
+      background: var(--panel);
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+      padding: min(2vw,20px) min(2vw,18px);
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      margin-bottom:0;
+      position: relative;
+    }
+    .module-header { font-weight: 700; font-size:1.13em; margin-bottom:11px; }
+    .alert-box, .info-box {
+      border-radius: 8px; font-weight:700; margin-bottom:12px; padding:8px 13px;
+      font-size:.97em;
+    }
+    .alert-box { background:var(--alert-bg); color:var(--alert-txt);}
+    .info-box { background:#eaf2fa; color:#105296;}
+    /* Cartes bus, rer, état */
+    .row, .bus-card, .rer-row { display:flex; align-items:center; margin-bottom:6px;}
+    .line-pill, .bus-line, .rer-line {
+      font-weight:700; border-radius:8px; padding:4px 11px; color:#fff; margin-right:8px; display:inline-block;
+      min-width:35px; text-align:center; font-size:1em;
+    }
+    .rer-line { background:#e6003d;}
+    .bus-77{ background:#0072bc;} .bus-201{background:#836d46;} .bus-101{background:#f28e00;}
+    .bus-106{background:#e3001b;} .bus-108{background:#732982;} .bus-110{background:#5c2d91;}
+    .bus-112{background:#b97a57;} .bus-281{background:#878500;} .bus-n33{background:#001858;}
+    .bus-pass { background:#191919; color:#ffd900; border-radius:6px; font-weight:700; padding: 6px 12px; margin-right:7px;}
+    .bus-termine { display:inline-block; background:#bdc4ce; color:#fff; padding:6px 10px; border-radius:9px; font-weight:600; margin-left:7px;}
+    /* Vélib & Sytadin */
+    .velib-grid { display: flex; gap:18px; flex-wrap: wrap;}
+    .velib-box {
+      background:#f7fbff; border-radius:9px; padding:12px 18px; flex: 1 1 110px; 
+      display:flex; flex-direction:column; align-items:center; min-width:100px; margin-bottom:8px;
+    }
+    .velib-title { font-weight:700; font-size:1.07em; margin-bottom:7px;}
+    .velib-stats { font-size:1.1em;}
+    .velib-stats span { margin-right:5px;}
+    .sytadin-img { width:100%; border-radius:8px; margin-top:10px;}
+    /* Trafic routier, news, courses */
+    .traffic-row { display:flex; gap:18px; flex-wrap:wrap;}
+    .traffic-road { background:#eef4fa; border-radius:7px; padding:10px 18px; font-weight:700; margin-right:7px; min-width:115px;}
+    .news-list { margin-top:8px; }
+    .news-item { padding:4px 0; border-bottom:1px solid #dde1eb;}
+    .race-panels { display: flex; gap:20px; }
+    .race-panel { flex:1; background:#f7fbff; border-radius:10px; padding:13px;}
+    .race-header { font-weight:700; font-size:1.09em; margin-bottom:7px;}
+    .race-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .race-item { font-weight:700;}
+    .race-time { font-weight:600; color:#002698; margin-left:8px;}
+    /* Responsive pour tablette/portrait et mobile */
+    @media (max-width:1100px){
+      .dashboard-grid{grid-template-columns:1fr 1fr;}
+      .race-panels{flex-direction: column;}
+    }
+    @media (max-width:650px){
+      .dashboard-grid{grid-template-columns:1fr;}
+      .velib-grid{flex-direction:column;}
+    }
+    @media (orientation:portrait) and (min-width:651px) {
+      .dashboard-grid{grid-template-columns:1fr 1fr;}
+      .race-panels{flex-direction: column;}
+    }
+  </style>
 </head>
 <body>
-  <!-- Header principal -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-title">Hippodrome de Vincennes</div>
-      <div class="brand-sub">Tableau de bord temps réel</div>
-    </div>
-    <div class="meta">
-      <div class="meta-row">
-        <span id="date">--</span>
-        <span id="clock">--:--</span>
+  <div class="header">
+    <span class="left">Dashboard IDFM – Vincennes / Joinville</span>
+    <span class="right">
+      <span id="date-label">05/10/2025</span>
+      <span id="clock">14:48</span>
+      <span id="meteo-icon">🌡️</span>
+      <span id="meteo-val">12°C</span>
+      <span id="saint-label">Ste Fleur</span>
+    </span>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Première rangée : trafic transport -->
+    <section class="module-panel" id="rerA-panel">
+      <div class="module-header">Joinville – RER A</div>
+      <div class="alert-box" id="rerA-alert">Perturbation : Service vers Boissy interrompu</div>
+      <!-- Rempli dynamiquement -->
+      <div id="rerA-body"></div>
+    </section>
+    <section class="module-panel" id="bus77-panel">
+      <div class="module-header">Hippodrome – Bus 77</div>
+      <div class="alert-box" id="bus77-alert">Travaux ponctuels : arrêts déplacés sur le secteur Hippodrome</div>
+      <div id="bus77-body"></div>
+    </section>
+    <section class="module-panel" id="breuil-panel">
+      <div class="module-header">École du Breuil – Bus 77 & 201</div>
+      <div class="info-box" id="breuil-alert">Info : Passage normal</div>
+      <div id="breuil-body"></div>
+    </section>
+    <!-- Deuxième rangée : tous bus, vlib, sytadin -->
+    <section class="module-panel" id="joinville-bus-panel" style="grid-column:1/4;">
+      <div class="module-header">Joinville – Tous Bus</div>
+      <div class="alert-box" id="joinville-alert">Travaux : alternance ponctuelle des dessertes</div>
+      <div id="joinville-bus-body"></div>
+    </section>
+    <section class="module-panel" id="velib-hippo-panel">
+      <div class="module-header">Vélib’ – Hippodrome</div>
+      <div class="velib-grid">
+        <div class="velib-box">
+          <div class="velib-title">Mécaniques</div>
+          <div class="velib-stats" id="velib-hippo-mech">12</div>
+          <div class="velib-title">Électriques</div>
+          <div class="velib-stats" id="velib-hippo-elec">3</div>
+          <div class="velib-title">Places</div>
+          <div class="velib-stats" id="velib-hippo-docks">5</div>
+        </div>
       </div>
-      <div class="meta-row">
-        <span id="weather-temp"></span>
-        <span id="weather-desc"></span>
-        <span id="saint" class="saint"></span>
+    </section>
+    <section class="module-panel" id="velib-breuil-panel">
+      <div class="module-header">Vélib’ – École du Breuil</div>
+      <div class="velib-grid">
+        <div class="velib-box">
+          <div class="velib-title">Mécaniques</div>
+          <div class="velib-stats" id="velib-breuil-mech">6</div>
+          <div class="velib-title">Électriques</div>
+          <div class="velib-stats" id="velib-breuil-elec">1</div>
+          <div class="velib-title">Places</div>
+          <div class="velib-stats" id="velib-breuil-docks">8</div>
+        </div>
       </div>
-      <div class="meta-row muted" id="lastUpdate">Maj --:--</div>
-    </div>
-  </header>
-
-  <!-- Header bis -->
-  <div id="traffic-banner" class="traffic-banner ok">Trafic normal</div>
-
-  <!-- Ligne 1 : 3 colonnes -->
-  <section class="grid grid-3">
-    <article class="panel">
-      <h2>Hippodrome de Vincennes — Bus 77</h2>
-      <div id="bus-hippodrome-body" class="board"></div>
-    </article>
-    <article class="panel">
-      <h2>École du Breuil — Bus 77 & 201</h2>
-      <div id="bus-breuil-body" class="board"></div>
-    </article>
-    <article class="panel">
-      <h2>Joinville-le-Pont — RER A</h2>
-      <div id="rer-body" class="board"></div>
-    </article>
-  </section>
-
-  <!-- Ligne 2 -->
-  <section class="grid grid-2">
-    <article class="panel">
-      <h2>Joinville-le-Pont — RER A (2 directions)</h2>
-      <div id="rer-col" class="board"></div>
-    </article>
-    <article class="panel">
-      <h2>Joinville-le-Pont — Tous les bus</h2>
-      <div id="bus-joinville-body" class="board"></div>
-    </article>
-  </section>
-
-  <!-- Ligne 3 -->
-  <section class="grid grid-1">
-    <article class="panel">
-      <h2>Vélib’ — Vincennes & Breuil</h2>
-      <div id="velib-body" class="board"></div>
-    </article>
-  </section>
-
-  <!-- Ligne 4 -->
-  <section class="grid grid-1">
-    <article class="panel">
-      <h2>Trafic routier & perturbations locales</h2>
-      <div id="road-list" class="board"></div>
-    </article>
-  </section>
-
-  <!-- Ligne 5 -->
-  <section class="grid grid-1">
-    <article class="panel">
-      <h2>Flash News — France Info</h2>
-      <div id="news-carousel" class="news-carousel"></div>
-    </article>
-  </section>
-
-  <!-- Ligne 6 -->
-  <section class="grid grid-2">
-    <article class="panel">
-      <h2>Prochaines courses — Vincennes</h2>
-      <div id="courses-list" class="board"></div>
-    </article>
-    <article class="panel">
-      <h2>Prochaines courses — Enghien</h2>
-      <div id="courses-enghien" class="board">À venir…</div>
-    </article>
-  </section>
-
-  <!-- Bandeau bas -->
-  <footer class="ticker">
-    <span id="ticker-slot">Chargement…</span>
-  </footer>
-
-  <script src="app.js"></script>
+    </section>
+    <section class="module-panel" id="sytadin-panel">
+      <div class="module-header">Carte trafic – Sytadin</div>
+      <img class="sytadin-img" id="sytadin-map" src="https://www.sytadin.fr/sys/barometre_courant_carte_centre.gif" alt="Carte trafic Sytadin" />
+    </section>
+    <!-- Troisième rangée : trafic routier, news -->
+    <section class="module-panel" id="road-panel">
+      <div class="module-header">Trafic routier</div>
+      <div class="traffic-row" id="road-list">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </section>
+    <section class="module-panel" id="news-panel">
+      <div class="module-header">Flash News – France Info</div>
+      <div class="news-list" id="news-list">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </section>
+    <!-- Quatrième rangée : courses hippiques -->
+    <section class="module-panel" style="grid-column:1/4;">
+      <div class="race-panels">
+        <div class="race-panel" id="race-vincennes-panel">
+          <div class="race-header">Courses – Vincennes</div>
+          <div class="race-grid" id="races-vincennes">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+        <div class="race-panel" id="race-enghien-panel">
+          <div class="race-header">Courses – Enghien</div>
+          <div class="race-grid" id="races-enghien">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- Liaisons JS -->
+  <!-- <script src="app.js"></script> -->
 </body>
 </html>
