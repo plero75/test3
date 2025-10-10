@@ -3,491 +3,579 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Affichage Dynamique – Hippodrome Paris‑Vincennes</title>
+  <title>Dashboard IDFM Vincennes Joinville</title>
   <style>
-    :root{
-      --bg:#0f1115; --panel:#161a22; --card:#0e1220; --text:#f4f6fb; --muted:#a9b1c3;
-      --accent:#ffd400; --danger:#ff4d4f; --warn:#ff9f1a; --ok:#20c997; --border:#1f2633;
-      --idfm-blue:#0087CE; --rerA:#e51c23; --vincennes:#8B4513; --joinville:#2E8B57;
-      --hippodrome:#4682B4; --breuil:#DAA520;
-      --block:#ffffff; --block-text:#000000;
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: #cfd6ea;
+      color: #001858;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      background:var(--bg); color:var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      overflow:hidden;
+    #fit {
+      width: 1920px;
+      height: 1080px;
+      transform-origin: top left;
     }
-    .app{display:grid; grid-template-rows:64px 1fr; height:100vh; width:100vw;}
-    header{display:flex;align-items:center;gap:12px; padding:10px 16px;border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg,#0f1626, #0d1322);}
-    .brand{font-weight:800;letter-spacing:.2px}
-    .brand small{color:var(--muted);font-weight:600}
-    .spacer{flex:1}
-    .clock{background:#000;padding:6px 10px;border-radius:6px;color:var(--accent);font-weight:800;
-      font-variant-numeric:tabular-nums;border:1px solid #222;}
-
-    /* Layout avec 3 colonnes et plus de blocs */
-    .main-grid{display:grid;gap:14px;padding:14px;height:100%;
-      grid-template-columns:1fr 1fr 1fr;grid-template-rows:250px 180px 180px 120px;}
-
-    /* Première ligne : RER A (span 2) + Météo/Trafic */
-    .rer-section{grid-column:1/3;grid-row:1;}
-    .info-section{grid-column:3;grid-row:1;}
-
-    /* Deuxième ligne : 3 blocs bus */
-    .bus-joinville{grid-column:1;grid-row:2;}
-    .bus-hippodrome{grid-column:2;grid-row:2;}
-    .bus-breuil{grid-column:3;grid-row:2;}
-
-    /* Troisième ligne : Vélib + Courses Vincennes (span 2) */
-    .velib-section{grid-column:1;grid-row:3;}
-    .courses-section{grid-column:2/4;grid-row:3;}
-
-    /* Quatrième ligne : Actualités (full width) */
-    .news-section{grid-column:1/4;grid-row:4;}
-
-    .bloc{background:var(--block); color:var(--block-text); border-radius:14px; overflow:hidden; border:2px solid #e9eef7;
-      display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(0,0,0,.25);}
-    .bloc-hd{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px solid #eef3fb;
-      font-weight:900; letter-spacing:.2px; font-size:16px}
-    .bloc-hd .tag{font-size:11px;padding:3px 6px;border-radius:999px;background:#f4f7ff;border:1px solid #dbe5f5;color:#2c3b52}
-    .bloc-bd{padding:10px;flex:1;display:flex;flex-direction:column;gap:8px}
-
-    /* RER grid */
-    .rer-grid{display:grid;gap:10px;grid-template-columns:1fr 1fr;flex:1;}
-    .rer-col .col-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#546279;font-size:13px;font-weight:700}
-    .row{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #e6ecf7;border-left:12px solid var(--rerA);
-      border-radius:12px;padding:8px}
-    .row .dir{font-weight:900;font-size:15px}
-    .row .meta{color:#6a7893;font-size:10px}
-    .times{margin-left:auto;display:flex;gap:6px;align-items:center}
-    .chip{background:#000;color:var(--accent);border:2px solid #1e1e1e; padding:5px 8px;border-radius:8px;
-      font-weight:900;font-variant-numeric: tabular-nums;min-width:35px;text-align:center;font-size:14px}
-    .chip.cancel{background:#220000;color:#ffb3b3;border-color:#3a0000;text-decoration:line-through}
-    .chip.late{background:#1a1400;color:#ffd56a;border-color:#3a2d00}
-
-    /* Bus rows - différentes couleurs par arrêt */
-    .bus-list{display:grid;gap:6px;flex:1}
-    .bus-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e6ecf7;
-      border-radius:10px;padding:6px}
-    .bus-row.joinville{border-left:10px solid var(--joinville)}
-    .bus-row.hippodrome{border-left:10px solid var(--hippodrome)}
-    .bus-row.breuil{border-left:10px solid var(--breuil)}
-
-    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:50%;
-      font-weight:900;background:#001826;color:#73c8ff;border:2px solid #0e3d57;font-size:12px}
-    .dest{font-weight:900;font-size:14px;flex:1}
-    .sub{font-size:10px;color:#6a7893}
-    .bus-times{display:flex;gap:4px;align-items:center}
-
-    /* Courses Vincennes */
-    .courses-list{display:grid;gap:8px;flex:1;grid-template-columns:1fr 1fr}
-    .course-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e6ecf7;border-left:10px solid var(--vincennes);
-      border-radius:10px;padding:6px}
-    .course-time{display:inline-flex;align-items:center;justify-content:center;min-width:45px;height:30px;border-radius:6px;
-      font-weight:900;background:#8B4513;color:#fff;border:2px solid #654321;font-size:12px}
-    .course-info{flex:1}
-    .course-name{font-weight:900;font-size:13px}
-    .course-details{font-size:10px;color:#6a7893}
-    .course-prize{font-size:11px;color:#2c5aa0;font-weight:800}
-
-    /* Vélib amélioré */
-    .velib-stations{display:grid;gap:8px;flex:1}
-    .velib-station{background:#fff;border:2px solid #e6ecf7;border-left:10px solid #00AA55;border-radius:10px;padding:8px}
-    .velib-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-    .velib-name{font-weight:900;font-size:14px;color:#2c5aa0}
-    .velib-id{font-size:11px;color:#6a7893}
-    .velib-counts{display:flex;gap:12px}
-    .velib-count{display:flex;align-items:center;gap:4px;font-weight:800;font-size:12px}
-    .velib-count.bikes{color:#00AA55}
-    .velib-count.docks{color:#2c5aa0}
-
-    /* Info blocks */
-    .info-rotating{position:relative;height:100%;overflow:hidden}
-    .info-panel{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-    .info-panel.active{opacity:1}
-    .metric{display:flex;align-items:baseline;gap:8px;justify-content:center}
-    .metric .big{font-size:36px;font-weight:900}
-    .metric .unit{font-size:14px;color:#6a7893}
-    .info-desc{font-size:11px;color:#6a7893;margin-top:6px}
-
-    /* Actualités */
-    .news-content{position:relative;height:100%;overflow:hidden}
-    .news-item{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;padding:12px;display:flex;flex-direction:column;justify-content:center}
-    .news-item.active{opacity:1}
-    .news-title{font-weight:900;font-size:16px;margin-bottom:6px;line-height:1.3}
-    .news-text{font-size:13px;line-height:1.4;color:#ddd}
-    .news-meta{font-size:10px;color:#999;margin-top:6px}
-
-    .alert{position:absolute; left:14px; right:14px; bottom:14px;
-      background:linear-gradient(90deg,#2b0b0b,#1a0000); border:2px solid #3a1010; color:#ffd6d6;
-      padding:8px 10px; border-radius:10px; display:none; gap:10px; align-items:center; font-weight:800;font-size:12px}
-    .alert .dot{width:8px;height:8px;border-radius:50%;background:var(--danger)}
-    .muted{color:#9aa7bf}
-    .section-note{font-size:10px;color:#6a7893;margin-left:6px}
+    header {
+      background: #001858;
+      color: white;
+      padding: 8px 16px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .weather {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      gap: 8px;
+      padding: 8px;
+      box-sizing: border-box;
+      height: calc(100% - 52px);
+      overflow: hidden;
+    }
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: 0 2px 4px rgba(0,0,0,.12);
+    }
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      color: #001858;
+      flex-shrink: 0;
+    }
+    #ticker {
+      grid-column: 1 / 4;
+      background: #001858;
+      color: #ffdf00;
+      padding: 8px 16px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      border-radius: 0 0 10px 10px;
+      display: flex;
+      align-items: center;
+      height: 45px;
+      overflow: hidden;
+    }
+    #ticker-slot {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    /* Styles pour les notifications alerte, temps et status */
+    .row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .row.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .badge {
+      flex-shrink: 0;
+      width: 38px;
+      height: 28px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 900;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+    .dest {
+      flex-grow: 1;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .times {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .time {
+      background: black;
+      color: #ffdf00;
+      min-width: 34px;
+      border-radius: 6px;
+      padding: 4px 6px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+    .st {
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-weight: 700;
+      color: white;
+      min-width: 60px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .st.imminent { background: #f97316; }
+    .st.delayed { background: #dc2626; }
+    .st.instation { background: #16a34a; }
+    .st.cancelled { background: #6b7280; }
+    .ended { background: #9aa1b2 !important; }
   </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Affichage dynamique – Hippodrome Paris‑Vincennes">
+  <div id="fit">
     <header>
-      <div class="brand">Dashboard Hippodrome <small>– Transport & Courses LIVE</small></div>
-      <div class="spacer"></div>
-      <div id="lastUpdate" class="muted" aria-live="polite"></div>
-      <div id="clock" class="clock" aria-label="Heure"></div>
+      <div>Dashboard IDFM Vincennes Joinville</div>
+      <div class="header-right">
+        <div id="date"></div>
+        <div id="time"></div>
+        <div class="weather" title="">
+          <span id="weatherTemp"></span>
+          <span id="weatherIcon"></span>
+          &nbsp;•&nbsp;
+          <span id="weather-desc"></span>
+        </div>
+        <div id="saint"></div>
+      </div>
     </header>
-
-    <div class="main-grid">
-      <!-- RER A (span 2 colonnes) -->
-      <div class="rer-section">
-        <div class="bloc" aria-labelledby="hd-rer">
-          <div class="bloc-hd" id="hd-rer">🚆 RER A – Joinville‑le‑Pont <span class="tag">Temps réel</span></div>
-          <div class="bloc-bd">
-            <div class="rer-grid">
-              <div class="rer-col" aria-label="Vers Paris">
-                <div class="col-hd">⬅︎ Vers Paris <span class="section-note" id="rer-paris-note"></span></div>
-                <div id="rer-paris" class="list" aria-live="polite"></div>
-              </div>
-              <div class="rer-col" aria-label="Vers Boissy-St-Léger">
-                <div class="col-hd">Vers Boissy/Marne ➜ <span class="section-note" id="rer-boissy-note"></span></div>
-                <div id="rer-boissy" class="list" aria-live="polite"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Météo / Trafic (rotation) -->
-      <div class="info-section">
-        <div class="bloc" aria-labelledby="hd-info">
-          <div class="bloc-hd" id="hd-info">📊 <span id="info-title">Météo Locale</span></div>
-          <div class="bloc-bd">
-            <div class="info-rotating">
-              <!-- Panel Météo -->
-              <div id="panel-meteo" class="info-panel active">
-                <div class="metric"><div id="weather-temp" class="big">--°</div><div class="unit">C</div></div>
-                <div id="weather-desc" class="info-desc">Météo indisponible</div>
-                <div id="weather-extra" class="info-desc"></div>
-              </div>
-              <!-- Panel Trafic -->
-              <div id="panel-trafic" class="info-panel">
-                <div class="metric"><div id="trafic-km" class="big">--</div><div class="unit">km</div></div>
-                <div class="info-desc">de bouchons en IDF</div>
-                <div id="trafic-note" class="info-desc"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BUS JOINVILLE-LE-PONT -->
-      <div class="bus-joinville">
-        <div class="bloc" aria-labelledby="hd-bus-joinville">
-          <div class="bloc-hd" id="hd-bus-joinville">🚌 Joinville-le-Pont <span class="tag">Toutes lignes</span></div>
-          <div class="bloc-bd">
-            <div id="bus-joinville-list" class="bus-list" aria-live="polite"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BUS HIPPODROME -->
-      <div class="bus-hippodrome">
-        <div class="bloc" aria-labelledby="hd-bus-hippo">
-          <div class="bloc-hd" id="hd-bus-hippo">🚌 Hippodrome <span class="tag">77 / 201</span></div>
-          <div class="bloc-bd">
-            <div id="bus-hippodrome-list" class="bus-list" aria-live="polite"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BUS ÉCOLE DU BREUIL -->
-      <div class="bus-breuil">
-        <div class="bloc" aria-labelledby="hd-bus-breuil">
-          <div class="bloc-hd" id="hd-bus-breuil">🚌 École du Breuil <span class="tag">77</span></div>
-          <div class="bloc-bd">
-            <div id="bus-breuil-list" class="bus-list" aria-live="polite"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VÉLIB AMÉLIORÉ -->
-      <div class="velib-section">
-        <div class="bloc" aria-labelledby="hd-velib">
-          <div class="bloc-hd" id="hd-velib">🚲 Vélib' Proximité</div>
-          <div class="bloc-bd">
-            <div id="velib-list" class="velib-stations"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COURSES VINCENNES (span 2 colonnes) -->
-      <div class="courses-section">
-        <div class="bloc" aria-labelledby="hd-courses">
-          <div class="bloc-hd" id="hd-courses">🏇 Prochaines Courses <span class="tag" id="courses-counter">Vincennes</span></div>
-          <div class="bloc-bd">
-            <div id="courses-list" class="courses-list"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTUALITÉS (full width) -->
-      <div class="news-section">
-        <div class="bloc" aria-labelledby="hd-news">
-          <div class="bloc-hd" id="hd-news">📰 Actualités <span class="tag" id="news-counter">1/10</span></div>
-          <div class="bloc-bd">
-            <div class="news-content" id="news-content">
-              <!-- Les actualités seront injectées ici -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="alert" class="alert" role="status" aria-live="assertive">
-      <span class="dot" aria-hidden="true"></span>
-      <span id="alert-text"></span>
+    <main>
+      <section class="panel" id="rerA-panel">
+        <h2>Joinville – RER A</h2>
+        <div id="rerA-board"></div>
+        <div id="rerA-traffic" style="color:red;font-weight:bold;margin-top:4px;"></div>
+      </section>
+      <section class="panel" id="bus77-panel">
+        <h2>Hippodrome – Bus 77</h2>
+        <div id="bus77-board"></div>
+        <div id="bus77-traffic" style="color:red;font-weight:bold;margin-top:4px;"></div>
+      </section>
+      <section class="panel" id="bus201-panel">
+        <h2>École du Breuil – Bus 201</h2>
+        <div id="bus201-board"></div>
+        <div id="bus201-traffic" style="color:red;font-weight:bold;margin-top:4px;"></div>
+      </section>
+      <section class="panel" id="joinville-all-panel">
+        <h2>Joinville – Tous Bus</h2>
+        <div id="joinville-all"></div>
+      </section>
+      <section class="panel" id="velib1-panel">
+        <h2>Vélib’ – Hippodrome</h2>
+        <div id="velib1"></div>
+      </section>
+      <section class="panel" id="velib2-panel">
+        <h2>Vélib’ – École du Breuil</h2>
+        <div id="velib2"></div>
+      </section>
+      <section class="panel" id="races-vincennes-panel">
+        <h2>Prochaines courses – Vincennes</h2>
+        <div id="racesVincennes"></div>
+      </section>
+      <section class="panel" id="races-enghien-panel">
+        <h2>Prochaines courses – Enghien</h2>
+        <div id="racesEnghien"></div>
+      </section>
+      <section class="panel" id="news-panel" style="grid-column:1/4;">
+        <h2>Actualités France Info</h2>
+        <div id="news"></div>
+      </section>
+    </main>
+    <div id="ticker">
+      <div id="ticker-slot"></div>
     </div>
   </div>
 
   <script>
-    const ENDPOINTS = { departures: '/api/nextDepartures', infos: '/api/infos', courses: '/api/vincennes' };
-    const $ = (sel, root=document) => root.querySelector(sel);
+    // ===== Config & endpoints =====
+    const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
+    const API_BASE = "https://prim.iledefrance-mobilites.fr/marketplace";
+    const SMARTIDF_LINES = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/referentiel-des-lignes/exports/json?lang=fr&timezone=Europe%2FBerlin";
+    const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
+    const RSS_URL = "https://www.francetvinfo.fr/titres.rss";
+    const NOMINIS_URL = "https://nominis.cef.fr/json/nominis.php";
+    const SYTADIN_INDICATOR_SRC = "https://www.sytadin.fr/sys/barometre_courant_cens.xml";
 
-    let currentNews = 0;
-    let newsItems = [];
-    let currentInfoPanel = 0; // 0=météo, 1=trafic
-
-    function setClock(){
-      const d = new Date();
-      $('#clock').textContent = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    }
-    setInterval(setClock, 1000); setClock();
-
-    function setLastUpdate(){
-      const d = new Date();
-      $('#lastUpdate').textContent = `Maj ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
-    }
-
-    function resetWeatherPanel(){
-      $('#weather-temp').textContent = '--';
-      $('#weather-desc').textContent = 'Météo indisponible';
-      $('#weather-extra').textContent = '';
-    }
-
-    function makeChip(text, state){
-      const span = document.createElement('span'); span.className='chip';
-      if(state==='cancel') span.classList.add('cancel');
-      if(state==='late') span.classList.add('late');
-      span.textContent = text; return span;
-    }
-
-    function renderRER(listEl, rows){
-      listEl.innerHTML = '';
-      (rows||[]).slice(0,3).forEach(r=>{
-        const row = document.createElement('div'); row.className='row';
-        const left = document.createElement('div');
-        left.innerHTML = `<div class="dir">${r.destination||''}</div>` + (r.platform?`<div class="meta">Voie ${r.platform}</div>`:'');
-        const times = document.createElement('div'); times.className='times';
-        (r.minutes||[]).slice(0,3).forEach(min=> times.appendChild(makeChip(typeof min==='number'? `${min}` : (min||'—'))));
-        if(r.status==='cancelled') times.appendChild(makeChip('supprimé','cancel'));
-        if(r.delay && r.delay>0) times.appendChild(makeChip(`+${r.delay} min`,'late'));
-        row.append(left,times); listEl.append(row);
-      });
-    }
-
-    function renderBusArray(listEl, buses, cssClass){
-      listEl.innerHTML = '';
-      (buses||[]).slice(0,4).forEach(b=>{
-        const row = document.createElement('div'); 
-        row.className = `bus-row ${cssClass}`;
-        const badge = document.createElement('div'); badge.className='badge'; badge.textContent = b.line || '—';
-        const text = document.createElement('div'); text.className='dest';
-        text.innerHTML = `<div class="dest">${b.dest||''}</div><div class="sub">${b.stop||''}</div>`;
-        const times = document.createElement('div'); times.className='bus-times';
-        (b.minutes||[]).slice(0,3).forEach(min=> times.appendChild(makeChip(typeof min==='number'? `${min}` : (min||'—'))));
-        if(b.status==='cancelled') times.appendChild(makeChip('supprimé','cancel'));
-        if(b.delay && b.delay>0) times.appendChild(makeChip(`+${b.delay} min`,'late'));
-        row.append(badge,text,times); listEl.append(row);
-      });
-    }
-
-    function renderCourses(courses){
-      const listEl = $('#courses-list'); listEl.innerHTML='';
-      if(!courses || courses.length === 0){
-        listEl.innerHTML = '<div class="info-desc">Aucune course programmée</div>';
-        return;
+    // ===== Live colors (SmartIDF) =====
+    let LINE_COLORS = {};
+    async function loadLineColors(){
+      const cache = sessionStorage.getItem("IDFM_LINE_COLORS_V1");
+      if(cache){ 
+        try{ LINE_COLORS = JSON.parse(cache); return; }catch{} 
       }
-
-      courses.slice(0,6).forEach(course => {
-        const row = document.createElement('div'); row.className='course-row';
-        const timeBox = document.createElement('div'); timeBox.className='course-time';
-        timeBox.textContent = course.heure || '--:--';
-
-        const info = document.createElement('div'); info.className='course-info';
-        info.innerHTML = `
-          <div class="course-name">${course.nom || 'Course inconnue'}</div>
-          <div class="course-details">${course.distance || '----'}m • ${course.discipline || 'Trot'}</div>
-        `;
-
-        const prize = document.createElement('div'); prize.className='course-prize';
-        if(course.dotation && course.dotation !== 'N/A'){
-          const montant = typeof course.dotation === 'number' ? 
-            `${(course.dotation/1000).toFixed(0)}k€` : course.dotation;
-          prize.textContent = montant;
+      try{
+        const url = PROXY + encodeURIComponent(SMARTIDF_LINES);
+        const res = await fetch(url);
+        const j = await res.json();
+        const rows = j.results || j.records || [];
+        const map = {};
+        rows.forEach(rec => {
+          const f = rec.fields || rec;
+          const id = f.id || f.idligne || f.id_line || f.internalid || f["id_line:"] || null;
+          let color = f.color || f.couleur || f.colorweb || f.color_hex || f.hexcolor || null;
+          const name = f.shortname || f.name || f.linename || f.label || f.publicname || null;
+          const operator = f.operatorname || f.operator || f.networkname || null;
+          if(id && color){
+            if(/^[0-9A-Fa-f]{6}$/.test(color)) color = "#" + color;
+            if(/^#[0-9A-Fa-f]{6}$/.test(color)) map[id] = {color, name, operator};
+          }
+        });
+        if(Object.keys(map).length){
+          LINE_COLORS = map;
+          sessionStorage.setItem("IDFM_LINE_COLORS_V1", JSON.stringify(map));
         }
-
-        row.append(timeBox, info, prize);
-        listEl.append(row);
-      });
+      }catch(e){ console.warn("SmartIDF color fetch failed", e); }
     }
 
-    function renderVelib(obj){
-      const el = $('#velib-list'); el.innerHTML='';
-      if(!obj){ el.innerHTML='<div class="info-desc">Données indisponibles</div>'; return; }
+    // ===== Fallback colors =====
+    const FALLBACK = {
+      "STIF:Line::C01742:": "#e6003d",
+      "STIF:Line::C02251:": "#0072bc",
+      "STIF:Line::C02252:": "#836d46",
+      "STIF:Line::C00229:": "#f28e00",
+      "STIF:Line::C00175:": "#e3001b",
+      "STIF:Line::C00177:": "#732982",
+      "STIF:Line::C00179:": "#5c2d91",
+      "STIF:Line::C00181:": "#b97a57",
+      "STIF:Line::C00659:": "#878500",
+      "STIF:Line::C00702:": "#001858",
+    };
 
-      // Mapping des IDs vers noms de stations
-      const stationNames = {
-        '12163': 'Hippodrome de Vincennes',
-        '12128': 'École Vétérinaire de Maisons-Alfort'
-      };
+    // ===== Vélib
+    const VELIB_INFO_URL   = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_information.json";
+    const VELIB_STATUS_URL = "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_status.json";
+    const VELIB_STATIONS   = [
+      { code: "12163", elId: "velib1", label: "Vincennes" },
+      { code: "12128", elId: "velib2", label: "École du Breuil" }
+    ];
 
-      Object.entries(obj).forEach(([id, info])=>{
-        const station = document.createElement('div'); station.className='velib-station';
+    // ===== Stops & Lines
+    const STOP_IDS = {
+      RER_A: "STIF:StopArea:SP:43135:",
+      JOINVILLE: "STIF:StopArea:SP:70640:",
+      HIPPODROME: "STIF:StopArea:SP:463641:",
+      BREUIL: "STIF:StopArea:SP:463644:"
+    };
+    const LINES = {
+      RER_A:  { id: "STIF:Line::C01742:", code: "A",   color:"#e6003d" },
+      BUS_77: { id: "STIF:Line::C02251:", code: "77",  color:"#0072bc" },
+      BUS_201:{ id: "STIF:Line::C02252:", code: "201", color:"#836d46" }
+    };
 
-        const header = document.createElement('div'); header.className='velib-header';
-        const name = document.createElement('div'); name.className='velib-name';
-        name.textContent = stationNames[id] || `Station ${info.name || id}`;
-        const stationId = document.createElement('div'); stationId.className='velib-id';
-        stationId.textContent = `#${id}`;
-        header.append(name, stationId);
+    function colorFor(id){ return (LINE_COLORS[id]?.color) || FALLBACK[id] || "#001858"; }
+    function applyLiveColor(meta){ return {...meta, color: colorFor(meta.id)}; }
 
-        const counts = document.createElement('div'); counts.className='velib-counts';
-        const bikes = document.createElement('div'); bikes.className='velib-count bikes';
-        bikes.innerHTML = `🚲 <strong>${info.bikes ?? '—'}</strong> vélos`;
-        const docks = document.createElement('div'); docks.className='velib-count docks';
-        docks.innerHTML = `📍 <strong>${info.docks ?? '—'}</strong> places`;
-        counts.append(bikes, docks);
-
-        station.append(header, counts);
-        el.append(station);
-      });
+    const pad2 = n => String(n).padStart(2,"0");
+    const nowFR = () => new Date().toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    const dateFR = () => { const d=new Date(); return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`; };
+    const minutesUntil = iso => Math.floor((new Date(iso) - new Date())/60000);
+    function setWeatherIcon(code){
+      const ic = document.getElementById("weatherIcon"); 
+      if(!ic) return;
+      ic.className="";
+      if([0].includes(code)) ic.classList.add("sunny");
+      else if([1,2,3,45,48].includes(code)) ic.classList.add("cloudy");
+      else if([51,53,55,61,63,65,80,81,82].includes(code)) ic.classList.add("rainy");
+      else ic.classList.add("windy");
     }
 
-    function renderNews(titles){
-      if(!Array.isArray(titles) || titles.length === 0) return;
-      newsItems = titles.slice(0,10);
-      currentNews = 0;
-      renderCurrentNews();
+    // ===== PRIM fetchers
+    async function fetchStopMonitoring(stopId, lineId){
+      const url = `${PROXY}${API_BASE}/stop-monitoring?MonitoringRef=${encodeURIComponent(stopId)}&LineRef=${encodeURIComponent(lineId)}`;
+      const res = await fetch(url, {headers:{Accept:"application/json"}});
+      const j = await res.json();
+      return j?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit ?? [];
+    }
+    async function fetchGeneralMessage(lineId){
+      const url = `${PROXY}${API_BASE}/general-message?LineRef=${encodeURIComponent(lineId)}`;
+      try{
+        const res = await fetch(url, {headers:{Accept:"application/json"}});
+        const j = await res.json();
+        const msgs = j?.Siri?.ServiceDelivery?.GeneralMessageDelivery?.[0]?.InfoMessage ?? [];
+        return msgs.map(m => m?.Content?.Message?.[0]?.MessageText?.[0]?.value).filter(Boolean);
+      }catch{ return []; }
     }
 
-    function renderCurrentNews(){
-      if(newsItems.length === 0) return;
-      const container = $('#news-content');
-      container.innerHTML = '';
-
-      newsItems.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = `news-item ${index === currentNews ? 'active' : ''}`;
-        div.innerHTML = `
-          <div class="news-title">${item.title || item}</div>
-          <div class="news-text">${item.description || item.summary || ''}</div>
-          <div class="news-meta">France Info</div>
-        `;
-        container.append(div);
-      });
-
-      $('#news-counter').textContent = `${currentNews + 1}/${newsItems.length}`;
+    // ===== Grouping & rendering
+    function groupByDirection(visits){
+      const map = new Map();
+      for(const v of visits){
+        const mvj = v.MonitoredVehicleJourney;
+        const dir = mvj?.DestinationName?.[0]?.value || mvj?.DirectionName?.[0]?.value || "Direction inconnue";
+        if(!map.has(dir)) map.set(dir, []);
+        map.get(dir).push(v);
+      }
+      return map;
     }
-
-    function nextNews(){
-      if(newsItems.length <= 1) return;
-      const current = $(`.news-item:nth-child(${currentNews + 1})`);
-      if(current) current.classList.remove('active');
-
-      currentNews = (currentNews + 1) % newsItems.length;
-
-      const next = $(`.news-item:nth-child(${currentNews + 1})`);
-      if(next) next.classList.add('active');
-
-      $('#news-counter').textContent = `${currentNews + 1}/${newsItems.length}`;
+    function statusFrom(call, mvj){
+      const exp = call.ExpectedArrivalTime || call.ExpectedDepartureTime;
+      const aim = call.AimedArrivalTime || call.AimedDepartureTime;
+      const s = (call.ArrivalStatus || mvj.ProgressStatus || "").toLowerCase();
+      const mins = exp ? Math.max(0, Math.floor((new Date(exp)-new Date())/60000)) : null;
+      if(s.includes("cancelled")) return {cls:"cancelled", text:"Supprimé"};
+      if(mins!==null && mins<=1) return {cls:"imminent", text:"Imminent"};
+      if(s.includes("inprogress")) return {cls:"instation", text:"En station"};
+      if(exp && aim && exp!==aim){ const delay = Math.floor((new Date(exp)-new Date(aim))/60000); if(delay>0) return {cls:"delayed", text:`Retard +${delay}’`}; }
+      return null;
     }
-
-    function toggleInfoPanel(){
-      const meteo = $('#panel-meteo');
-      const trafic = $('#panel-trafic');
-      const title = $('#info-title');
-
-      if(currentInfoPanel === 0){
-        meteo.classList.remove('active');
-        trafic.classList.add('active');
-        title.textContent = 'Trafic IDF';
-        currentInfoPanel = 1;
-      } else {
-        trafic.classList.remove('active');
-        meteo.classList.add('active');
-        title.textContent = 'Météo Locale';
-        currentInfoPanel = 0;
+    function buildDirectionRow({lineCode, lineColor, direction, times, statuses, operator}){
+      const row = document.createElement("div"); row.className="row";
+      const badge = document.createElement("div"); badge.className="badge"; badge.style.background=lineColor; badge.textContent=lineCode;
+      if(operator) badge.title = operator;
+      const dest = document.createElement("div"); dest.className="dest"; dest.textContent=direction;
+      const right = document.createElement("div"); right.className="times";
+      times.forEach(t=>{ const el=document.createElement("div"); el.className="time"; el.textContent=t; right.appendChild(el); });
+      statuses.forEach(s=>{ if(!s) return; const st=document.createElement("div"); st.className="st "+s.cls; st.textContent=s.text; right.appendChild(st); });
+      row.appendChild(badge); row.appendChild(dest); row.appendChild(right);
+      requestAnimationFrame(()=>row.classList.add("show")); return row;
+    }
+    function renderPanel(boardEl, visits, lineMeta){
+      if(!boardEl) return; // ✅ Protection
+      boardEl.innerHTML = "";
+      const meta = applyLiveColor(lineMeta);
+      const liveOp = (LINE_COLORS[meta.id]?.operator) || null;
+      const groups = groupByDirection(visits);
+      if(!visits.length || !groups.size){
+        const row = document.createElement("div"); row.className="row show";
+        row.innerHTML = `<div class="badge ended">—</div><div class="dest">Service terminé</div><div class="times"></div>`;
+        boardEl.appendChild(row); return;
+      }
+      for(const [direction, list] of groups){
+        const times=[], statuses=[];
+        list.slice(0,3).forEach(v=>{ const mvj=v.MonitoredVehicleJourney; const call=mvj.MonitoredCall;
+          const exp=call.ExpectedArrivalTime||call.ExpectedDepartureTime;
+          const mins=exp?Math.max(0, Math.floor((new Date(exp)-new Date())/60000)):null;
+          if(mins!==null) times.push(String(mins));
+          statuses.push(statusFrom(call,mvj));
+        });
+        boardEl.appendChild(buildDirectionRow({ lineCode:meta.code, lineColor:meta.color, direction, times, statuses, operator: liveOp }));
       }
     }
 
-    async function fetchJSON(url){ 
-      try{ 
-        const r = await fetch(url,{cache:'no-store'}); 
-        if(!r.ok) throw new Error(`HTTP ${r.status}`); 
-        return await r.json(); 
-      }catch(e){ 
-        console.error(`Fetch error ${url}:`, e);
-        return null; 
-      } 
+    // ===== Renderers des panneaux =====
+    async function renderRER(){
+      const board = document.getElementById("rerA-board");
+      const t = document.getElementById("rerA-traffic");
+      if(!board || !t) return; // ✅ Protection
+      const v = await fetchStopMonitoring(STOP_IDS.RER_A, LINES.RER_A.id);
+      renderPanel(board, v, LINES.RER_A);
+      const m = await fetchGeneralMessage(LINES.RER_A.id);
+      t.classList.toggle("show", m.length>0);
+      t.textContent = m[0] ? `⚠️ ${m[0]}` : "";
     }
-
-    async function refresh(){
-      const [dep, inf, courses] = await Promise.all([
-        fetchJSON(ENDPOINTS.departures),
-        fetchJSON(ENDPOINTS.infos),
-        fetchJSON(ENDPOINTS.courses)
+    async function renderBus77(){
+      const board = document.getElementById("bus77-board");
+      const t = document.getElementById("bus77-traffic");
+      if(!board || !t) return; // ✅ Protection
+      const v = await fetchStopMonitoring(STOP_IDS.HIPPODROME, LINES.BUS_77.id);
+      renderPanel(board, v, LINES.BUS_77);
+      const m = await fetchGeneralMessage(LINES.BUS_77.id);
+      t.classList.toggle("show", m.length>0);
+      t.textContent = m[0] ? `⚠️ ${m[0]}` : "";
+    }
+    async function renderBus201(){
+      const board = document.getElementById("bus201-board");
+      const t = document.getElementById("bus201-traffic");
+      if(!board || !t) return; // ✅ Protection
+      const [v1,v2]=await Promise.all([
+        fetchStopMonitoring(STOP_IDS.HIPPODROME, LINES.BUS_201.id),
+        fetchStopMonitoring(STOP_IDS.BREUIL, LINES.BUS_201.id)
       ]);
-
-      renderRER($('#rer-paris'),  dep?.RER_A?.directionParis || []);
-      renderRER($('#rer-boissy'), dep?.RER_A?.directionBoissy || []);
-      $('#rer-paris-note').textContent = dep?.RER_A?.noteParis || '';
-      $('#rer-boissy-note').textContent = dep?.RER_A?.noteBoissy || '';
-
-      // Séparer les 3 types de bus
-      renderBusArray($('#bus-joinville-list'), dep?.BUS?.joinville || [], 'joinville');
-      renderBusArray($('#bus-hippodrome-list'), dep?.BUS?.hippodrome || [], 'hippodrome'); 
-      renderBusArray($('#bus-breuil-list'), dep?.BUS?.breuil || [], 'breuil');
-
-      // Météo
-      if(inf?.meteo){
-        $('#weather-temp').textContent = Math.round(inf.meteo.temp) || '--';
-        $('#weather-desc').textContent = inf.meteo.desc || '';
-        $('#weather-extra').textContent = inf.meteo.extra || '';
-      } else {
-        resetWeatherPanel();
+      renderPanel(board, [...v1,...v2], LINES.BUS_201);
+      const m = await fetchGeneralMessage(LINES.BUS_201.id);
+      t.classList.toggle("show", m.length>0);
+      t.textContent = m[0] ? `⚠️ ${m[0]}` : "";
+    }
+    async function renderJoinvilleAll(){
+      const board=document.getElementById("joinville-all");
+      if(!board) return; // ✅ Protection
+      board.innerHTML="";
+      const JOINVILLE_LINES = [
+        { id:"STIF:Line::C02251:", code:"77"  },
+        { id:"STIF:Line::C02252:", code:"201" },
+        { id:"STIF:Line::C00229:", code:"101" },
+        { id:"STIF:Line::C00175:", code:"106" },
+        { id:"STIF:Line::C00177:", code:"108" },
+        { id:"STIF:Line::C00179:", code:"110" },
+        { id:"STIF:Line::C00181:", code:"112" },
+        { id:"STIF:Line::C00659:", code:"281" },
+        { id:"STIF:Line::C00702:", code:"N33" },
+      ];
+      for(const meta0 of JOINVILLE_LINES){
+        const meta = {...meta0, color: colorFor(meta0.id)};
+        const visits = await fetchStopMonitoring(STOP_IDS.JOINVILLE, meta.id);
+        const groups = groupByDirection(visits);
+        if(!visits.length || !groups.size){
+          const row = buildDirectionRow({lineCode:meta.code,lineColor:meta.color,direction:"Service terminé",times:[],statuses:[{cls:"ended",text:""}],operator: LINE_COLORS[meta.id]?.operator });
+          board.appendChild(row); continue;
+        }
+        const entries = Array.from(groups.entries()).slice(0,2);
+        for(const [direction, list] of entries){
+          const times=[], statuses=[];
+          list.slice(0,3).forEach(v=>{ const mvj=v.MonitoredVehicleJourney; const call=mvj.MonitoredCall;
+            const exp=call.ExpectedArrivalTime||call.ExpectedDepartureTime;
+            const mins=exp?Math.max(0, Math.floor((new Date(exp)-new Date())/60000)):null;
+            if(mins!==null) times.push(String(mins));
+            statuses.push(statusFrom(call,mvj));
+          });
+          board.appendChild(buildDirectionRow({lineCode:meta.code,lineColor:meta.color,direction,times,statuses,operator: LINE_COLORS[meta.id]?.operator }));
+        }
       }
-
-      // Trafic
-      if(inf?.trafic){
-        $('#trafic-km').textContent = inf.trafic.km || '--';
-        $('#trafic-note').textContent = inf.trafic.note || '';
-      }
-
-      renderVelib(inf?.velib);
-      renderNews(inf?.actus);
-      renderCourses(courses?.prochaines || []);
-
-      setLastUpdate();
     }
 
-    // Rotations
-    setInterval(nextNews, 20000);        // Actualités : 20s
-    setInterval(toggleInfoPanel, 15000); // Météo/Trafic : 15s
-    setInterval(refresh, 30000);         // Données : 30s
+    // ===== Fonctions complémentaires =====
+    async function renderWeather(){ 
+      try {
+        const r=await fetch(WEATHER_URL);
+        const j=await r.json();
+        const w=j?.current_weather;
+        if(w){
+          document.getElementById("weatherTemp").textContent = `${Math.round(w.temperature)}°C`;
+          document.getElementById("weather-desc").textContent = describeWeather(w.weathercode);
+          setWeatherIcon(Number(w.weathercode));
+          tickerData.timeWeather = `${Math.round(w.temperature)}°C • ${describeWeather(w.weathercode)}`;
+        }
+      } catch(e){ console.warn(e); }
+    }
+    async function renderSaint(){
+      try {
+        const d=new Date();
+        const url = `${PROXY}${NOMINIS_URL}?jour=${d.getDate()}&mois=${d.getMonth()+1}`;
+        const r=await fetch(url, {headers:{Accept:"application/json"}});
+        const j=await r.json();
+        const name=j?.response?.nominis?.jour?.fete||j?.response?.fete||"";
+        document.getElementById("saint").textContent = name||"";
+        tickerData.saint = `Fête : ${name}`;
+      } catch(e){ document.getElementById("saint").textContent=""; }
+    }
+    async function renderNews(){
+      const el=document.getElementById("news");
+      if(!el) return;
+      el.innerHTML="";
+      try {
+        const r=await fetch(PROXY + encodeURIComponent(RSS_URL));
+        const xml=await r.text();
+        const doc=new DOMParser().parseFromString(xml,"application/xml");
+        const items=Array.from(doc.querySelectorAll("item")).slice(0,8);
+        if(!items.length){
+          el.innerHTML=`<div class='row show'><div class='badge' style='background:#001858'>•</div><div class='dest'>Aucune actu</div></div>`;
+          return;
+        }
+        items.forEach(it=>{
+          const title=it.querySelector("title")?.textContent?.trim()||"";
+          if(!title)return;
+          const row=document.createElement("div");
+          row.className="row";
+          row.innerHTML=`<div class='badge' style='background:#001858'>•</div><div class='dest'>${title}</div>`;
+          requestAnimationFrame(()=>row.classList.add("show"));
+          el.appendChild(row);
+        });
+      } catch(e){
+        el.innerHTML=`<div class='row show'><div class='badge' style='background:#001858'>•</div><div class='dest'>Flux France Info indisponible</div></div>`;
+      }
+    }
+    async function renderVelib(){
+      if(!VELIB_STATIONS.length) return;
+      try {
+        const [info,status] = await Promise.all([
+          fetch(VELIB_INFO_URL).then(r=>r.json()),
+          fetch(VELIB_STATUS_URL).then(r=>r.json())
+        ]);
+        const infoMap = new Map(info.data.stations.map(s=>[s.station_id, s]));
+        const statusMap = new Map(status.data.stations.map(s=>[s.station_id, s]));
+        for(const st of VELIB_STATIONS){
+          const el = document.getElementById(st.elId);
+          if(!el) continue;
+          const station = infoMap.get(Number(st.code));
+          const stat = statusMap.get(Number(st.code));
+          if(station && stat){
+            el.textContent = `${station.name} : ${stat.num_bikes_available} vélos 🚲 / ${stat.num_docks_available} places 📍`;
+          } else {
+            el.textContent = "Données indisponibles";
+          }
+        }
+      } catch(e){ console.warn(e); }
+    }
+    async function renderSytadinIndicator(){
+      const el=document.getElementById("sytadin-indicator");
+      if(!el) return;
+      try {
+        const r=await fetch(`${PROXY}${SYTADIN_INDICATOR_SRC}`);
+        const txt=await r.text();
+        el.textContent = /A4/i.test(txt) ? "A4 OK" : "A4 ND";
+      } catch(e) {
+        el.textContent = "A4 / A86 : ND";
+      }
+    }
+    function renderRoad(){
+      const el=document.getElementById("road");
+      if(!el) return;
+      el.innerHTML = `<div class="row show"><div class="badge" style="background:#001858">•</div><div class="dest">A86 : Fluide</div></div>`;
+    }
+    function renderRaces(){
+      const v=document.getElementById("racesVincennes");
+      const e=document.getElementById("racesEnghien");
+      if(!v||!e) return;
+      v.innerHTML="";
+      e.innerHTML="";
+      // À compléter avec vos appels API courses PMU si besoin
+    }
 
-    resetWeatherPanel();
-    refresh();
+    // ===== Horloge =====
+    function tick(){
+      const d = document.getElementById("date");
+      const t = document.getElementById("time");
+      if(!d || !t) return;
+      d.textContent = dateFR();
+      t.textContent = nowFR();
+    }
+
+    // ===== Initialisation =====
+    async function init(){
+      tick(); 
+      setInterval(tick, 15000);
+      await loadLineColors();
+      await Promise.all([
+        renderRER(),
+        renderBus77(),
+        renderBus201(),
+        renderJoinvilleAll(),
+        renderWeather(),
+        renderNews(),
+        renderVelib(),
+        renderSaint(),
+        renderSytadinIndicator()
+      ]);
+      renderRoad();
+      renderRaces();
+      setInterval(()=>{
+        renderRER();
+        renderBus77();
+        renderBus201();
+        renderJoinvilleAll();
+      }, 30000);
+    }
+    document.addEventListener("DOMContentLoaded", init);
+
   </script>
 </body>
 </html>
