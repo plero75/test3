@@ -1,121 +1,208 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard Transports Vincennes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Dashboard Transports Vincennes - Fonctionnel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      background-color: #f5f6f8;
+      color: #001858;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h2 {
+      border-bottom: 2px solid #001858;
+      padding-bottom: 4px;
+    }
+
+    .traffic-banner {
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      background-color: #d0e5ff;
+      color: #001858;
+    }
+
+    .traffic-banner.alert {
+      background-color: #ffe3e3;
+      color: #a30000;
+    }
+
+    .traffic-sub {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+
+    .traffic-sub.ok {
+      background-color: #e5f4e3;
+      color: #1a7719;
+    }
+
+    .traffic-sub.alert {
+      background-color: #fbeaea;
+      color: #a30000;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 12px;
+      border-bottom: 1px solid #c9d6e4;
+      align-items: center;
+    }
+
+    .line-pill {
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: white;
+      margin-right: 8px;
+      min-width: 28px;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .line-pill.rer-a {
+      background-color: #e6003d;
+    }
+
+    .line-pill.77 {
+      background-color: #0072bc;
+    }
+
+    .line-pill.201 {
+      background-color: #836d46;
+    }
+
+    .dest {
+      flex: 1;
+    }
+
+    .times {
+      display: flex;
+      gap: 8px;
+      min-width: 120px;
+      justify-content: flex-end;
+    }
+
+    .time-box {
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: black;
+      background-color: #ffed00;
+      text-align: center;
+      min-width: 48px;
+    }
+
+    .time-imminent {
+      background-color: #0a7d21;
+      color: white;
+    }
+
+    .time-delay {
+      background-color: #b45309;
+      color: white;
+    }
+
+    .time-cancelled {
+      background-color: #b91c1c;
+      color: white;
+    }
+
+    .time-last {
+      background-color: #d80000;
+      color: white;
+    }
+
+    #clock {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    #weather-temp, #weather-emoji, #weather-desc {
+      display: inline-block;
+      margin-right: 6px;
+      font-weight: bold;
+    }
+
+    /* Simple styling for container sections */
+    section {
+      margin-bottom: 24px;
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #dde6f1;
+    }
+  </style>
 </head>
+
 <body>
-  <!-- Header -->
-  <div class="topbar">
-    <div class="brand">
-      <img src="logo-idfm.png" alt="IDFM" class="logo-idfm" height="32">
-      <div>
-        <div class="title">Dashboard Vincennes</div>
-        <div class="subtitle">Transports & Infos Live</div>
-      </div>
+  <div id="traffic-banner" class="traffic-banner">Chargement des alertes trafic...</div>
+
+  <section>
+    <h2>Horloge</h2>
+    <div id="clock">--:--</div>
+  </section>
+
+  <section>
+    <h2>Météo</h2>
+    <div>
+      <span id="weather-emoji">🌤️</span>
+      <span id="weather-temp">--°C</span>
+      <span id="weather-desc">Chargement...</span>
     </div>
-    <div class="ticker"><span id="ticker-slot">Chargement…</span></div>
-    <div class="now">
-      <div id="clock">--:--</div>
-      <div id="lastUpdate" class="muted">Maj --:--</div>
-    </div>
-  </div>
+  </section>
 
-  <!-- Bandeau trafic global -->
-  <div id="traffic-banner" class="traffic-banner ok">Chargement du trafic…</div>
+  <section>
+    <h2>RER A - Joinville</h2>
+    <div id="rer-body">Chargement…</div>
+    <div id="rer-traffic" class="traffic-sub"></div>
+  </section>
 
-  <!-- Grille principale -->
- <!-- ===== Transit ===== -->
-<section class="grid">
-  <!-- RER A – Joinville-le-Pont -->
-  <article class="panel">
-    <h2>RER A — Joinville-le-Pont</h2>
-    <div id="rer-traffic" class="traffic-sub ok" style="display:none"></div>
-    <div id="rer-body" class="board"></div>
-  </article>
+  <section>
+    <h2>Bus - Joinville</h2>
+    <div id="bus-joinville-body">Chargement…</div>
+    <div id="bus-joinville-traffic" class="traffic-sub"></div>
+  </section>
 
-  <!-- Bus — Joinville-le-Pont -->
-  <article class="panel">
-    <h2>Bus — Joinville-le-Pont</h2>
-    <div id="bus-joinville-traffic" class="traffic-sub ok" style="display:none"></div>
-    <div id="bus-joinville-body" class="board"></div>
-  </article>
+  <section>
+    <h2>Bus - Hippodrome</h2>
+    <div id="bus-hippodrome-body">Chargement…</div>
+    <div id="bus-hippodrome-traffic" class="traffic-sub"></div>
+  </section>
 
-  <!-- Bus — Hippodrome de Vincennes -->
-  <article class="panel">
-    <h2>Bus — Hippodrome de Vincennes</h2>
-    <div id="bus-hippodrome-traffic" class="traffic-sub ok" style="display:none"></div>
-    <div id="bus-hippodrome-body" class="board"></div>
-  </article>
+  <section>
+    <h2>Bus - École du Breuil</h2>
+    <div id="bus-breuil-body">Chargement…</div>
+    <div id="bus-breuil-traffic" class="traffic-sub"></div>
+  </section>
 
-  <!-- Bus — École du Breuil -->
-  <article class="panel">
-    <h2>Bus — École du Breuil</h2>
-    <div id="bus-breuil-traffic" class="traffic-sub ok" style="display:none"></div>
-    <div id="bus-breuil-body" class="board"></div>
-  </article>
-</section>
+  <section>
+    <h2>Vélib’</h2>
+    <div id="velib-vincennes">Chargement…</div>
+    <div id="velib-breuil">Chargement…</div>
+  </section>
 
-    <!-- Bloc meilleur itinéraire -->
-    <div class="panel best-route">
-      <h2>🚀 Trajet optimal → Joinville RER</h2>
-      <div id="best-route">Calcul en cours…</div>
-    </div>
+  <section>
+    <h2>Actualités</h2>
+    <div id="news-carousel">Chargement…</div>
+  </section>
 
-    <!-- Bloc Vélib -->
-    <div class="panel">
-      <h2>🚲 Vélib’</h2>
-      <div class="velib-row">
-        <div class="velib-card">
-          <div class="velib-icon">🚲</div>
-          <div class="velib-value" id="velib-vincennes">--</div>
-          <div class="velib-label">Vincennes</div>
-        </div>
-        <div class="velib-card">
-          <div class="velib-icon">🚲</div>
-          <div class="velib-value" id="velib-breuil">--</div>
-          <div class="velib-label">Breuil</div>
-        </div>
-      </div>
-    </div>
+  <section>
+    <h2>Courses hippiques</h2>
+    <div id="courses-list">Chargement…</div>
+  </section>
 
-    <!-- Bloc météo -->
-    <div class="panel weather-card">
-      <div id="weather-emoji" class="weather-emoji">⛅</div>
-      <div>
-        <div id="weather-temp" class="weather-temp">--°C</div>
-        <div id="weather-desc" class="weather-desc">Chargement…</div>
-      </div>
-    </div>
-
-    <!-- Bloc courses Vincennes -->
-    <div class="panel">
-      <h2>🏇 Courses – Vincennes</h2>
-      <div id="courses-list" class="courses-board">Chargement…</div>
-    </div>
-
-    <!-- Bloc événements circulation -->
-    <div class="panel">
-      <h2>🚧 Circulation</h2>
-      <div id="events-list">Chargement…</div>
-    </div>
-
-    <!-- Bloc trafic routier -->
-    <div class="panel">
-      <h2>🚗 Trafic routier</h2>
-      <div id="road-list" class="road-list">Chargement…</div>
-    </div>
-
-    <!-- Bloc actualités -->
-    <div class="panel">
-      <h2>📰 Actus France Info</h2>
-      <div id="news-carousel" class="news-carousel">Chargement…</div>
-    </div>
-
-  </div>
-
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
