@@ -1,15 +1,18 @@
-export function decodeEntities(str = "") {
+ // Fonction utilitaire pour décoder les entités HTML
+function decodeEntities(str = "") {
   return str
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&quot;/gi, '"')
-    .replace(/&#039;/gi, "'")
+    .replace(/'/gi, "'")
     .replace(/&apos;/gi, "'")
     .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">").trim();
+    .replace(/&gt;/gi, ">")
+    .trim();
 }
 
-export function cleanText(str = "") {
+// Fonction utilitaire pour nettoyer du texte HTML/rich
+function cleanText(str = "") {
   return decodeEntities(str)
     .replace(/<[^>]*>/g, " ")
     .replace(/[<>]/g, " ")
@@ -17,10 +20,11 @@ export function cleanText(str = "") {
     .trim();
 }
 
-export function minutesFromISO(iso) {
+// Fonction utilitaire pour calculer le nombre de minutes restantes
+function minutesFromISO(iso) {
   if (!iso) return null;
   return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
-} 
+}
 
 
 
@@ -600,3 +604,4 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
