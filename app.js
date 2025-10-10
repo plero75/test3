@@ -1,5 +1,26 @@
-import { decodeEntities, cleanText, minutesFromISO } from "./utils.js";
+export function decodeEntities(str = "") {
+  return str
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#039;/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">").trim();
+}
 
+export function cleanText(str = "") {
+  return decodeEntities(str)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[<>]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function minutesFromISO(iso) {
+  if (!iso) return null;
+  return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+}
 // === Constantes & endpoints ===
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=48.835&longitude=2.45&current_weather=true";
@@ -627,6 +648,7 @@ function startLoops(){
   setLastUpdate();
   startLoops();
 })();
+
 
 
 
