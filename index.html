@@ -1,175 +1,75 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard IDFM – Fullscreen vNext (Sytadin à partir de la ligne 2)</title>
-<style>
-/* Base */
-html,body{margin:0;padding:0;height:100%;background:#cfd6ea;color:#001858;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
-#fit{width:1920px;height:1080px;transform-origin:top left}
-
-/* Header */
-header{background:#001858;color:white;padding:8px 16px;font-weight:700;font-size:1.1rem;display:flex;justify-content:space-between;align-items:center}
-.header-right{display:flex;align-items:center;gap:14px}
-.weather{display:flex;align-items:center;gap:8px}
-.weather svg{width:28px;height:28px}
-
-/* Grid 3x6 */
-main{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(6,1fr);gap:8px;padding:8px;box-sizing:border-box;height:calc(100% - 52px)}
-.panel{background:white;border-radius:10px;padding:8px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.12)}
-.panel h2{margin:0 0 6px;font-size:1.0rem;color:#001858}
-.board{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:5px}
-
-/* Lines */
-.line{display:flex;align-items:center;justify-content:space-between;border-radius:8px;background:#f7f8fb;padding:6px 8px}
-.line-left{display:flex;align-items:center;gap:8px;font-weight:700;color:#001858}
-.line-id{color:#fff;font-weight:900;min-width:38px;text-align:center;border-radius:5px;padding:2px 0}
-.line-right{display:flex;align-items:center;gap:6px;font-weight:900}
-.time{background:black;color:#ffdf00;border-radius:5px;padding:2px 8px;min-width:34px;text-align:center;font-size:1.2rem;font-weight:900}
-.status{background:#6b7280;color:white;padding:2px 8px;border-radius:5px;font-weight:800}
-.ended{background:#9aa1b2}
-
-/* Joinville BUS: two-column subgrid */
-.joinville-two-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.joinville-two-cols .line{margin:0}
-
-/* Velib icons */
-.velib{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.velib .kpi{display:flex;align-items:center;gap:8px;background:#f7f8fb;border:1px solid #e3e6f2;border-radius:10px;padding:8px 10px}
-.velib .kpi svg{width:28px;height:28px}
-.velib .value{font-size:1.05rem;font-weight:900}
-.velib .label{font-size:.85rem;color:#334155}
-
-/* Courses layout */
-.tickets{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.ticket{display:flex;align-items:center;justify-content:space-between;background:#f7f8fb;border:1px solid #e3e6f2;border-radius:10px;padding:8px}
-.badge{background:#001858;color:#fff;border-radius:8px;padding:4px 8px;font-weight:900;min-width:68px;text-align:center}
-.t-info{display:flex;flex-direction:column}
-.t-title{font-weight:800}
-.t-time{font-weight:900}
-
-/* Sytadin panel: start row 2 and span 2 rows on right column */
-.sytadin-panel{grid-column:3;grid-row:2 / span 2;display:flex;flex-direction:column}
-.sytadin-frame{flex:1;width:100%;height:100%;border:0;border-radius:8px;background:#e9eef8}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panneau d'Information Transports - Joinville</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div id="fit">
-  <header>
-    <div>Dashboard IDFM – Vincennes / Joinville</div>
-    <div class="header-right">
-      <div id="date">05/10/2025</div>
-      <div id="time" class="mono">14:48</div>
-      <div class="weather" title="12°C, ciel dégagé">
-        <!-- Sunny with cloud icon -->
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="12" r="3"></circle><path d="M7 5v1M7 18v1M1 12h1M12 12h1M3.5 7.5l.7.7M3.5 16.5l.7-.7"></path><path d="M13 17h6a4 4 0 0 0 0-8 5 5 0 0 0-9.5-1"></path></svg>
-        <strong>12°C</strong>
+  <div id="fit">
+    <header>
+      <span>🚇 PANNEAU D'INFORMATION TRANSPORTS - JOINVILLE</span>
+      <div class="header-right">
+        <span id="date"></span>
+        <span id="time"></span>
+        <span id="weather"></span>
       </div>
-      <div id="saint">Ste Fleur</div>
-    </div>
-  </header>
+    </header>
+    <main>
+      <!-- Bloc RER -->
+      <section class="tile" id="rer-section">
+        <h2><span class="line-badge">A</span>RER A - JOINVILLE-LE-PONT</h2>
+        <div id="rer-status" class="status">Chargement...</div>
+        <div class="departures" id="rer-departures"></div>
+      </section>
 
-  <main>
-    <!-- Ligne 1 : RER / Hippodrome / École du Breuil -->
-    <section class="panel"><h2>Joinville – RER A</h2><div class="board">
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#e5003a">A</div>Vers Paris / La Défense</div><div class="line-right"><div class="time mono">1</div><div class="time mono">6</div><div class="time mono">12</div></div></div>
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#e5003a">A</div>Vers Boissy-Saint-Léger</div><div class="status ended">Service terminé</div></div>
-    </div></section>
+      <!-- Bloc Bus 77 -->
+      <section class="tile" id="bus77-section">
+        <h2><span class="line-badge" style="background:#0072bc;">77</span>BUS 77 - HIPPODROME</h2>
+        <div class="departures" id="bus77-departures"></div>
+      </section>
 
-    <section class="panel"><h2>Hippodrome – Bus 77</h2><div class="board">
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#0072bc">77</div>Gare de Lyon</div><div class="status ended">Service terminé</div></div>
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#0072bc">77</div>Plateau de Gravelle</div><div class="status ended">Service terminé</div></div>
-    </div></section>
+      <!-- Bloc Bus 201 -->
+      <section class="tile" id="bus201-section">
+        <h2><span class="line-badge" style="background:#836d46;">201</span>ÉCOLE DU BREUIL - BUS 77 &amp; 201</h2>
+        <div class="departures" id="bus201-departures"></div>
+      </section>
 
-    <section class="panel"><h2>École du Breuil – 77 & 201</h2><div class="board">
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#0072bc">77</div>Joinville-le-Pont</div><div class="line-right"><div class="time mono">7</div><div class="time mono">18</div></div></div>
-      <div class="line"><div class="line-left"><div class="line-id" style="background:#836d46">201</div>Porte Dorée</div><div class="line-right"><div class="time mono">3</div><div class="time mono">12</div></div></div>
-    </div></section>
+      <!-- Bloc Toutes les lignes Joinville -->
+      <section class="tile" id="joinville-all-section" style="grid-column:1 / 4;">
+        <h2>🚌 JOINVILLE - TOUTES LES LIGNES DE BUS</h2>
+        <div class="departures" id="joinville-all-departures"></div>
+      </section>
 
-    <!-- Ligne 2 : Joinville Tous Bus (2 colonnes, à gauche) + Sytadin colonne droite -->
-    <section class="panel" style="grid-column:1 / span 2; grid-row:2">
-      <h2>Joinville – Tous Bus</h2>
-      <div class="board joinville-two-cols">
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#f7b10a">101</div>Camping International</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#e12b2b">106</div>Fourchette de Bry</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#6d2f91">108</div>Jeanne Vacher</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#5c2d91">110</div>Villiers-sur-Marne</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#e67817">112</div>La Varenne-Chennevières</div><div class="line-right"><div class="time mono">12</div><div class="time mono">47</div></div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#e67817">112</div>Château de Vincennes</div><div class="line-right"><div class="time mono">17</div></div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#836d46">201</div>Champigny – Diderot – La Plage</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#918a4a">281</div>Europarc</div><div class="status ended">Service terminé</div></div>
-        <div class="line"><div class="line-left"><div class="line-id" style="background:#001858">N33</div>Villiers-sur-Marne</div><div class="line-right"><div class="time mono">1</div><div class="time mono">22</div></div></div>
-      </div>
-    </section>
+      <!-- Bloc Vélib Hippodrome -->
+      <section class="tile" id="velib1-section" style="background:#21743b;">
+        <h2>🚲 VÉLIB' - HIPPODROME VINCENNES</h2>
+        <div class="velib-stats">
+          <div class="velib-stat"><span id="velibvincennes" class="velib-number">--</span></div>
+        </div>
+      </section>
 
-    <section class="panel sytadin-panel">
-      <h2>Carte trafic – Sytadin</h2>
-      <iframe id="sytadin" class="sytadin-frame" title="Carte Sytadin" src="https://www.sytadin.fr/frame/cartographie.jsp.html?largeur=596" loading="lazy"></iframe>
-    </section>
+      <!-- Bloc Vélib Breuil -->
+      <section class="tile" id="velib2-section" style="background:#21743b;">
+        <h2>🚲 VÉLIB' - ÉCOLE DU BREUIL</h2>
+        <div class="velib-stats">
+          <div class="velib-stat"><span id="velibbreuil" class="velib-number">--</span></div>
+        </div>
+      </section>
 
-    <!-- Ligne 3 : Vélib (2 panneaux) sous la ligne 1, colonne 1-2 (Sytadin occupe col 3 ligne 2-3) -->
-    <section class="panel" style="grid-column:1; grid-row:3"><h2>Vélib’ – Hippodrome</h2><div class="board velib">
-      <div class="kpi" title="Vélos mécaniques disponibles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="18" r="3"></circle><circle cx="18.5" cy="18" r="3"></circle><path d="M5.5 18h5l3-6h-4"></path><path d="M13.5 18l-2-4"></path><path d="M12 6h3l3 6"></path></svg>
-        <div class="value">12</div><div class="label">mécaniques</div>
-      </div>
-      <div class="kpi" title="Vélos électriques disponibles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        <div class="value">3</div><div class="label">électriques</div>
-      </div>
-      <div class="kpi" title="Places libres">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7h8v10H8z"></path></svg>
-        <div class="value">5</div><div class="label">places</div>
-      </div>
-    </div></section>
+      <!-- Bloc Courses hippiques -->
+      <section class="tile" id="courses-list">
+        <h2>🏇 PROCHAINES COURSES - VINCENNES</h2>
+      </section>
 
-    <section class="panel" style="grid-column:2; grid-row:3"><h2>Vélib’ – École du Breuil</h2><div class="board velib">
-      <div class="kpi" title="Vélos mécaniques disponibles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="18" r="3"></circle><circle cx="18.5" cy="18" r="3"></circle><path d="M5.5 18h5l3-6h-4"></path><path d="M13.5 18l-2-4"></path><path d="M12 6h3l3 6"></path></svg>
-        <div class="value">6</div><div class="label">mécaniques</div>
-      </div>
-      <div class="kpi" title="Vélos électriques disponibles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        <div class="value">1</div><div class="label">électrique</div>
-      </div>
-      <div class="kpi" title="Places libres">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7h8v10H8z"></path></svg>
-        <div class="value">8</div><div class="label">places</div>
-      </div>
-    </div></section>
+      <!-- Bloc Flash traffic -->
+      <section class="tile" id="traffic-banner"></section>
+    </main>
+    <footer class="ticker" id="ticker">Chargement du ticker...</footer>
+  </div>
 
-    <!-- Ligne 4 : Trafic routier + Flash News -->
-    <section class="panel" style="grid-column:1; grid-row:4"><h2>Trafic routier</h2><div class="board">
-      <div class="line"><div class="line-left">A86</div><div>Fluide</div></div>
-      <div class="line"><div class="line-left">A4</div><div>Chargé sens Paris</div></div>
-    </div></section>
-
-    <section class="panel" style="grid-column:2 / span 2; grid-row:4"><h2>Flash News – France Info</h2><div class="board">
-      <div class="line">• Travaux ligne 112 – arrêts déplacés</div>
-      <div class="line">• RER A : circulation fluide</div>
-    </div></section>
-
-    <!-- Ligne 5-6 : Courses -->
-    <section class="panel" style="grid-column:1; grid-row:5 / span 2"><h2>Courses – Vincennes</h2><div class="board tickets">
-      <div class="ticket"><span class="badge">R1C1</span><div class="t-info"><span class="t-title">Prix de l'Étrier</span><span class="t-time mono">13:50</span></div></div>
-      <div class="ticket"><span class="badge">R1C2</span><div class="t-info"><span class="t-title">Prix de Paris</span><span class="t-time mono">14:25</span></div></div>
-      <div class="ticket"><span class="badge">R1C3</span><div class="t-info"><span class="t-title">Prix Masséna</span><span class="t-time mono">15:05</span></div></div>
-      <div class="ticket"><span class="badge">R1C4</span><div class="t-info"><span class="t-title">Prix de Vincennes</span><span class="t-time mono">15:45</span></div></div>
-    </div></section>
-
-    <section class="panel" style="grid-column:2; grid-row:5 / span 2"><h2>Courses – Enghien</h2><div class="board tickets">
-      <div class="ticket"><span class="badge">R2C1</span><div class="t-info"><span class="t-title">Prix d'Enghien</span><span class="t-time mono">13:45</span></div></div>
-      <div class="ticket"><span class="badge">R2C2</span><div class="t-info"><span class="t-title">Prix Soisy</span><span class="t-time mono">14:20</span></div></div>
-      <div class="ticket"><span class="badge">R2C3</span><div class="t-info"><span class="t-title">Prix du Val-d'Oise</span><span class="t-time mono">15:00</span></div></div>
-    </div></section>
-
-    <!-- Colonne 3 sur lignes 5-6 libre pour extensions -->
-  </main>
-</div>
-<script>
-function fit(){const r=document.getElementById('fit');const W=r.offsetWidth,H=r.offsetHeight;const w=window.innerWidth,h=window.innerHeight;const s=Math.min(w/W,h/H);r.style.transform=`scale(${s})`}
-window.addEventListener('resize',fit);fit();
-</script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
