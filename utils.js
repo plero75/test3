@@ -22,3 +22,4 @@ function minutesFromISO(iso) {
   if (!iso) return null;
   return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
 }
+
