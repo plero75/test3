@@ -3,7 +3,9 @@
 // ===============================
 
 // ========== Décodage & nettoyage ==========
-export function decodeEntities(str = "") {
+ 
+ // (enlever les "export" ici)
+function decodeEntities(str = "") {
   return String(str)
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -15,7 +17,7 @@ export function decodeEntities(str = "") {
     .trim();
 }
 
-export function cleanText(str = "") {
+function cleanText(str = "") {
   return decodeEntities(String(str))
     .replace(/<br\s*\/?>/gi, " ")
     .replace(/<[^>]*>/g, " ")
@@ -24,12 +26,12 @@ export function cleanText(str = "") {
     .trim();
 }
 
-export function minutesFromISO(iso) {
+function minutesFromISO(iso) {
   if (!iso) return null;
   const mins = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
-  // Evite les faux "À quai" si ETA déjà dépassé
-  return mins < 0 ? null : mins;
+  return mins < 0 ? null : mins; // évite le faux "À quai"
 }
+
 
 // ========== Constantes ==========
 const PROXY = "https://ratp-proxy.hippodrome-proxy42.workers.dev/?url=";
@@ -748,3 +750,4 @@ function startLoops() {
   setLastUpdate();
   startLoops();
 })();
+
