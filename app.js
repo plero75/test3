@@ -45,7 +45,7 @@ const STOP_IDS = {
   HIPPODROME: "STIF:StopArea:SP:463641:",  // Bus 77
   BREUIL: "STIF:StopArea:SP:463644:",      // Bus 201
   // Optionnel si tu veux un bloc BUS à Joinville :
-  JOINVILLE_BUSES: null                    // <-- Renseigne un ID bus si souhaité
+  JOINVILLE_BUSES: "STIF:StopArea:SP:43135:"                    // <-- Renseigne un ID bus si souhaité
 };
 
 const LINES_SIRI = {
@@ -750,4 +750,5 @@ function startLoops() {
   setLastUpdate();
   startLoops();
 })();
+
 
