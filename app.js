@@ -1,10 +1,10 @@
-// ===============================
+ // ===============================
 //  Dashboard Vincennes – Version finale & déboguée
 // ===============================
 
 // ========== Décodage & nettoyage ==========
- 
- // (enlever les "export" ici)
+
+// (enlever les "export" ici)
 function decodeEntities(str = "") {
   return String(str)
     .replace(/&nbsp;/gi, " ")
@@ -44,8 +44,8 @@ const STOP_IDS = {
   RER_A: "STIF:StopArea:SP:43135:",        // Joinville-le-Pont (RER A)
   HIPPODROME: "STIF:StopArea:SP:463641:",  // Bus 77
   BREUIL: "STIF:StopArea:SP:463644:",      // Bus 201
-  // Optionnel si tu veux un bloc BUS à Joinville :
-  JOINVILLE_BUSES: "STIF:StopArea:SP:43135:"                    // <-- Renseigne un ID bus si souhaité
+  // Joinville (hub) : même zone que RER, peut agréger d'autres visites si exposées
+  JOINVILLE_BUSES: "STIF:StopArea:SP:43135:"
 };
 
 const LINES_SIRI = {
@@ -238,7 +238,7 @@ async function renderBusForStop(stopId, bodyId, trafficId) {
   const sortedLines = Object.entries(byLine).sort(([a], [b]) => (a || "").localeCompare(b || ""));
 
   for (const [lineId, rows] of sortedLines) {
-    // TODO: ajouter couleurs de ligne si besoin via un mapping local
+    // TODO: couleurs de ligne si besoin via mapping local
     const meta = { code: lineId || "?", color: "#2450a4", textColor: "#fff" };
 
     const byDest = {};
@@ -283,16 +283,13 @@ async function computeBestRouteJoinville() {
   if (!el) return;
   el.textContent = "Calcul…";
 
-  // Attente bus depuis Hippodrome (lignes 77)
+  // Attente bus depuis Hippodrome (77)
   const hippo = await fetchJSON(primUrl("/stop-monitoring", { MonitoringRef: STOP_IDS.HIPPODROME }));
   const visits = parseStop(hippo);
   const busNext = visits.sort((a, b) => (a.minutes ?? 99) - (b.minutes ?? 99))[0];
   const nextBusMin = Number.isFinite(busNext?.minutes) ? busNext.minutes : null;
 
-  // Paramètres simples
   const MARCHE = 15, VELIB = 6, BUS_TRAVEL = 5;
-
-  // Vélib
   let velibOK = false;
   try {
     const d = await fetchJSON(`https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?where=stationcode%3D${VELIB_STATIONS.VINCENNES}&limit=1`);
@@ -607,11 +604,14 @@ async function refreshTransitTraffic() {
     }
   } catch (e) {
     console.error("refreshTransitTraffic fallback RATP", e);
+    const banner = document.getElementById("traffic-banner");
     if (banner) {
       banner.textContent = "⚠️ Trafic indisponible";
       banner.className = "traffic-banner alert";
     }
+    const rerInfo = document.getElementById("rer-traffic");
     if (rerInfo) rerInfo.style.display = "none";
+    const events = document.getElementById("events-list");
     if (events) {
       events.innerHTML = '<div class="traffic-sub alert">Données trafic indisponibles</div>';
     }
@@ -751,4 +751,23 @@ function startLoops() {
   startLoops();
 })();
 
+// ========== Carte Sytadin (iframe + fallback) ==========
+(function initSytadinEmbed(){
+  const iframe = document.getElementById('sytadin-frame');
+  const fallback = document.getElementById('sytadin-fallback');
+  const btnOpen = document.getElementById('open-sytadin');
+  if (!iframe || !fallback) return;
 
+  let shown = false;
+  const timer = setTimeout(() => {
+    if (shown) return;
+    fallback.style.display = 'block';
+    if (btnOpen) btnOpen.style.display = 'inline-block';
+    shown = true;
+  }, 3000);
+
+  iframe.addEventListener('load', () => {
+    if (shown) return; // fallback déjà affiché
+    clearTimeout(timer); // l'iframe s'est bien chargée
+  });
+})();
