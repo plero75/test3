@@ -24,7 +24,6 @@ const LINES_SIRI = {
   BUS_201: "STIF:Line::201:"
 };
 
-
 const VELIB_STATIONS = { VINCENNES: "12163", BREUIL: "12128" };
 
 const WEATHER_CODES = {
@@ -44,23 +43,68 @@ let tickerIndex = 0;
 let tickerData = { timeWeather: "", saint: "", horoscope: "", traffic: "" };
 
 // === Utils ===
-function decodeEntities(str=""){return str.replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#039;/gi,"'").replace(/&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").trim();}
-function cleanText(str=""){return decodeEntities(str).replace(/<[^>]*>/g," ").replace(/[<>]/g," ").replace(/\s+/g," ").trim();}
-async function fetchJSON(url, timeout=12000){ try{ const c=new AbortController(); const t=setTimeout(()=>c.abort(),timeout); const r=await fetch(url,{signal:c.signal, cache:"no-store"}); clearTimeout(t); if(!r.ok) throw new Error(`HTTP ${r.status}`); return await r.json(); } catch(e){ console.error("fetchJSON",url,e.message); return null; } }
-async function fetchText(url, timeout=12000){ try{ const c=new AbortController(); const t=setTimeout(()=>c.abort(),timeout); const r=await fetch(url,{signal:c.signal, cache:"no-store"}); clearTimeout(t); if(!r.ok) throw new Error(`HTTP ${r.status}`); return await r.text(); } catch(e){ console.error("fetchText",url,e.message); return ""; } }
-function minutesFromISO(iso){ if(!iso) return null; return Math.max(0, Math.round((new Date(iso).getTime()-Date.now())/60000)); }
-function setClock(){ const el=document.getElementById("clock"); if(el) el.textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
-function setLastUpdate(){ const el=document.getElementById("lastUpdate"); if(el) el.textContent=`Maj ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`; }
+function decodeEntities(str = "") {
+  return str
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#039;/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .trim();
+}
+function cleanText(str = "") {
+  return decodeEntities(str).replace(/<[^>]*>/g, " ").replace(/[<>]/g, " ").replace(/\s+/g, " ").trim();
+}
+async function fetchJSON(url, timeout = 12000) {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), timeout);
+    const r = await fetch(url, { signal: c.signal, cache: "no-store" });
+    clearTimeout(t);
+    if (!r.ok) throw new Error(HTTP ${r.status});
+    return await r.json();
+  } catch (e) {
+    console.error("fetchJSON", url, e.message);
+    return null;
+  }
+}
+async function fetchText(url, timeout = 12000) {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), timeout);
+    const r = await fetch(url, { signal: c.signal, cache: "no-store" });
+    clearTimeout(t);
+    if (!r.ok) throw new Error(HTTP ${r.status});
+    return await r.text();
+  } catch (e) {
+    console.error("fetchText", url, e.message);
+    return "";
+  }
+}
+function minutesFromISO(iso) {
+  if (!iso) return null;
+  return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+}
+function setClock() {
+  const el = document.getElementById("clock");
+  if (el) el.textContent = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+function setLastUpdate() {
+  const el = document.getElementById("lastUpdate");
+  if (el) el.textContent = Maj ${new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })};
+}
 
-function flattenStatuses(...values){
-  const out=[];
-  const pushVal=(val)=>{
-    if(val==null) return;
-    if(Array.isArray(val)){
+function flattenStatuses(...values) {
+  const out = [];
+  const pushVal = (val) => {
+    if (val == null) return;
+    if (Array.isArray(val)) {
       val.forEach(pushVal);
-    }else if(typeof val==="object" && "value" in val){
+    } else if (typeof val === "object" && "value" in val) {
       pushVal(val.value);
-    }else{
+    } else {
       out.push(String(val));
     }
   };
@@ -68,41 +112,92 @@ function flattenStatuses(...values){
   return out;
 }
 
-function statusLabelFromCodes(codes){
-  if(!codes?.length) return null;
-  const normalized=codes.map(c=>c.toLowerCase());
-  if(normalized.some(c=>/service.?terminated|completed/.test(c))) return "Service terminé";
-  if(normalized.some(c=>/cancel/.test(c))) return "Course annulée";
-  if(normalized.some(c=>/not.?yet.?operating/.test(c))) return "Pas encore en service";
-  if(normalized.some(c=>/no.?report/.test(c))) return "Pas d'information";
-  if(normalized.some(c=>/arrived|departed/.test(c))) return "Passage effectué";
+function statusLabelFromCodes(codes) {
+  if (!codes?.length) return null;
+  const normalized = codes.map(c => c.toLowerCase());
+  if (normalized.some(c => /service.?terminated|completed/.test(c))) return "Service terminé";
+  if (normalized.some(c => /cancel/.test(c))) return "Course annulée";
+  if (normalized.some(c => /not.?yet.?operating/.test(c))) return "Pas encore en service";
+  if (normalized.some(c => /no.?report/.test(c))) return "Pas d'information";
+  if (normalized.some(c => /arrived|departed/.test(c))) return "Passage effectué";
   return null;
 }
 
+// --- Helpers réseau patch ---
+function viaProxy(target) {
+  // tolère PROXY défini avec ou sans ?url=
+  const base = PROXY.replace(/\/?\?url=?$/, "");
+  return ${base}/?url=${encodeURIComponent(target)};
+}
+async function timedFetch(url, opt = {}) {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), opt.timeout || 12000);
+  try {
+    const res = await fetch(url, {
+      ...opt,
+      signal: c.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "/",
+        ...(opt.headers || {})
+      },
+      cache: "no-store"
+    });
+    return res;
+  } finally {
+    clearTimeout(t);
+  }
+}
+async function fetchWithRetry(url, opt = {}, attempts = 3) {
+  let last;
+  for (let i = 0; i < attempts; i++) {
+    last = await timedFetch(url, opt);
+    if (last.ok) return last;
+    if (![429, 500, 502, 503, 504].includes(last.status)) return last;
+    await new Promise(r => setTimeout(r, 300 * Math.pow(2, i))); // 300/600/1200ms
+  }
+  return last;
+}
+
 // === Référentiel lignes (couleurs IDFM) ===
-function normaliseColor(hex){ if(!hex) return null; const c=hex.toString().trim().replace(/^#/,""); return /^[0-9a-fA-F]{6}$/.test(c)?`#${c}`:null; }
-function fallbackLineMeta(id){ return { id, code:id, color:"#2450a4", textColor:"#fff" }; }
-async function fetchLineMetadata(lineId){
-  if(!lineId) return fallbackLineMeta(lineId);
-  if(lineMetaCache.has(lineId)) return lineMetaCache.get(lineId);
-  const url = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/referentiel-des-lignes/records?where=id_line%3D%22"+lineId+"%22&limit=1";
-  const data = await fetchJSON(url,10000); let meta=fallbackLineMeta(lineId);
-  if(data?.results?.length){ const e=data.results[0]; meta={ id:lineId, code:e.shortname_line||e.name_line||lineId, color: normaliseColor(e.colourweb_hexa)||"#2450a4", textColor: normaliseColor(e.textcolourweb_hexa)||"#fff" }; }
-  lineMetaCache.set(lineId, meta); return meta;
+function normaliseColor(hex) {
+  if (!hex) return null;
+  const c = hex.toString().trim().replace(/^#/, "");
+  return /^[0-9a-fA-F]{6}$/.test(c) ? #${c} : null;
+}
+function fallbackLineMeta(id) {
+  return { id, code: id, color: "#2450a4", textColor: "#fff" };
+}
+async function fetchLineMetadata(lineId) {
+  if (!lineId) return fallbackLineMeta(lineId);
+  if (lineMetaCache.has(lineId)) return lineMetaCache.get(lineId);
+  const url = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/referentiel-des-lignes/records?where=id_line%3D%22" + lineId + "%22&limit=1";
+  const data = await fetchJSON(url, 10000); let meta = fallbackLineMeta(lineId);
+  if (data?.results?.length) {
+    const e = data.results[0];
+    meta = {
+      id: lineId,
+      code: e.shortname_line || e.name_line || lineId,
+      color: normaliseColor(e.colourweb_hexa) || "#2450a4",
+      textColor: normaliseColor(e.textcolourweb_hexa) || "#fff"
+    };
+  }
+  lineMetaCache.set(lineId, meta);
+  return meta;
 }
 
 // === Stops parsing ===
-function parseStop(data){
-  const visits=data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit;
-  if(!Array.isArray(visits)) return [];
-  return visits.map(v=>{
-    const mv=v.MonitoredVehicleJourney||{}; const call=mv.MonitoredCall||{};
-    const lineRef=mv.LineRef?.value||mv.LineRef||""; const lineId=(lineRef.match(/C\d{5}/)||[null])[0];
-    const destDisplay=cleanText(call.DestinationDisplay?.[0]?.value||"");
-    const expected=call.ExpectedDepartureTime||call.ExpectedArrivalTime||null;
-    const originName=cleanText(mv.OriginName?.[0]?.value||mv.OriginName?.value||"");
-    const distanceText=cleanText(call.Extensions?.Distances?.PresentableDistance||"");
-    const statusCodes=flattenStatuses(
+function parseStop(data) {
+  const visits = data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]?.MonitoredStopVisit;
+  if (!Array.isArray(visits)) return [];
+  return visits.map(v => {
+    const mv = v.MonitoredVehicleJourney || {}; const call = mv.MonitoredCall || {};
+    const lineRef = mv.LineRef?.value || mv.LineRef || ""; const lineId = (lineRef.match(/C\d{5}/) || [null])[0];
+    const destDisplay = cleanText(call.DestinationDisplay?.[0]?.value || "");
+    const expected = call.ExpectedDepartureTime || call.ExpectedArrivalTime || null;
+    const originName = cleanText(mv.OriginName?.[0]?.value || mv.OriginName?.value || "");
+    const distanceText = cleanText(call.Extensions?.Distances?.PresentableDistance || "");
+    const statusCodes = flattenStatuses(
       call.DepartureStatus,
       call.ArrivalStatus,
       mv.ProgressStatus,
@@ -124,15 +219,15 @@ function parseStop(data){
 }
 
 // === RER ===
-async function renderRer(){
-  const container=document.getElementById("rer-body");
-  if(!container) return;
+async function renderRer() {
+  const container = document.getElementById("rer-body");
+  if (!container) return;
 
-  container.innerHTML="";
+  container.innerHTML = "";
 
-  const card=document.createElement("div");
-  card.className="rer-card";
-  card.innerHTML=`
+  const card = document.createElement("div");
+  card.className = "rer-card";
+  card.innerHTML = `
     <div class="rer-card-header">
       <span class="line-pill rer-a">A</span>
       <div class="rer-card-header-text">
@@ -142,89 +237,89 @@ async function renderRer(){
     </div>
   `;
 
-  const body=document.createElement("div");
-  body.className="rer-card-body";
-  body.innerHTML=`<div class="rer-empty">Chargement des circulations…</div>`;
+  const body = document.createElement("div");
+  body.className = "rer-card-body";
+  body.innerHTML = <div class="rer-empty">Chargement des circulations…</div>;
   card.appendChild(body);
   container.appendChild(card);
 
-  const data=await fetchJSON(PROXY+encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}`));
-  const visits=parseStop(data)
-    .filter(v=>/paris|nation|châtelet|haussmann/i.test(v.dest||""))
-    .slice(0,6);
+  const data = await fetchJSON(viaProxy(https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.RER_A}));
+  const visits = parseStop(data)
+    .filter(v => /paris|nation|châtelet|haussmann/i.test(v.dest || ""))
+    .slice(0, 6);
 
-  body.innerHTML="";
+  body.innerHTML = "";
 
-  if(!visits.length){
-    const empty=document.createElement("div");
-    empty.className="rer-empty";
-    empty.textContent="Aucune desserte vers Paris pour le moment.";
+  if (!visits.length) {
+    const empty = document.createElement("div");
+    empty.className = "rer-empty";
+    empty.textContent = "Aucune desserte vers Paris pour le moment.";
     body.appendChild(empty);
     return;
   }
 
-  const groupsMap=new Map();
-  visits.forEach(v=>{
-    const key=v.dest||"Destination inconnue";
-    if(!groupsMap.has(key)) groupsMap.set(key,[]);
+  const groupsMap = new Map();
+  visits.forEach(v => {
+    const key = v.dest || "Destination inconnue";
+    if (!groupsMap.has(key)) groupsMap.set(key, []);
     groupsMap.get(key).push(v);
   });
 
-  const groups=Array.from(groupsMap.entries()).map(([dest, list])=>{
-    const sorted=list.slice().sort((a,b)=>{
-      const aMin=a.minutes!=null?a.minutes:Number.POSITIVE_INFINITY;
-      const bMin=b.minutes!=null?b.minutes:Number.POSITIVE_INFINITY;
-      return aMin-bMin;
+  const groups = Array.from(groupsMap.entries()).map(([dest, list]) => {
+    const sorted = list.slice().sort((a, b) => {
+      const aMin = a.minutes != null ? a.minutes : Number.POSITIVE_INFINITY;
+      const bMin = b.minutes != null ? b.minutes : Number.POSITIVE_INFINITY;
+      return aMin - bMin;
     });
     return { dest, visits: sorted };
-  }).sort((a,b)=>{
-    const aMin=a.visits[0]?.minutes!=null?a.visits[0].minutes:Number.POSITIVE_INFINITY;
-    const bMin=b.visits[0]?.minutes!=null?b.visits[0].minutes:Number.POSITIVE_INFINITY;
-    return aMin-bMin;
+  }).sort((a, b) => {
+    const aMin = a.visits[0]?.minutes != null ? a.visits[0].minutes : Number.POSITIVE_INFINITY;
+    const bMin = b.visits[0]?.minutes != null ? b.visits[0].minutes : Number.POSITIVE_INFINITY;
+    return aMin - bMin;
   });
 
-  groups.forEach(group=>{
-    const groupEl=document.createElement("div");
-    groupEl.className="rer-destination-group";
+  groups.forEach(group => {
+    const groupEl = document.createElement("div");
+    groupEl.className = "rer-destination-group";
 
-    const title=document.createElement("div");
-    title.className="rer-destination-title";
-    title.textContent=group.dest;
+    const title = document.createElement("div");
+    title.className = "rer-destination-title";
+    title.textContent = group.dest;
     groupEl.appendChild(title);
 
-    const list=document.createElement("div");
-    list.className="rer-train-list";
+    const list = document.createElement("div");
+    list.className = "rer-train-list";
 
-    group.visits.forEach(visit=>{
-      const row=document.createElement("div");
-      row.className="rer-train-row";
+    group.visits.forEach(visit => {
+      const row = document.createElement("div");
+      row.className = "rer-train-row";
 
-      const waitCell=document.createElement("div");
-      waitCell.className="rer-train-wait";
-      const waitPill=document.createElement("span");
-      waitPill.className="rer-wait-pill";
-      waitPill.textContent=visit.minutes!=null?visit.minutes:"--";
+      const waitCell = document.createElement("div");
+      waitCell.className = "rer-train-wait";
+      const waitPill = document.createElement("span");
+      waitPill.className = "rer-wait-pill";
+      waitPill.textContent = visit.minutes != null ? visit.minutes : "--";
       waitCell.appendChild(waitPill);
-      if(visit.minutes!=null){
-        const waitLabel=document.createElement("span");
-        waitLabel.className="rer-wait-label";
-        waitLabel.textContent="min";
+      if (visit.minutes != null) {
+        const waitLabel = document.createElement("span");
+        waitLabel.className = "rer-wait-label";
+        waitLabel.textContent = "min";
         waitCell.appendChild(waitLabel);
       }
       row.appendChild(waitCell);
 
-      const info=document.createElement("div");
-      info.className="rer-train-info";
-      const origin=document.createElement("div");
-      origin.className="rer-train-origin";
-      origin.textContent=visit.origin||"Origine non communiquée";
+      const info = document.createElement("div");
+      info.className = "rer-train-info";
+      const origin = document.createElement("div");
+      origin.className = "rer-train-origin";
+      origin.textContent = visit.origin || "Origine non communiquée";
       info.appendChild(origin);
       row.appendChild(info);
 
-      const meta=document.createElement("div");
-      meta.className="rer-train-meta";
-      const metaParts=[visit.statusLabel, visit.distance].filter(Boolean);
-      meta.textContent=metaParts.join(" · ");
+      const meta = document.createElement("div");
+      meta.className = "rer-train-meta";
+      const metaParts = [visit.statusLabel, visit.distance].filter(Boolean);
+      meta.textContent = metaParts.join(" · ");
       row.appendChild(meta);
 
       list.appendChild(row);
@@ -244,19 +339,20 @@ async function renderBusByStop() {
   ];
 
   const container = document.getElementById("bus-blocks");
+  if (!container) return;
   container.innerHTML = "";
 
   for (const stop of stops) {
     const block = document.createElement("div");
     block.className = "bus-stop-block";
-    block.innerHTML = `<h3 class="bus-stop-title">🚏 ${stop.name}</h3>`;
+    block.innerHTML = <h3 class="bus-stop-title">🚏 ${stop.name}</h3>;
 
     const content = document.createElement("div");
     content.className = "bus-stop-content";
     block.appendChild(content);
     container.appendChild(block);
 
-    const data = await fetchJSON(PROXY + encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}`));
+    const data = await fetchJSON(viaProxy(https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${stop.id}));
     const visits = parseStop(data);
 
     if (!visits.length) {
@@ -281,7 +377,7 @@ async function renderBusByStop() {
       destGroup.className = "bus-destination-group";
       const title = document.createElement("div");
       title.className = "bus-destination-title";
-      title.textContent = `➡️ ${destination}`;
+      title.textContent = ➡ ${destination};
       destGroup.appendChild(title);
 
       const orderedRows = rows.slice().sort((a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity));
@@ -302,7 +398,7 @@ async function renderBusByStop() {
 
         const info = document.createElement("div");
         info.className = "dest";
-        info.textContent = r.origin ? `Depuis ${r.origin}` : destination;
+        info.textContent = r.origin ? Depuis ${r.origin} : destination;
         row.appendChild(info);
 
         const time = document.createElement("div");
@@ -315,7 +411,7 @@ async function renderBusByStop() {
         }
         if (Number.isFinite(r.minutes)) {
           const minuteSpan = document.createElement("span");
-          minuteSpan.textContent = `${r.minutes} min`;
+          minuteSpan.textContent = ${r.minutes} min;
           time.appendChild(minuteSpan);
         } else if (r.distance) {
           const distanceSpan = document.createElement("span");
@@ -334,55 +430,46 @@ async function renderBusByStop() {
 }
 
 // === Itinéraire optimal Joinville ===
-async function computeBestRouteJoinville(){
-  const el=document.getElementById("best-route"); if(!el) return;
-  const hippo=await fetchJSON(PROXY+encodeURIComponent(`https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}`));
-  const visits=parseStop(hippo);
-  const busNext=visits.filter(v=>/C02251|C01219/.test(v.lineId||"")).sort((a,b)=>(a.minutes||99)-(b.minutes||99))[0];
-  const nextBusMin = Number.isFinite(busNext?.minutes)? Math.max(0,busNext.minutes) : null;
+async function computeBestRouteJoinville() {
+  const el = document.getElementById("best-route"); if (!el) return;
+  const hippo = await fetchJSON(viaProxy(https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=${STOP_IDS.HIPPODROME}));
+  const visits = parseStop(hippo);
+  const busNext = visits.filter(v => /C02251|C01219/.test(v.lineId || "")).sort((a, b) => (a.minutes || 99) - (b.minutes || 99))[0];
+  const nextBusMin = Number.isFinite(busNext?.minutes) ? Math.max(0, busNext.minutes) : null;
 
-  const MARCHE=15, VELIB=6, BUS_TRAVEL=5;
-  let velibOK=false;
-  try{
-    const d=await fetchJSON(`https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?where=stationcode%3D${encodeURIComponent(VELIB_STATIONS.VINCENNES)}&limit=1`);
-    const st=d?.results?.[0]; velibOK = ((st?.mechanical_bikes||0)+(st?.ebike_bikes||0))>0;
-  }catch{}
+  const MARCHE = 15, VELIB = 6, BUS_TRAVEL = 5;
+  let velibOK = false;
+  try {
+    const d = await fetchJSON(viaProxy(https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?where=stationcode%3D${encodeURIComponent(VELIB_STATIONS.VINCENNES)}&limit=1));
+    const st = d?.results?.[0]; velibOK = ((st?.mechanical_bikes || 0) + (st?.ebike_bikes || 0)) > 0;
+  } catch { }
 
-  const options=[
-    {label:"🚶 Marche", total:MARCHE, detail:"trajet direct"},
-    {label:"🚲 Vélib’", total: velibOK? VELIB : Infinity, detail: velibOK? "vélo disponible" : "aucun vélo dispo"}
+  const options = [
+    { label: "🚶 Marche", total: MARCHE, detail: "trajet direct" },
+    { label: "🚲 Vélib’", total: velibOK ? VELIB : Infinity, detail: velibOK ? "vélo disponible" : "aucun vélo dispo" }
   ];
-  if(nextBusMin!=null) options.push({label:"🚌 Bus 77/201", total: nextBusMin+BUS_TRAVEL, detail:`attente ${nextBusMin} min + ~${BUS_TRAVEL} min`});
-  options.sort((a,b)=>a.total-b.total);
-  const best=options[0];
+  if (nextBusMin != null) options.push({ label: "🚌 Bus 77/201", total: nextBusMin + BUS_TRAVEL, detail: attente ${nextBusMin} min + ~${BUS_TRAVEL} min });
+  options.sort((a, b) => a.total - b.total);
+  const best = options[0];
 
-  el.innerHTML = `<div class="best-option"><span class="tag">${best.label}</span><div><strong>${best.total===Infinity? "Non recommandé" : best.total+" min"}</strong> • ${best.detail}</div></div>`;
+  el.innerHTML = <div class="best-option"><span class="tag">${best.label}</span><div><strong>${best.total === Infinity ? "Non recommandé" : best.total + " min"}</strong> • ${best.detail}</div></div>;
 }
 
 // === Horoscope ===
 const SIGNS = [
-  { fr: "Bélier", en: "Aries" },
-  { fr: "Taureau", en: "Taurus" },
-  { fr: "Gémeaux", en: "Gemini" },
-  { fr: "Cancer", en: "Cancer" },
-  { fr: "Lion", en: "Leo" },
-  { fr: "Vierge", en: "Virgo" },
-  { fr: "Balance", en: "Libra" },
-  { fr: "Scorpion", en: "Scorpio" },
-  { fr: "Sagittaire", en: "Sagittarius" },
-  { fr: "Capricorne", en: "Capricorn" },
-  { fr: "Verseau", en: "Aquarius" },
-  { fr: "Poissons", en: "Pisces" }
+  { fr: "Bélier", en: "Aries" }, { fr: "Taureau", en: "Taurus" }, { fr: "Gémeaux", en: "Gemini" },
+  { fr: "Cancer", en: "Cancer" }, { fr: "Lion", en: "Leo" }, { fr: "Vierge", en: "Virgo" },
+  { fr: "Balance", en: "Libra" }, { fr: "Scorpion", en: "Scorpio" }, { fr: "Sagittaire", en: "Sagittarius" },
+  { fr: "Capricorne", en: "Capricorn" }, { fr: "Verseau", en: "Aquarius" }, { fr: "Poissons", en: "Pisces" }
 ];
 let signIdx = 0;
 
 async function fetchHoroscope(signEn) {
-  const target = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${signEn}&day=today`;
-  const url = PROXY + encodeURIComponent(target);
-
+  const target = https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${signEn}&day=today;
+  const url = viaProxy(target);
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await timedFetch(url);
+    if (!res.ok) throw new Error(HTTP ${res.status});
     const data = await res.json();
     return data?.data?.horoscope_data || "Horoscope indisponible.";
   } catch (e) {
@@ -390,73 +477,127 @@ async function fetchHoroscope(signEn) {
     return "Erreur horoscope";
   }
 }
-
 async function refreshHoroscopeCycle() {
   const { fr, en } = SIGNS[signIdx];
   const text = await fetchHoroscope(en);
-  tickerData.horoscope = `🔮 ${fr} : ${text}`;
+  tickerData.horoscope = 🔮 ${fr} : ${text};
   signIdx = (signIdx + 1) % SIGNS.length;
 }
 
-
 // === Saint du jour ===
-async function refreshSaint(){
-  try{ const data=await fetchJSON("https://nominis.cef.fr/json/nominis.php",10000); if(data?.response?.prenoms) tickerData.saint=`🎂 Ste ${data.response.prenoms}`; }
-  catch{ tickerData.saint="🎂 Fête indisponible"; }
+async function refreshSaint() {
+  try {
+    const data = await fetchJSON("https://nominis.cef.fr/json/nominis.php", 10000);
+    if (data?.response?.prenoms) tickerData.saint = 🎂 Ste ${data.response.prenoms};
+  } catch { tickerData.saint = "🎂 Fête indisponible"; }
 }
 
-// === Météo ===
-function weatherEmojiFromCode(code){ if([0,1].includes(code)) return "☀️"; if([2,3].includes(code)) return "⛅"; if([61,63,65,80,81,82].includes(code)) return "🌧️"; if([95,96,99].includes(code)) return "⛈️"; if([45,48].includes(code)) return "🌫️"; return "🌤️"; }
-async function refreshWeather(){
-  const data=await fetchJSON(WEATHER_URL,10000);
-  const t=document.getElementById("weather-temp"), d=document.getElementById("weather-desc"), e=document.getElementById("weather-emoji");
-  if(!data?.current_weather){ if(t) t.textContent="--°"; return; }
-  const { temperature, weathercode }=data.current_weather;
-  const temp=`${Math.round(temperature)}°C`; const desc=WEATHER_CODES[weathercode]||""; const ico=weatherEmojiFromCode(weathercode);
-  if(t) t.textContent=temp; if(d) d.textContent=desc; if(e) e.textContent=ico;
-  tickerData.timeWeather=`${ico} ${temp} (${desc})`;
+// === Météo (patch retry/backoff + proxy) ===
+function weatherEmojiFromCode(code) {
+  if ([0, 1].includes(code)) return "☀";
+  if ([2, 3].includes(code)) return "⛅";
+  if ([61, 63, 65, 80, 81, 82].includes(code)) return "🌧";
+  if ([95, 96, 99].includes(code)) return "⛈";
+  if ([45, 48].includes(code)) return "🌫";
+  return "🌤";
+}
+async function refreshWeather() {
+  const res = await fetchWithRetry(viaProxy(WEATHER_URL), {}, 3);
+  const t = document.getElementById("weather-temp"),
+        d = document.getElementById("weather-desc"),
+        e = document.getElementById("weather-emoji");
+  if (!res || !res.ok) { if (t) t.textContent = "--°"; return; }
+  const data = await res.json();
+  if (!data?.current_weather) { if (t) t.textContent = "--°"; return; }
+  const { temperature, weathercode } = data.current_weather;
+  const temp = ${Math.round(temperature)}°C;
+  const desc = WEATHER_CODES[weathercode] || "";
+  const ico = weatherEmojiFromCode(weathercode);
+  if (t) t.textContent = temp; if (d) d.textContent = desc; if (e) e.textContent = ico;
+  tickerData.timeWeather = ${ico} ${temp} (${desc});
 }
 
-// === Vélib ===
-async function refreshVelib(){
-  for(const [key,stationId] of Object.entries(VELIB_STATIONS)){
-    try{
-      const d=await fetchJSON(`https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?where=stationcode%3D${encodeURIComponent(stationId)}&limit=1`);
-      const st=d?.results?.[0]; const el=document.getElementById(`velib-${key.toLowerCase()}`); if(!el) continue;
-      if(!st){ el.textContent="Indispo"; continue; }
-      const mech=st.mechanical_bikes||0, ebike=st.ebike_bikes||0, docks=st.numdocksavailable||0;
-      el.innerHTML=`🚲${mech} 🔌${ebike} 🅿️${docks}`;
-    }catch{}
+// === Vélib (via proxy pour homogénéité/CORS) ===
+async function refreshVelib() {
+  for (const [key, stationId] of Object.entries(VELIB_STATIONS)) {
+    try {
+      const url = viaProxy(https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel/records?where=stationcode%3D${encodeURIComponent(stationId)}&limit=1);
+      const d = await fetchJSON(url);
+      const st = d?.results?.[0]; const el = document.getElementById(velib-${key.toLowerCase()}); if (!el) continue;
+      if (!st) { el.textContent = "Indispo"; continue; }
+      const mech = st.mechanical_bikes || 0, ebike = st.ebike_bikes || 0, docks = st.numdocksavailable || 0;
+      el.innerHTML = 🚲${mech} 🔌${ebike} 🅿${docks};
+    } catch { }
   }
 }
 
-// === Actus ===
-async function refreshNews(){
-  const xml=await fetchText(PROXY+encodeURIComponent(RSS_URL),15000); let items=[];
-  if(xml){ try{ const doc=new DOMParser().parseFromString(xml,"application/xml"); const nodes=[...doc.querySelectorAll("item")].slice(0,6); items=nodes.map(n=>({title:cleanText(n.querySelector("title")?.textContent||""),desc:cleanText(n.querySelector("description")?.textContent||"")})); }catch{} }
-  newsItems=items; renderNews();
+// === Actus (RSS via proxy + Accept + retry) ===
+async function refreshNews() {
+  const res = await fetchWithRetry(viaProxy(RSS_URL), { headers: { "Accept": "application/rss+xml" } }, 2);
+  let items = [];
+  if (res && res.ok) {
+    const xml = await res.text();
+    try {
+      const doc = new DOMParser().parseFromString(xml, "application/xml");
+      const nodes = [...doc.querySelectorAll("item")].slice(0, 6);
+      items = nodes.map(n => ({
+        title: cleanText(n.querySelector("title")?.textContent || ""),
+        desc: cleanText(n.querySelector("description")?.textContent || "")
+      }));
+    } catch { }
+  }
+  newsItems = items; renderNews();
 }
-function renderNews(){ const cont=document.getElementById("news-carousel"); if(!cont) return; cont.innerHTML=""; if(!newsItems.length){ cont.textContent="Aucune actu"; return; } newsItems.forEach((n,i)=>{ const d=document.createElement("div"); d.className="news-card"+(i===currentNews?" active":""); d.innerHTML=`<div class="news-title">${n.title}</div><div class="news-desc">${n.desc}</div>`; cont.appendChild(d); }); }
-function nextNews(){ if(newsItems.length){ currentNews=(currentNews+1)%newsItems.length; renderNews(); } }
+function renderNews() {
+  const cont = document.getElementById("news-carousel"); if (!cont) return;
+  cont.innerHTML = "";
+  if (!newsItems.length) { cont.textContent = "Aucune actu"; return; }
+  newsItems.forEach((n, i) => {
+    const d = document.createElement("div");
+    d.className = "news-card" + (i === currentNews ? " active" : "");
+    d.innerHTML = <div class="news-title">${n.title}</div><div class="news-desc">${n.desc}</div>;
+    cont.appendChild(d);
+  });
+}
+function nextNews() { if (newsItems.length) { currentNews = (currentNews + 1) % newsItems.length; renderNews(); } }
 
 // === Courses Vincennes ===
-async function getVincennesCoursesToday(){
-  const d=new Date(); const pmu=`${String(d.getDate()).padStart(2,"0")}${String(d.getMonth()+1).padStart(2,"0")}${d.getFullYear()}`;
-  const url=PROXY+encodeURIComponent(`https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu}`);
-  const data=await fetchJSON(url,15000); const res=[];
-  if(data?.programme?.reunions){ data.programme.reunions.forEach(reunion=>{ if(reunion.hippodrome?.code!=="VIN") return; reunion.courses?.forEach(course=>{ const start=new Date(course.heureDepart); if(!isNaN(start)){ res.push({heure:start.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),nom:course.libelle}); } }); }); }
+async function getVincennesCoursesToday() {
+  const d = new Date(); const pmu = ${String(d.getDate()).padStart(2, "0")}${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear()};
+  const url = viaProxy(https://offline.turfinfo.api.pmu.fr/rest/client/7/programme/${pmu});
+  const data = await fetchJSON(url, 15000); const res = [];
+  if (data?.programme?.reunions) {
+    data.programme.reunions.forEach(reunion => {
+      if (reunion.hippodrome?.code !== "VIN") return;
+      reunion.courses?.forEach(course => {
+        const start = new Date(course.heureDepart);
+        if (!isNaN(start)) {
+          res.push({ heure: start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }), nom: course.libelle });
+        }
+      });
+    });
+  }
   return res;
 }
-async function refreshCourses(){ const courses=await getVincennesCoursesToday(); const cont=document.getElementById("courses-list"); cont.innerHTML=""; courses.forEach(c=>{ const row=document.createElement("div"); row.textContent=`${c.heure} – ${c.nom}`; cont.appendChild(row); }); }
+async function refreshCourses() {
+  const courses = await getVincennesCoursesToday();
+  const cont = document.getElementById("courses-list");
+  if (!cont) return;
+  cont.innerHTML = "";
+  courses.forEach(c => {
+    const row = document.createElement("div");
+    row.textContent = ${c.heure} – ${c.nom};
+    cont.appendChild(row);
+  });
+}
 
 // === Trafic routier (comptages permanents Open Data Paris) ===
 async function refreshRoad() {
   try {
-    const url = PROXY + encodeURIComponent(
-      "https://opendata.paris.fr/api/records/1.0/search/?dataset=comptages-routiers-permanents&sort=-horodate&rows=5"
-    );
+    const url = viaProxy("https://opendata.paris.fr/api/records/1.0/search/?dataset=comptages-routiers-permanents&sort=-horodate&rows=5");
     const data = await fetchJSON(url, 15000);
     const cont = document.getElementById("road-list");
+    if (!cont) return;
     cont.innerHTML = "";
 
     if (!data || !data.records) throw new Error("Pas de données trafic");
@@ -468,10 +609,10 @@ async function refreshRoad() {
       const debit = f.debit || "-";
       const taux = f.taux_occupation || f.taux_occupation_htps || "-";
       const hd = f.horodate;
-      const time = hd ? new Date(hd).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }) : "";
+      const time = hd ? new Date(hd).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "";
 
       const div = document.createElement("div");
-      div.textContent = `${libelle} • état: ${etat} • débit: ${debit} veh/h • taux: ${taux}% • ${time}`;
+      div.textContent = ${libelle} • état: ${etat} • débit: ${debit} veh/h • taux: ${taux}% • ${time};
       cont.appendChild(div);
     });
   } catch (e) {
@@ -484,11 +625,10 @@ async function refreshRoad() {
 // === Événements circulation (Open Data Paris) ===
 async function refreshEventsCirculation() {
   try {
-    const url = PROXY + encodeURIComponent(
-      "https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-datedebut&rows=5"
-    );
+    const url = viaProxy("https://opendata.paris.fr/api/records/1.0/search/?dataset=circulation_evenement&sort=-datedebut&rows=5");
     const data = await fetchJSON(url, 15000);
     const cont = document.getElementById("events-list");
+    if (!cont) return;
     cont.innerHTML = "";
 
     if (!data || !data.records) throw new Error("Pas de données événements");
@@ -500,12 +640,12 @@ async function refreshEventsCirculation() {
       const dateDebut = f.datedebut;
       const dateFin = f.datefin;
 
-      const debutStr = dateDebut ? new Date(dateDebut).toLocaleString("fr-FR", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit" }) : "";
-      const finStr = dateFin ? new Date(dateFin).toLocaleString("fr-FR", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit" }) : "";
+      const debutStr = dateDebut ? new Date(dateDebut).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "";
+      const finStr = dateFin ? new Date(dateFin).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "";
 
       const div = document.createElement("div");
       div.className = "event-row";
-      div.textContent = `${titre}${localisation ? " – " + localisation : ""} (${debutStr}${finStr ? " → " + finStr : ""})`;
+      div.textContent = ${titre}${localisation ? " – " + localisation : ""} (${debutStr}${finStr ? " → " + finStr : ""});
       cont.appendChild(div);
     });
   } catch (e) {
@@ -515,16 +655,13 @@ async function refreshEventsCirculation() {
   }
 }
 
-
 // === Messages trafic (IDFM GeneralMessage) ===
 async function fetchGeneralMessages() {
   const msgs = [];
-const ids = Object.values(LINES_SIRI);
+  const ids = Object.values(LINES_SIRI);
 
   await Promise.all(ids.map(async (lineRef) => {
-    const url = PROXY + encodeURIComponent(
-      `https://prim.iledefrance-mobilites.fr/marketplace/general-message?LineRef=${lineRef}`
-    );
+    const url = viaProxy(https://prim.iledefrance-mobilites.fr/marketplace/general-message?LineRef=${lineRef});
     const data = await fetchJSON(url, 12000);
 
     const deliveries = data?.Siri?.ServiceDelivery?.GeneralMessageDelivery || [];
@@ -532,9 +669,9 @@ const ids = Object.values(LINES_SIRI);
       (del.InfoMessage || []).forEach(msg => {
         const txt =
           cleanText(msg?.Content?.Message?.[0]?.MessageText?.[0]?.value ||
-                    msg?.Content?.Message?.MessageText?.value ||
-                    msg?.Description || "");
-        if (txt) msgs.push(`[${lineRef}] ${txt}`);
+            msg?.Content?.Message?.MessageText?.value ||
+            msg?.Description || "");
+        if (txt) msgs.push([${lineRef}] ${txt});
       });
     });
   }));
@@ -549,16 +686,16 @@ const ids = Object.values(LINES_SIRI);
   } else {
     banner.className = "traffic-banner alert";
     banner.textContent = msgs.join("  •  ");
-    tickerData.traffic = `⚠️ ${msgs[0]}`;
+    tickerData.traffic = ⚠ ${msgs[0]};
   }
 }
- 
+
 // === Ticker (alterne météo/heure, fête, horoscope, trafic) ===
-function updateTicker(){
+function updateTicker() {
   const slot = document.getElementById("ticker-slot");
   if (!slot) return;
   const pool = [
-    `${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} • ${tickerData.timeWeather}`.trim(),
+    ${new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} • ${tickerData.timeWeather}.trim(),
     tickerData.saint,
     tickerData.horoscope,
     tickerData.traffic
@@ -578,7 +715,7 @@ function updateTicker(){
 }
 
 // === Boucles ===
-function startLoops(){
+function startLoops() {
   setInterval(setClock, 1000);
 
   setInterval(renderRer, 60 * 1000);
@@ -593,18 +730,16 @@ function startLoops(){
   setInterval(nextNews, 12 * 1000);
   setInterval(refreshEventsCirculation, 5 * 60 * 1000);
 
-  setInterval(refreshHoroscopeCycle, 5 * 1000);
+  // Horoscope moins fréquent pour éviter tout blocage
+  setInterval(refreshHoroscopeCycle, 15 * 60 * 1000);
+
   setInterval(fetchGeneralMessages, 5 * 60 * 1000);
 
   setInterval(() => { updateTicker(); setLastUpdate(); }, 10 * 1000);
 }
 
 // === Init ===
-
-// dans startLoops
-setInterval(refreshEventsCirculation, 5 * 60 * 1000);
-
-(async function init(){
+(async function init() {
   setClock();
 
   await Promise.allSettled([
